@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  /* Le dice a Tailwind v4 que busque la clase .dark para activar el modo oscuro */
+  --variant-dark: .dark &;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
