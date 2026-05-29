@@ -9,6 +9,8 @@ export interface AuthUser {
     role?: string;
     isStaff?: boolean;
     permissions?: string[];
+    modules?: string[];
+    foto?: string;
 }
 
 interface AuthState {

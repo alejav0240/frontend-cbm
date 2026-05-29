@@ -1,83 +1,63 @@
 import { onError } from '@apollo/client/link/error';
 import { Observable } from '@apollo/client';
-import { isAuthError } from '../types';
-import { TokenManager } from '@/shared/lib/apollo';
+import { CombinedGraphQLErrors } from '@apollo/client/errors';
+import { TokenManager } from '../utils/tokenManager';
 import { REFRESH_TOKEN_MUTATION } from '../operations/auth';
 import { getApolloClient } from '../createClient';
 
-/**
- * Estado del refresh token (módulo-level, seguro en App Router)
- */
+const AUTH_CODES = ['UNAUTHENTICATED', 'invalid_token', 'token_expired', 'authentication_required', 'Unauthorized'];
+
 let isRefreshing = false;
 type RefreshSubscriber = (success: boolean) => void;
 let refreshQueue: RefreshSubscriber[] = [];
 
-/**
- * Notifica a todas las requests en espera del resultado del refresh
- */
 const flushRefreshQueue = (success: boolean): void => {
-    refreshQueue.forEach((callback) => callback(success));
+    refreshQueue.forEach((cb) => cb(success));
     refreshQueue = [];
 };
 
-/**
- * Link de manejo de errores con refresh automático de token
- * Detecta errores 401/UNAUTHENTICATED y gestiona el flujo de refresh
- */
+const isAuthError = (error: unknown): boolean => {
+    // GraphQL errors (Apollo v4)
+    if (CombinedGraphQLErrors.is(error)) {
+        return error.errors.some(
+            (e) =>
+                AUTH_CODES.includes((e.extensions?.code as string) ?? '') ||
+                AUTH_CODES.some((code) => e.message?.includes(code))
+        );
+    }
+    // Network / HTTP errors
+    if (error instanceof Error && 'statusCode' in error) {
+        return (error as any).statusCode === 401;
+    }
+    return false;
+};
+
 export const createErrorLink = () => {
     return onError(({ error, operation, forward }) => {
-        // Ignorar si es la propia mutación de refresh (evita loops infinitos)
-        if (operation.operationName === 'RefreshToken') {
-            return;
-        }
-
-        // Verificar si es un error de autenticación
-        if (!isAuthError(error)) {
-            return;
-        }
-
-        // Evitar redirect si ya estamos en la página de login
-        if (typeof window !== 'undefined' && window.location.pathname === '/login') {
-            return;
-        }
+        if (operation.operationName === 'RefreshToken') return;
+        if (!isAuthError(error)) return;
+        if (typeof window !== 'undefined' && window.location.pathname === '/login') return;
 
         console.debug('[Apollo] Auth error detected, attempting refresh...');
 
-        // Si ya hay un refresh en progreso, encolar esta request
         if (isRefreshing) {
             return new Observable((observer) => {
-                const subscriber: RefreshSubscriber = (success: boolean) => {
-                    if (success) {
-                        // Reintentar la operación original
-                        forward?.(operation)?.subscribe(observer);
-                    } else {
-                        // Propagar error si el refresh falló
-                        observer.error(error);
-                    }
-                };
-                refreshQueue.push(subscriber);
+                refreshQueue.push((success) => {
+                    if (success) forward(operation).subscribe(observer);
+                    else observer.error(error);
+                });
             });
         }
 
-        // Iniciar proceso de refresh
         isRefreshing = true;
 
         return new Observable((observer) => {
-            const client = getApolloClient();
-
-            client
-                .mutate({
-                    mutation: REFRESH_TOKEN_MUTATION,
-                    fetchPolicy: 'network-only', // Forzar request a red, no caché
-                    errorPolicy: 'none',
-                })
+            getApolloClient()
+                .mutate({ mutation: REFRESH_TOKEN_MUTATION, fetchPolicy: 'network-only' })
                 .then((response) => {
-                    const payload = (response.data as any)?.refreshToken;
-                    TokenManager.handleRefreshSuccess(payload);
+                    TokenManager.handleRefreshSuccess((response.data as any)?.refreshToken);
                     flushRefreshQueue(true);
-
-                    // Reintentar la operación original con nueva sesión
-                    forward?.(operation)?.subscribe(observer);
+                    forward(operation).subscribe(observer);
                 })
                 .catch((refreshError) => {
                     console.error('[Apollo] Token refresh failed', refreshError);
@@ -85,9 +65,7 @@ export const createErrorLink = () => {
                     flushRefreshQueue(false);
                     observer.error(refreshError);
                 })
-                .finally(() => {
-                    isRefreshing = false;
-                });
+                .finally(() => { isRefreshing = false; });
         });
     });
 };
