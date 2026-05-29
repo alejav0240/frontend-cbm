@@ -1,31 +1,121 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
+/* ===== TEMA Y VARIABLES ===== */
 @theme {
-  /* Le dice a Tailwind v4 que busque la clase .dark para activar el modo oscuro */
   --variant-dark: .dark &;
-}
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-serif: var(--font-serif), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@variant dark (&:where(.dark, .dark *));
+
+/* ===== MODOS CLARO Y OSCURO ===== */
+:root {
+  color-scheme: light;
+  --background: #fdfcfb;
+  --foreground: #2c3e50;
+  --primary: #008080;
+  --secondary: #5a5a40;
+  --accent: #e6e6e6;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0d1b1b;
+  --foreground: #e0f2f2;
+  --accent: #162a2a;
+  --primary: #00b2b2;
+}
+
+/* ===== ESTILOS GLOBALES ===== */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-image: radial-gradient(circle at 50% 0%, rgba(0, 128, 128, 0.05) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* ===== UTILIDADES ===== */
+.serif {
+  font-family: var(--font-serif);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ===== MARKDOWN (optimizado con capas) ===== */
+@layer components {
+  .markdown-body {
+    @apply text-gray-700 dark:text-gray-300 leading-relaxed;
+  }
+
+  .markdown-body h1 {
+    @apply text-3xl font-bold mb-6 mt-12 dark:text-white font-serif;
+  }
+
+  .markdown-body h2 {
+    @apply text-2xl font-bold mb-4 mt-10 dark:text-white font-serif;
+  }
+
+  .markdown-body h3 {
+    @apply text-xl font-bold mb-3 mt-8 dark:text-white font-serif;
+  }
+
+  .markdown-body p {
+    @apply mb-6;
+  }
+
+  .markdown-body ul {
+    @apply list-disc pl-6 mb-6 space-y-2;
+  }
+
+  .markdown-body ol {
+    @apply list-decimal pl-6 mb-6 space-y-2;
+  }
+
+  .markdown-body blockquote {
+    @apply border-l-4 border-[#008080] pl-6 italic my-8 text-gray-500 dark:text-gray-400;
+  }
+
+  .markdown-body strong {
+    @apply font-bold text-[#008080];
+  }
+
+  .markdown-body a {
+    @apply text-[#008080] hover:underline transition-colors;
+  }
+
+  .markdown-body code {
+    @apply bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+
+  .markdown-body pre {
+    @apply bg-gray-900 text-gray-100 p-6 rounded-2xl overflow-x-auto my-8 font-mono text-sm;
+  }
+
+  /* Mejora: código inline dentro de pre */
+  .markdown-body pre code {
+    @apply bg-transparent p-0 text-inherit;
+  }
 }
