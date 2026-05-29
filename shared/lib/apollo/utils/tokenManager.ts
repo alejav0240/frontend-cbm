@@ -1,5 +1,5 @@
 import { isBrowser } from './isBrowser';
-import {useAuthStore} from "@/shared/hooks/useAuthStore";
+import {useAuthStore} from "@/modules/auth/hooks/useAuthStore";
 
 /**
  * Gestor centralizado de tokens de autenticación

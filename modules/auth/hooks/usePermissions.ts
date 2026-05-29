@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { PERMISSIONS, PermissionKey, MenuGroup, MenuItem } from '@/shared/lib/permissions/permissions.config';
-import {useAuthStore} from "@/shared/hooks/useAuthStore";
+import {useAuthStore} from "@/modules/auth/hooks/useAuthStore";
 
 /**
  * Hook para gestión de permisos en la UI
