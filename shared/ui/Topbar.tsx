@@ -123,7 +123,7 @@ export default function Topbar() {
                     iconColor: 'bg-[#008080]/10 text-[#008080]',
                     action: () => {
                         setSelectedPatient(p);
-                        setCurrentPage('clinical');
+                        setCurrentPage('pacientes');
                         setGlobalSearchTerm('');
                         setShowMobileSearch(false);
                     }
@@ -142,7 +142,7 @@ export default function Topbar() {
                     icon: <Music size={14} />,
                     iconColor: 'bg-blue-500/10 text-blue-500',
                     action: () => {
-                        setCurrentPage('sessions');
+                        setCurrentPage('sesiones');
                         setGlobalSearchTerm('');
                         setShowMobileSearch(false);
                     }
@@ -161,7 +161,7 @@ export default function Topbar() {
                     icon: <BookOpen size={14} />,
                     iconColor: 'bg-purple-500/10 text-purple-500',
                     action: () => {
-                        setCurrentPage('resources');
+                        setCurrentPage('recursos');
                         setGlobalSearchTerm('');
                         setShowMobileSearch(false);
                     }
@@ -451,7 +451,7 @@ export default function Topbar() {
                                             icon={<User size={18} />}
                                             label="Mi Perfil"
                                             onClick={() => {
-                                                setCurrentPage('profile');
+                                                setCurrentPage('perfil');
                                                 setShowProfileMenu(false);
                                             }}
                                         />
@@ -459,7 +459,7 @@ export default function Topbar() {
                                             icon={<SettingsIcon size={18} />}
                                             label="Configuración"
                                             onClick={() => {
-                                                setCurrentPage('settings');
+                                                setCurrentPage('ajustes');
                                                 setShowProfileMenu(false);
                                             }}
                                         />

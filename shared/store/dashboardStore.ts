@@ -3,31 +3,36 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type PageType =
+    // atencion
     | 'overview'
-    | 'patients'
+    | 'pacientes'
     | 'agenda'
-    | 'sessions'
-    | 'cycles'
-    | 'family-portal'
-    | 'clinical'
-    | 'evaluations'
-    | 'intervention-plan'
-    | 'scales'
-    | 'therapy-reports'
-    | 'payments'
-    | 'expenses'
-    | 'inventory'
-    | 'reports'
-    | 'institutions'
+    | 'sesiones'
+    | 'ciclos'
+    | 'portal-familiar'
+    // clinica
+    | 'expedientes'
+    | 'evaluaciones'
+    | 'planes'
+    | 'escalas'
+    | 'informes'
+    // operaciones
+    | 'pagos'
+    | 'gastos'
+    | 'inventario'
+    | 'analisis'
+    | 'instituciones'
+    // comunidad
     | 'blog'
-    | 'courses'
-    | 'resources'
+    | 'cursos'
+    | 'recursos'
     | 'marketing'
+    // sistema
     | 'users'
     | 'roles'
-    | 'forms'
-    | 'settings'
-    | 'profile';
+    | 'formularios'
+    | 'ajustes'
+    | 'perfil';
 
 export interface SelectedPatient {
     id: string;
