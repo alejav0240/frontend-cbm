@@ -53,8 +53,6 @@ query GetPatientDetails($id: ID!) {
   patient(id: $id) {
     id
     databaseId
-    firstName
-    lastName
     fullName
     ci
     birthDate
@@ -63,7 +61,13 @@ query GetPatientDetails($id: ID!) {
     status
     registrationComplete
     diagnosis
+    createdAt
     residence
+    tutor {
+      id
+      fullName
+      celular
+    }
     clinicalNotes {
       id
       category
@@ -80,7 +84,7 @@ query GetPatientDetails($id: ID!) {
           sessionNumber
           sessionDate
           sessionStatus
-          paymentStatus
+          paymentStatusDisplay
           therapist {
             fullName
             __typename

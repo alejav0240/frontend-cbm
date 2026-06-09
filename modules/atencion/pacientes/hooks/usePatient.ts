@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@apollo/client/react";
+import { useEffect } from "react";
 import {
     CREATE_PATIENT,
     DELETE_PATIENT,
@@ -8,66 +9,47 @@ import {
     UPDATE_PATIENT
 } from "@/modules/atencion/pacientes";
 import { useMemo } from "react";
-import { PatientsData } from "@/modules/atencion/pacientes/types/patient";
-import { PatientFormData } from "@/modules/atencion/pacientes/schemas/schema";
+import {
+    CreatePatientVars, PatientDetailsData, PatientFilter,
+    PatientsData,
+    UpdateClinicalNotesVars,
+    UpdatePatientVars
+} from "@/modules/atencion/pacientes/types/patient";
+import { useLoadingStore, LOADING_KEYS } from "@/shared/store/loadingStore";
 
-type CreatePatientVars = Omit<PatientFormData, 'photo' | 'dob' | 'idCard' | 'diagnostico' | 'residenciaActual' | 'ciTutor' | 'tutorPhone' | 'contactEmail'> & {
-    authorId: string;
-    ci?: string;
-    birthDate?: string;
-    diagnosis?: string;
-    residence?: string;
-    imageUrl?: string;
-    tutorName?: string;
-    tutorCi?: string;
-    tutorCelular?: string;
-    tutorEmail?: string;
-};
-
-type UpdatePatientVars = {
-    id: string;
-    imageUrl?: string;
-    residence?: string;
-    diagnosis?: string;
-    registrationComplete?: boolean;
-};
-
-type UpdateClinicalNotesVars = {
-    patientId: string;
-    authorId: string;
-    notes: { category: string; content?: string }[];
-};
+const K = LOADING_KEYS.pacientes;
 
 export function usePatientDetails(id: string) {
-    const { data, loading, error, refetch } = useQuery(GET_PATIENT_DETAILS, {
+    const { data, loading, error, refetch } = useQuery<PatientDetailsData>(GET_PATIENT_DETAILS, {
         variables: { id },
         skip: !id,
         notifyOnNetworkStatusChange: true
     });
 
-    return {
-        patient: data?.patient,
-        isLoading: loading,
-        error,
-        refetch,
-    };
+    return { patient: data?.data, isLoading: loading, error, refetch };
 }
 
-export function usePatients(
-    filterTerm: string = "",
-    page: number = 1,
-    status: string = "Todos",
-    pageSize: number = 8
-) {
+export function usePatients({
+    search = "",
+    page = 1,
+    status = "Todos",
+    pageSize = 8
+}:PatientFilter) {
+    const { start, stop } = useLoadingStore();
+
     const { data, error, refetch, loading } = useQuery<PatientsData>(GET_PATIENTS, {
         variables: {
             page,
             pageSize,
-            search: filterTerm || undefined,
+            search: search || undefined,
             status: status === "Todos" ? undefined : status.toLowerCase()
         },
         notifyOnNetworkStatusChange: true,
     });
+
+    useEffect(() => {
+        loading ? start(K.list) : stop(K.list);
+    }, [loading]);
 
     const patients = useMemo(() => data?.patients?.results || [], [data]);
 
@@ -75,6 +57,10 @@ export function usePatients(
     const [updateMutation] = useMutation(UPDATE_PATIENT, { onCompleted: () => refetch() });
     const [updateNotesMutation] = useMutation(UPDATE_CLINICAL_NOTES, { onCompleted: () => refetch() });
     const [deleteMutation] = useMutation<{ deletePatient: { success: boolean; message: string } }>(DELETE_PATIENT, { onCompleted: () => refetch() });
+
+    useEffect(() => {
+        isAdding ? start(K.create) : stop(K.create);
+    }, [isAdding]);
 
     return {
         patients,

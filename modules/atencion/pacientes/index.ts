@@ -6,6 +6,7 @@ export { usePatients, usePatientDetails } from './hooks/usePatient';
 export { usePatientGrowth } from './hooks/usePatientGrowth';
 export { usePatientsViewData } from './hooks/usePatientsViewData';
 export { usePatientsModals } from './hooks/usePatientsModals';
+export { LOADING_KEYS } from '@/shared/store/loadingStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type { Patient, NormalizedPatient, PatientsData, GrowthPoint, GrowthResponse } from './types/patient';
@@ -29,4 +30,4 @@ export { default as CreatePatientForm } from './components/CreatePatientForm';
 export { default as ClinicalForm } from './components/ClinicalForm';
 
 // ─── Services ─────────────────────────────────────────────────────────────────
-export { generatePatientsPDF } from './services/pdf';
+export { generatePatientsPDF, generatePatientsExcel } from './services/pdf';

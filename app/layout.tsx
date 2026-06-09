@@ -2,6 +2,18 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import {MainProvider} from "@/config/providers/main-provider";
+import { Inter, Playfair_Display } from 'next/font/google';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-serif',
+});
+
 
 export const metadata: Metadata = {
   title: {
@@ -47,7 +59,7 @@ export default function RootLayout({
 }>) {
   return (
       // suppressHydrationWarning es obligatorio al usar next-themes
-      <html lang="es" suppressHydrationWarning>
+      <html lang="es" className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body>
         <MainProvider>
           {children}

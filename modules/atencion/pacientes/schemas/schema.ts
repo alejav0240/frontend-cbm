@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 // ─── Patient creation form ────────────────────────────────────────────────────
-
 export const patientSchema = z.object({
     firstName:       z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
     lastName:        z.string().min(2, 'El apellido debe tener al menos 2 caracteres'),

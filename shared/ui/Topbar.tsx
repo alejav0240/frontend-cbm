@@ -429,10 +429,10 @@ export default function Topbar() {
                             </div>
                             <div className="text-left hidden lg:block">
                                 <p className="text-sm font-bold dark:text-white leading-tight">
-                                    {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username || 'Usuario'}
+                                    {user?.fullName ?? (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username ?? 'Usuario')}
                                 </p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                    {user?.isStaff ? 'Administrador' : 'Personal'}
+                                    {user?.role?.name ?? (user?.isStaff ? 'Administrador' : 'Personal')}
                                 </p>
                             </div>
                         </button>

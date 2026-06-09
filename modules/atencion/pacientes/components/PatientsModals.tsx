@@ -8,7 +8,7 @@ import type { FilterConfig } from '@/shared/ui/PDFExportModal';
 import { NormalizedPatient } from '@/modules/atencion/pacientes/types/patient';
 import ClinicalForm from "@/modules/atencion/pacientes/components/ClinicalForm";
 import CreatePatientForm from "@/modules/atencion/pacientes/components/CreatePatientForm";
-import {generatePatientsPDF} from "@/modules/atencion/pacientes/services/pdf";
+import { generatePatientsPDF, generatePatientsExcel } from "@/modules/atencion/pacientes/services/pdf";
 
 interface PatientsModalsProps {
     showForm: boolean;
@@ -79,6 +79,7 @@ export function PatientsModals({
                 title="Exportar Reporte de Pacientes"
                 data={patientsList}
                 generatePDF={generatePatientsPDF}
+                generateExcel={generatePatientsExcel}
                 fileName="reporte_pacientes"
                 filtersConfig={patientsFilters}
             />

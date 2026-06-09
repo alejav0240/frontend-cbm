@@ -17,6 +17,7 @@ interface PDFExportModalProps {
   title: string;
   data: any[];
   generatePDF: (filteredData: any[]) => any;
+  generateExcel?: (filteredData: any[], fileName: string) => void;
   fileName: string;
   filtersConfig?: FilterConfig[];
 }
@@ -27,6 +28,7 @@ export function PDFExportModal({
   title,
   data,
   generatePDF,
+  generateExcel,
   fileName,
   filtersConfig = []
 }: PDFExportModalProps) {
@@ -169,7 +171,7 @@ export function PDFExportModal({
             </div>
           </div>
 
-          <div className="pt-6">
+          <div className="pt-6 space-y-3">
             <button
               onClick={handleDownload}
               className="w-full bg-[#008080] text-white py-4 rounded-2xl font-bold hover:bg-[#006666] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#008080]/20"
@@ -177,6 +179,15 @@ export function PDFExportModal({
               <Download size={20} />
               Descargar PDF
             </button>
+            {generateExcel && (
+              <button
+                onClick={() => generateExcel(filteredData, fileName)}
+                className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20"
+              >
+                <Download size={20} />
+                Descargar Excel
+              </button>
+            )}
           </div>
         </div>
 

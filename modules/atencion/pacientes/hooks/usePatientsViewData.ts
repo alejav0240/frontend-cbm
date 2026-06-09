@@ -1,20 +1,27 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { usePatients } from './usePatient';
 import { usePatientGrowth } from './usePatientGrowth';
 import { usePatientsModals } from './usePatientsModals';
 import { useDashboardStore } from '@/shared/store/dashboardStore';
 import { useAuthStore } from '@/modules/auth/hooks/useAuthStore';
+import { useLoadingStore, LOADING_KEYS } from '@/shared/store/loadingStore';
 import { toast } from 'sonner';
 import { useDebounce } from '@/shared/lib/hooks/useDebounce';
+import {ClinicalFormData, PatientFormData} from "@/modules/atencion/pacientes";
+
+const K = LOADING_KEYS.pacientes;
 
 export function usePatientsViewData() {
     const { globalSearchTerm, setCurrentPage: setActivePage, setSelectedPatient } = useDashboardStore();
     const { user } = useAuthStore();
+    const { start, stop } = useLoadingStore();
 
     const [localSearchTerm, setLocalSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('Todos');
+    const [prevSearch, setPrevSearch] = useState('');
+    const [prevStatus, setPrevStatus] = useState('Todos');
     const [currentPage, setCurrentPage] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,10 +31,14 @@ export function usePatientsViewData() {
     const searchTerm = globalSearchTerm || localSearchTerm;
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-    useEffect(() => { setCurrentPage(1); }, [debouncedSearchTerm, filterStatus]);
+    if (debouncedSearchTerm !== prevSearch || filterStatus !== prevStatus) {
+        setPrevSearch(debouncedSearchTerm);
+        setPrevStatus(filterStatus);
+        setCurrentPage(1); // Se ejecuta inmediatamente en este ciclo de render
+    }
 
     const { patients, totalCount, totalPages, addPatient, updatePatient, updateClinicalNotes, deletePatient, isAdding, refetch } =
-        usePatients(debouncedSearchTerm, currentPage, filterStatus, 8);
+        usePatients({search:debouncedSearchTerm, page:currentPage, status:filterStatus, pageSize:8});
 
     const normalizedPatients = useMemo(() => patients.map(p => ({
         ...p,
@@ -44,9 +55,10 @@ export function usePatientsViewData() {
         setActivePage('expedientes');
     };
 
-    const handleFormSubmit = async (formData: any) => {
+    const handleFormSubmit = async (formData: PatientFormData) => {
         if (isSubmitting) return;
         setIsSubmitting(true);
+        start(K.create);
         try {
             if (!user?.databaseId) {
                 toast.error('Sesión inválida. Por favor, reingresa.');
@@ -80,19 +92,22 @@ export function usePatientsViewData() {
             setCurrentPage(1);
             await refetch();
             toast.success('Paciente registrado correctamente');
-        } catch (error: any) {
-            toast.error(error.message || 'Error al registrar el paciente');
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Error al registrar el paciente';
+            toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);
+            stop(K.create);
         }
     };
 
-    const handleClinicalSubmit = async (clinicalData: any) => {
+    const handleClinicalSubmit = async (clinicalData: ClinicalFormData) => {
         const { selectedPatientForClinical } = modals;
         if (!selectedPatientForClinical?.databaseId || !user?.databaseId) {
             toast.error('Error: Datos del paciente o usuario no encontrados');
             return;
         }
+        start(K.clinical);
         try {
             await Promise.all([
                 updateClinicalNotes({
@@ -108,18 +123,22 @@ export function usePatientsViewData() {
                         { category: 'ADDITIONAL_NOTES',  content: clinicalData.notas },
                     ]
                 }),
-                updatePatient({ id: selectedPatientForClinical.databaseId, registrationComplete: true }),
+                updatePatient({ id: selectedPatientForClinical.id, registrationComplete: true }),
             ]);
             modals.setShowClinicalForm(false);
             await refetch();
             toast.success('Registro clínico completado correctamente');
-        } catch (error: any) {
-            toast.error(error.message || 'Error al actualizar el registro clínico');
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Error al actualizar el registro clínico';
+            toast.error(errorMessage);
+        } finally {
+            stop(K.clinical);
         }
     };
 
     const handleDeletePatient = async () => {
         if (!modals.patientToDelete) return;
+        start(K.delete);
         try {
             await deletePatient(modals.patientToDelete);
             toast.success('Paciente eliminado correctamente');
@@ -128,6 +147,8 @@ export function usePatientsViewData() {
             await refetch();
         } catch {
             toast.error('Error al eliminar el paciente');
+        } finally {
+            stop(K.delete);
         }
     };
 

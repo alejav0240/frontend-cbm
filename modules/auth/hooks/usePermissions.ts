@@ -25,7 +25,7 @@ export const usePermissions = () => {
             if (!isAuthenticated || !user) return false;
 
             // Admin tiene todos los permisos
-            if (user.role === 'admin' || user.isStaff) return true;
+            if (user.role?.name === 'admin' || user.isStaff) return true;
 
             // Verificar en lista de permisos del usuario
             const userPermissions = user.permissions ?? [];

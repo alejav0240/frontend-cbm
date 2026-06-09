@@ -1,31 +1,80 @@
-// ─── GraphQL / API types ──────────────────────────────────────────────────────
+import {PatientFormData} from "@/modules/atencion/pacientes";
 
 export interface Patient {
     id: string;
-    databaseId: string;
+    databaseId:number;
     fullName: string;
-    firstName: string;
-    lastName: string;
     ci: string;
     status: string;
     registrationComplete: boolean;
     diagnosis: string;
-    birthDate: string;
-    createdAt: string;
+    birthDate: Date;
+    createdAt: Date;
     imageUrl?: string;
     tutor: {
-        id: number;
+        id: string;
         firstName: string;
-        celular: number;
+        celular: string;
     };
-    // Clinical notes (populated after registration is complete)
-    objetivosGenerales?: string;
-    fisico?: string;
-    emocional?: string;
-    cognitivo?: string;
-    social?: string;
-    metodosAUsar?: string;
-    notas?: string;
+}
+
+export interface PatientFilter {
+    status?: string;
+    search: string;
+    page?: number;
+    pageSize?: number;
+}
+
+export interface PatientDetails{
+    id: string;
+    databaseId:number;
+    fullName: string;
+    ci: string;
+    birthDate: Date;
+    imageUrl?: string;
+    notes?: string;
+    status: string;
+    registrationComplete: boolean;
+    diagnosis: string;
+    createdAt: Date;
+    residence: string;
+    tutor: {
+        id: string;
+        fullName: string;
+        celular: string;
+    };
+    clinicalNotes: {
+        id:number;
+        category: string;
+        content: string;
+        createdAt: Date;
+    };
+    therapeuticSessions: {
+        edges: {
+            node: {
+                id: string;
+                sessionNumber: number;
+                sessionDate: Date;
+                sessionStatus: string;
+                paymentStatusDisplay: string;
+                therapist: {
+                    fullName: string;
+                };
+                videoUrl?: string;
+                notes?: string;
+            };
+        };
+    }
+}
+
+export interface PatientDetailsData {
+    data: PatientDetails;
+}
+
+export interface SearchPatient {
+    id: string;
+    databaseId:number;
+    fullName: string;
 }
 
 export interface PatientsData {
@@ -54,3 +103,30 @@ export interface NormalizedPatient extends Patient {
     idNumber: string;   // = ci
     image?: string;     // = imageUrl
 }
+// ─── Zod types
+export type CreatePatientVars = Omit<PatientFormData, 'photo' | 'dob' | 'idCard' | 'diagnostico' | 'residenciaActual' | 'ciTutor' | 'tutorPhone' | 'contactEmail'> & {
+    authorId: string;
+    ci?: string;
+    birthDate?: string;
+    diagnosis?: string;
+    residence?: string;
+    imageUrl?: string;
+    tutorName?: string;
+    tutorCi?: string;
+    tutorCelular?: string;
+    tutorEmail?: string;
+};
+
+export type UpdatePatientVars = {
+    id: string;
+    imageUrl?: string;
+    residence?: string;
+    diagnosis?: string;
+    registrationComplete?: boolean;
+};
+
+export type UpdateClinicalNotesVars = {
+    patientId: string | number;
+    authorId: string;
+    notes: { category: string; content?: string }[];
+};
