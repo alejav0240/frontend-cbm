@@ -1,20 +1,24 @@
 "use client";
 
+import React, { useMemo } from "react";
 import { SessionsStats } from "@/modules/atencion/sesiones/components/SessionsStats";
 import { SessionFormModal } from "@/modules/atencion/sesiones/components/SessionFormModal";
 import { SessionsHeader } from "@/modules/atencion/sesiones/components/SessionsHeader";
 import { SessionsFilters } from "@/modules/atencion/sesiones/components/SessionsFilters";
 import { SessionsTable } from "@/modules/atencion/sesiones/components/SessionsTable";
+import { SessionDetailsModal } from "@/modules/atencion/sesiones/components/SessionDetailsModal";
 import ConfirmModal from "@/shared/ui/ConfirmModal";
 import PDFExportModal from "@/shared/ui/PDFExportModal";
-import { SessionDetailsModal } from "@/modules/atencion/sesiones/components/SessionDetailsModal";
 import { useSessionsData } from "@/modules/atencion/sesiones/hooks/useSessionsData";
 import { sessionsFilters } from "@/modules/atencion/sesiones/data/data";
 import {
   generateSessionsListPDF,
-  generateSessionSummaryPDF,
   generateSessionsExcel,
 } from "@/modules/atencion/sesiones/services/pdf";
+import {
+  generateSessionPDF,
+  generateSessionWord,
+} from "@/modules/atencion/sesiones/services/sessionExport";
 import { NormalizedSession } from "@/modules/atencion/sesiones/types/session";
 
 export function SesionesView() {
@@ -43,7 +47,7 @@ export function SesionesView() {
     handleFormSubmit,
     handleDeleteSession,
     handleSaveNotes,
-    handleExportSession,
+    handleOpenSessionExport,
     handleSendReminder,
     showForm,
     setShowForm,
@@ -51,17 +55,23 @@ export function SesionesView() {
     setShowDeleteConfirm,
     showExportModal,
     setShowExportModal,
-    showSummaryModal,
-    setShowSummaryModal,
+    showSessionExportModal,
+    setShowSessionExportModal,
     selectedSession,
     setSelectedSession,
     selectedSessionForSummary,
+    setSelectedSessionForSummary,
     isEditingNotes,
     setIsEditingNotes,
     setSessionToDelete,
   } = useSessionsData();
 
-  console.log("----------", paginatedSessions);
+  // todo: analizar si es necesario o se puede hacer en useSessionsData
+  const sessionSummaryData = useMemo(
+    () => (selectedSessionForSummary ? [selectedSessionForSummary] : []),
+    [selectedSessionForSummary],
+  );
+  //todo: falat integrar con onStartSession onCompleteSession
   return (
     <div className="space-y-8">
       <SessionsStats />
@@ -86,7 +96,7 @@ export function SesionesView() {
           currentPage={currentPage}
           onPageChange={setCurrentPage}
           totalPages={totalPages}
-          onExportSession={handleExportSession}
+          onExportSession={handleOpenSessionExport}
           onViewDetails={(s) => setSelectedSession(s as NormalizedSession)}
           onStartSession={() => {}}
           onCompleteSession={() => {}}
@@ -97,15 +107,7 @@ export function SesionesView() {
         />
       </div>
 
-      <ConfirmModal
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDeleteSession}
-        title="Eliminar Sesión"
-        message="¿Estás seguro de que deseas eliminar este registro de sesión? Esta acción no se puede deshacer."
-        confirmLabel="Eliminar Sesión"
-      />
-
+      {/* Exportar reporte general — PDF + Excel */}
       <PDFExportModal
         isOpen={showExportModal}
         onClose={() => setShowExportModal(false)}
@@ -117,13 +119,27 @@ export function SesionesView() {
         filtersConfig={sessionsFilters}
       />
 
+      {/* Exportar sesión individual — PDF + Word */}
       <PDFExportModal
-        isOpen={showSummaryModal}
-        onClose={() => setShowSummaryModal(false)}
-        title="Vista Previa de Resumen de Sesión"
-        data={selectedSessionForSummary ? [selectedSessionForSummary] : []}
-        generatePDF={(data) => generateSessionSummaryPDF(data[0])}
-        fileName={`resumen_sesion_${selectedSessionForSummary?.patientName?.replace(/\s+/g, "_") ?? ""}`}
+        isOpen={showSessionExportModal}
+        onClose={() => {
+          setShowSessionExportModal(false);
+          setSelectedSessionForSummary(null);
+        }}
+        title={`Exportar Sesión #${selectedSessionForSummary?.sessionNum ?? ""} — ${selectedSessionForSummary?.patientName ?? ""}`}
+        data={sessionSummaryData}
+        generatePDF={generateSessionPDF}
+        generateWord={generateSessionWord}
+        fileName={`sesion_${selectedSessionForSummary?.sessionNum ?? ""}_${selectedSessionForSummary?.patientName?.replace(/\s+/g, "_") ?? ""}`}
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteSession}
+        title="Eliminar Sesión"
+        message="¿Estás seguro de que deseas eliminar este registro de sesión? Esta acción no se puede deshacer."
+        confirmLabel="Eliminar Sesión"
       />
 
       <SessionDetailsModal
@@ -138,7 +154,7 @@ export function SesionesView() {
         editedNotes={editedNotes}
         setEditedNotes={setEditedNotes}
         onSaveNotes={handleSaveNotes}
-        onExportSession={handleExportSession}
+        onExportSession={handleOpenSessionExport}
         onSendReminder={handleSendReminder}
       />
 

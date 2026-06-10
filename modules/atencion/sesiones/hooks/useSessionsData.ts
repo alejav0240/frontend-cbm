@@ -12,6 +12,10 @@ import { useSessions } from "./useSession";
 import { useSearchPatients } from "@/modules/atencion/pacientes/hooks/usePatient";
 import { useSearchUsers } from "@/modules/sistema/usuarios/hooks/useUsers";
 import { NormalizedSession } from "@/modules/atencion/sesiones/types/session";
+import {
+  exportSessionPDF,
+  exportSessionWord,
+} from "@/modules/atencion/sesiones/services/sessionExport";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -131,9 +135,6 @@ export function useSessionsData() {
     [rawSessions],
   );
 
-  console.log("rawSessions", rawSessions);
-  console.log("normalizedSessions", normalizedSessions);
-
   const filteredSessions = useMemo(
     () =>
       normalizedSessions.filter((s) => {
@@ -230,9 +231,26 @@ export function useSessionsData() {
     handleFormSubmit: form.handleSubmit(handleFormSubmit),
     handleDeleteSession,
     handleSaveNotes,
-    handleExportSession: (session: NormalizedSession) => {
+    // Abre el modal de exportación para una sesión individual
+    handleOpenSessionExport: (session: NormalizedSession) => {
       modals.setSelectedSessionForSummary(session);
-      modals.setShowSummaryModal(true);
+      modals.setShowSessionExportModal(true);
+    },
+    // Descarga directa usada dentro del modal
+    handleExportSessionPDF: async (data: NormalizedSession[]) => {
+      try {
+        const doc = await exportSessionPDF(data[0]);
+        return doc;
+      } catch {
+        toast.error("Error al generar el PDF");
+      }
+    },
+    handleExportSessionWord: async (data: NormalizedSession[]) => {
+      try {
+        await exportSessionWord(data[0]);
+      } catch {
+        toast.error("Error al generar el Word");
+      }
     },
     handleSendReminder: (session: NormalizedSession) => {
       toast.promise(new Promise((resolve) => setTimeout(resolve, 1500)), {

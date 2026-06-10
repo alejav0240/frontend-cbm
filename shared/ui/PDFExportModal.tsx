@@ -21,9 +21,12 @@ interface PDFExportModalProps {
     filteredData: any[],
     fileName: string,
   ) => void | Promise<void>;
+  generateWord?: (filteredData: any[]) => void | Promise<void>;
   fileName: string;
   filtersConfig?: FilterConfig[];
 }
+
+const EMPTY_FILTERS: FilterConfig[] = [];
 
 export function PDFExportModal({
   isOpen,
@@ -32,14 +35,16 @@ export function PDFExportModal({
   data,
   generatePDF,
   generateExcel,
+  generateWord,
   fileName,
-  filtersConfig = [],
+  filtersConfig = EMPTY_FILTERS,
 }: PDFExportModalProps) {
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
   const filteredData = useMemo(() => {
+    if (!data) return [];
     return data.filter((item) => {
       return Object.entries(filters).every(([key, value]) => {
         if (!value || value === "all") return true;
@@ -220,6 +225,15 @@ export function PDFExportModal({
               >
                 <Download size={20} />
                 Descargar Excel
+              </button>
+            )}
+            {generateWord && (
+              <button
+                onClick={() => generateWord(filteredData)}
+                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+              >
+                <Download size={20} />
+                Descargar Word
               </button>
             )}
           </div>

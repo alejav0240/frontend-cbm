@@ -40,9 +40,6 @@ export function useSessions(filters: filtersData) {
       (sesion) => sesion !== null && sesion !== undefined,
     );
   }, [data]);
-  console.log("data", data);
-
-  console.log("sessions", sessions);
 
   const [createMutation, { loading: isCreating }] = useMutation(
     CREATE_SESSION,

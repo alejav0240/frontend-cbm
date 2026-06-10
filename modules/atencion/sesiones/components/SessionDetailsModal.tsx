@@ -14,6 +14,7 @@ interface SessionDetailsModalProps {
   setEditedNotes: (notes: string) => void;
   onSaveNotes: () => void;
   onExportSession: (session: any) => void;
+  onExportWord?: (session: any) => void;
   onSendReminder: (session: any) => void;
 }
 
@@ -27,6 +28,7 @@ export function SessionDetailsModal({
   setEditedNotes,
   onSaveNotes,
   onExportSession,
+  onExportWord,
   onSendReminder,
 }: SessionDetailsModalProps) {
   if (!session) return null;
