@@ -1,7 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+    experimental: {
+        optimizePackageImports: [
+            'lucide-react',
+            'recharts',
+            'motion',
+            'motion/react',
+            '@apollo/client',
+        ],
+    },
 };
 
 export default nextConfig;

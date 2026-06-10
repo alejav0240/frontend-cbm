@@ -1,9 +1,10 @@
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 import { NormalizedSession } from '@/modules/atencion/sesiones/types/session';
 
-export const generateSessionsListPDF = (sessions: NormalizedSession[]) => {
+export const generateSessionsListPDF = async (sessions: NormalizedSession[]) => {
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text('Reporte de Sesiones', 14, 22);
@@ -20,7 +21,11 @@ export const generateSessionsListPDF = (sessions: NormalizedSession[]) => {
     return doc;
 };
 
-export const generateSessionSummaryPDF = (session: NormalizedSession) => {
+export const generateSessionSummaryPDF = async (session: NormalizedSession) => {
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text('Resumen de Sesión', 14, 22);
@@ -45,7 +50,8 @@ export const generateSessionSummaryPDF = (session: NormalizedSession) => {
     return doc;
 };
 
-export const generateSessionsExcel = (sessions: NormalizedSession[], fileName = 'reporte_sesiones') => {
+export const generateSessionsExcel = async (sessions: NormalizedSession[], fileName = 'reporte_sesiones') => {
+    const XLSX = await import('xlsx');
     const rows = sessions.map(s => ({
         '#': s.sessionNum,
         Paciente: s.patientName,
@@ -60,7 +66,6 @@ export const generateSessionsExcel = (sessions: NormalizedSession[], fileName = 
         Notas: s.notes,
         Grabación: s.recordingUrl ?? '',
     }));
-
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Sesiones');

@@ -16,8 +16,8 @@ interface PDFExportModalProps {
   onClose: () => void;
   title: string;
   data: any[];
-  generatePDF: (filteredData: any[]) => any;
-  generateExcel?: (filteredData: any[], fileName: string) => void;
+  generatePDF: (filteredData: any[]) => any | Promise<any>;
+  generateExcel?: (filteredData: any[], fileName: string) => void | Promise<void>;
   fileName: string;
   filtersConfig?: FilterConfig[];
 }
@@ -64,14 +64,14 @@ export function PDFExportModal({
     });
   }, [data, filters, filtersConfig]);
 
-  const updatePreview = useCallback(() => {
+  const updatePreview = useCallback(async () => {
     if (filteredData.length === 0) {
       setPdfUrl(null);
       return;
     }
     setIsPreviewLoading(true);
     try {
-      const doc = generatePDF(filteredData);
+      const doc = await generatePDF(filteredData);
       const url = doc.output('datauristring');
       
       setPdfUrl(url);
@@ -88,8 +88,8 @@ export function PDFExportModal({
     }
   }, [isOpen, updatePreview]);
 
-  const handleDownload = () => {
-    const doc = generatePDF(filteredData);
+  const handleDownload = async () => {
+    const doc = await generatePDF(filteredData);
     doc.save(`${fileName}_${Date.now()}.pdf`);
   };
 

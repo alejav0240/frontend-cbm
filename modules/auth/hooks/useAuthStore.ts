@@ -16,6 +16,7 @@ export interface AuthUser {
     foto?: string;
     cv?: string;
     modules?: string[];
+    permissions?: string[];
     role?: {
         id: string;
         name: string;

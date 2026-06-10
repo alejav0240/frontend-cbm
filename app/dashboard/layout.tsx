@@ -1,15 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useQuery } from '@apollo/client/react';
 import { ME_QUERY } from '@/modules/auth/graphql';
 import { AuthUser, useAuthStore } from '@/modules/auth/hooks/useAuthStore';
-import Sidebar from '@/shared/ui/Sidebar';
-import Topbar from '@/shared/ui/Topbar';
 import LoadingScreen from "@/shared/ui/LoadingScreen";
+
+const Sidebar = dynamic(() => import('@/shared/ui/Sidebar'), { ssr: false });
+const Topbar = dynamic(() => import('@/shared/ui/Topbar'), { ssr: false });
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { setUser, setIsLoading, isLoading } = useAuthStore();
+    const router = useRouter();
 
     const { data, loading, error } = useQuery<{ me: AuthUser }>(ME_QUERY, {
         fetchPolicy: 'network-only',
@@ -21,15 +25,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         } else if (!loading) {
             setIsLoading(false);
         }
-    }, [data, loading]);
+    }, [data, loading, setUser, setIsLoading]);
 
-    if (isLoading || loading) return <LoadingScreen />;
+    useEffect(() => {
+        if (!loading && (error || (!data?.me))) {
+            router.replace('/login');
+        }
+    }, [loading, error, data, router]);
 
-    // Token inválido o expirado
-    if (error || !data?.me) {
-        if (typeof window !== 'undefined') window.location.href = '/login';
-        return null;
-    }
+    if (loading || isLoading) return <LoadingScreen />;
+    if (error || !data?.me) return null;
 
     return (
         <div className="min-h-screen bg-[#f8fafc] dark:bg-background flex transition-colors duration-500">

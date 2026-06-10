@@ -25,7 +25,7 @@ export interface SesionType {
 }
 
 export interface SesionData {
-    sesions: SesionType[];
+    sessions: SesionType[];
 }
 
 export interface filtersData {

@@ -1,8 +1,10 @@
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+import { NormalizedPatient } from '@/modules/atencion/pacientes/types/patient';
 
-export const generatePatientsPDF = (patients: any[]) => {
+export const generatePatientsPDF = async (patients: NormalizedPatient[]) => {
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text('Reporte de Pacientes', 14, 22);
@@ -10,8 +12,8 @@ export const generatePatientsPDF = (patients: any[]) => {
     doc.setTextColor(100);
     doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 14, 30);
     autoTable(doc, {
-        head: [["ID", "Nombre", "Edad", "Tutor", "Estado"]],
-        body: patients.map(p => [p.idNumber || p.id, p.name, p.age, p.tutor, p.status]),
+        head: [["ID", "Nombre", "Diagnóstico", "Estado", "Tutor"]],
+        body: patients.map(p => [p.idNumber || p.id, p.name, p.diagnosis ?? '', p.status, p.tutor?.firstName ?? '']),
         startY: 40,
         theme: 'striped',
         headStyles: { fillColor: '#008080' },
@@ -19,7 +21,8 @@ export const generatePatientsPDF = (patients: any[]) => {
     return doc;
 };
 
-export const generatePatientsExcel = (patients: any[], fileName = 'reporte_pacientes') => {
+export const generatePatientsExcel = async (patients: NormalizedPatient[], fileName = 'reporte_pacientes') => {
+    const XLSX = await import('xlsx');
     const rows = patients.map(p => ({
         ID: p.idNumber || p.id,
         Nombre: p.name,
@@ -31,7 +34,6 @@ export const generatePatientsExcel = (patients: any[], fileName = 'reporte_pacie
         'Registro Completo': p.registrationComplete ? 'Sí' : 'No',
         'Fecha Registro': p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '',
     }));
-
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Pacientes');

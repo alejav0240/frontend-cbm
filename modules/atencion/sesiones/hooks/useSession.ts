@@ -20,12 +20,19 @@ export function useSessions(filters: filtersData) {
         },
         notifyOnNetworkStatusChange: true,
     });
-
     useEffect(() => {
         loading ? start(LOADING_KEY) : stop(LOADING_KEY);
     }, [loading]);
 
-    const sessions = useMemo(() => data?.sesions ?? [], [data]);
+    const sessions = useMemo(() => {
+        if (!data?.sessions) return [];
+
+        // Filtramos cualquier sesión inválida, nula o indefinida que venga de la API
+        return data.sessions.filter(sesion => sesion !== null && sesion !== undefined);
+    }, [data]);
+    console.log('data', data);
+
+    console.log('sessions', sessions);
 
     const [createMutation, { loading: isCreating }] = useMutation(CREATE_SESSION, { onCompleted: () => refetch() });
     const [updateMutation] = useMutation(UPDATE_SESSION, { onCompleted: () => refetch() });

@@ -61,7 +61,7 @@ export function PatientsModals({
             </Modal>
 
             <Modal isOpen={showClinicalForm} onClose={onCloseClinicalForm} title="Completar Registro Clínico">
-                <ClinicalForm patient={selectedPatientForClinical} onSubmit={onClinicalSubmit} onCancel={onCloseClinicalForm} />
+                <ClinicalForm patient={null} patientName={selectedPatientForClinical?.fullName} onSubmit={onClinicalSubmit} onCancel={onCloseClinicalForm} />
             </Modal>
 
             <ConfirmModal

@@ -51,6 +51,7 @@ export function SesionesView() {
         setSessionToDelete,
     } = useSessionsData();
 
+    console.log('----------',paginatedSessions)
     return (
         <div className="space-y-8">
             <SessionsStats />

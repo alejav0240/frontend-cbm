@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
     const path = join(process.cwd(), 'public', 'uploads', fileName);
     
     await writeFile(path, buffer);
-    console.log(`File uploaded to: ${path}`);
 
     const url = `/uploads/${fileName}`;
 

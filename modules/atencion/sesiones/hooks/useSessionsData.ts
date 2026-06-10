@@ -53,11 +53,11 @@ export function useSessionsData() {
     [patientResults]);
 
     const therapistOptions = useMemo(() =>
-        (therapistResults ?? []).map(t => ({ label: t.fullname, value: t.id })),
+        (therapistResults ?? []).map(t => ({ label: t.fullName, value: t.id })),
     [therapistResults]);
 
     const therapistsList = useMemo(() =>
-        (therapistResults ?? []).map(t => t.fullname),
+        (therapistResults ?? []).map(t => t.fullName),
     [therapistResults]);
 
     const normalizedSessions: NormalizedSession[] = useMemo(() =>
@@ -84,6 +84,9 @@ export function useSessionsData() {
             };
         }),
     [rawSessions]);
+
+    console.log('rawSessions', rawSessions);
+    console.log('normalizedSessions', normalizedSessions);
 
     const filteredSessions = useMemo(() =>
         normalizedSessions.filter(s => {

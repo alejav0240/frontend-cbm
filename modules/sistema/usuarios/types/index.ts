@@ -1,6 +1,6 @@
 export interface SearchUsers {
     id: string;
-    fullname: string;
+    fullName: string;
 }
 export interface SearchUserData {
     users:{

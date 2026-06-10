@@ -6,7 +6,7 @@ export function useSearchUsers({
     pageSize=50,
     roleName='',
     excludeRole='',
-    page=10,
+    page=1,
     search=''
 }: SearchUserFilter) {
     const { data, loading, refetch } = useQuery<SearchUserData>(GET_THERAPISTS_SEARCH, {
@@ -18,6 +18,5 @@ export function useSearchUsers({
             excludeRole: excludeRole,
         }
     });
-    console.log(data);
     return {users: data?.users.results, loading, refetch};
 }

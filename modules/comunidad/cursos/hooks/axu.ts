@@ -1,3 +1,6 @@
+import { useQuery } from "@apollo/client/react";
+import { useMemo } from "react";
+import { GET_INSTITUTIONS } from "@/modules/atencion/pacientes/graphql/query";
 
 interface Institution {
     id: string;

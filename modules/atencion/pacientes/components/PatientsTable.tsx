@@ -114,7 +114,7 @@ export default function PatientsTable({
                   
                   <PermissionGuard permission="pacientes:delete">
                     <button
-                      onClick={() => onDelete(patient.databaseId)}
+                      onClick={() => onDelete(String(patient.databaseId))}
                       className="p-2.5 bg-gray-100 dark:bg-white/5 rounded-xl text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition-all"
                       title="Eliminar"
                     >
