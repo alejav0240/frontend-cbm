@@ -4,14 +4,14 @@ import {
     CREATE_PATIENT,
     DELETE_PATIENT,
     GET_PATIENT_DETAILS,
-    GET_PATIENTS,
+    GET_PATIENTS, SEARCH_PATIENTS,
     UPDATE_CLINICAL_NOTES,
     UPDATE_PATIENT
 } from "@/modules/atencion/pacientes";
 import { useMemo } from "react";
 import {
     CreatePatientVars, PatientDetailsData, PatientFilter,
-    PatientsData,
+    PatientsData, SearchPatientData,
     UpdateClinicalNotesVars,
     UpdatePatientVars
 } from "@/modules/atencion/pacientes/types/patient";
@@ -27,6 +27,18 @@ export function usePatientDetails(id: string) {
     });
 
     return { patient: data?.data, isLoading: loading, error, refetch };
+}
+
+export function useSearchPatients({
+      search = "",
+      pageSize = 10
+  }:PatientFilter) {
+    const { data, loading, error, refetch } = useQuery<SearchPatientData>(SEARCH_PATIENTS, {
+        variables: { search, pageSize },
+        notifyOnNetworkStatusChange: true
+    });
+
+    return { patient: data?.patients.results, isLoading: loading, error, refetch };
 }
 
 export function usePatients({

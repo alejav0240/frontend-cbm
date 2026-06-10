@@ -73,9 +73,14 @@ export interface PatientDetailsData {
 
 export interface SearchPatient {
     id: string;
-    databaseId:number;
     fullName: string;
 }
+
+export interface SearchPatientData {
+    patients:{
+        results:SearchPatient[];
+    };
+};
 
 export interface PatientsData {
     patients: {

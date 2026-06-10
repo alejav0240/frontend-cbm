@@ -24,6 +24,7 @@
     "react-hook-form": "^7.76.1",
     "recharts": "^3.8.1",
     "sonner": "^2.0.7",
+    "xlsx": "0.18.5",
     "zen-observable-ts": "^1.1.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
