@@ -2,20 +2,20 @@ import { gql } from "@apollo/client";
 
 export const CREATE_PATIENT = gql`
   mutation CreatePatient(
-    $authorId: ID!,
-    $firstName: String!, 
-    $lastName: String!, 
-    $birthDate: Date, 
-    $ci: String, 
-    $imageUrl: String, 
-    $diagnosis: String, 
-    $notes: String, 
-    $residence: String, 
-    $tutorCelular: String, 
-    $tutorCi: String, 
-    $tutorEmail: String, 
-    $tutorName: String,
-    $selectedDay: String,
+    $authorId: ID!
+    $firstName: String!
+    $lastName: String!
+    $birthDate: Date
+    $ci: String
+    $imageUrl: String
+    $diagnosis: String
+    $notes: String
+    $residence: String
+    $tutorCelular: String
+    $tutorCi: String
+    $tutorEmail: String
+    $tutorName: String
+    $selectedDay: String
     $selectedTime: String
   ) {
     createPatient(
@@ -46,10 +46,10 @@ export const CREATE_PATIENT = gql`
 
 export const UPDATE_PATIENT = gql`
   mutation UpdatePatient(
-    $id: ID!, 
-    $imageUrl: String, 
-    $residence: String, 
-    $diagnosis: String, 
+    $id: ID!
+    $imageUrl: String
+    $residence: String
+    $diagnosis: String
     $registrationComplete: Boolean
   ) {
     updatePatient(
@@ -70,8 +70,8 @@ export const UPDATE_PATIENT = gql`
 
 export const UPDATE_CLINICAL_NOTES = gql`
   mutation UpdateClinicalNotes(
-    $patientId: ID!, 
-    $authorId: ID!, 
+    $patientId: ID!
+    $authorId: ID!
     $notes: [BasicNote]!
   ) {
     updateClinicalNotes(

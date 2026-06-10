@@ -1,7 +1,13 @@
-import {gql} from "@apollo/client";
+import { gql } from "@apollo/client";
 
 export const GET_SESSIONS = gql`
-  query GetSessions($patientId: ID = "", $paymentStatus: String = "", $sessionType: String = "", $sessionStatus: String = "", $therapistId: ID = "") {
+  query GetSessions(
+    $patientId: ID = ""
+    $paymentStatus: String = ""
+    $sessionType: String = ""
+    $sessionStatus: String = ""
+    $therapistId: ID = ""
+  ) {
     sessions(
       patientId: $patientId
       paymentStatus: $paymentStatus

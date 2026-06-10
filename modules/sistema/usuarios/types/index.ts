@@ -1,17 +1,17 @@
 export interface SearchUsers {
-    id: string;
-    fullName: string;
+  id: string;
+  fullName: string;
 }
 export interface SearchUserData {
-    users:{
-        results: SearchUsers[];
-    };
-};
+  users: {
+    results: SearchUsers[];
+  };
+}
 
 export interface SearchUserFilter {
-    search?: string;
-    roleName?: string;
-    pageSize?: number;
-    excludeRole?: string;
-    page?: number;
+  search?: string;
+  roleName?: string;
+  pageSize?: number;
+  excludeRole?: string;
+  page?: number;
 }

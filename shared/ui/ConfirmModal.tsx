@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { AlertTriangle, X } from 'lucide-react';
-import Modal from './components/Modal';
+import React from "react";
+import { AlertTriangle, X } from "lucide-react";
+import Modal from "./components/Modal";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface ConfirmModalProps {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: 'danger' | 'warning' | 'info';
+  variant?: "danger" | "warning" | "info";
 }
 
 export function ConfirmModal({
@@ -21,20 +21,20 @@ export function ConfirmModal({
   onConfirm,
   title,
   message,
-  confirmLabel = 'Confirmar',
-  cancelLabel = 'Cancelar',
-  variant = 'danger'
+  confirmLabel = "Confirmar",
+  cancelLabel = "Cancelar",
+  variant = "danger",
 }: ConfirmModalProps) {
   const variantColors = {
-    danger: 'bg-red-500 hover:bg-red-600 shadow-red-500/20',
-    warning: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20',
-    info: 'bg-[#008080] hover:bg-[#006666] shadow-[#008080]/20'
+    danger: "bg-red-500 hover:bg-red-600 shadow-red-500/20",
+    warning: "bg-orange-500 hover:bg-orange-600 shadow-orange-500/20",
+    info: "bg-[#008080] hover:bg-[#006666] shadow-[#008080]/20",
   };
 
   const iconColors = {
-    danger: 'text-red-500 bg-red-50',
-    warning: 'text-orange-500 bg-orange-50',
-    info: 'text-[#008080] bg-[#008080]/10'
+    danger: "text-red-500 bg-red-50",
+    warning: "text-orange-500 bg-orange-50",
+    info: "text-[#008080] bg-[#008080]/10",
   };
 
   return (

@@ -2,23 +2,23 @@ import { gql } from "@apollo/client";
 
 export const CREATE_SESSION = gql`
   mutation CreateSession(
-    $patientId: ID,
-    $therapistId: ID!,
-    $sessionDate: DateTime!,
-    $sessionType: String!,
-    $durationMinutes: Int,
-    $notes: String,
-    $groupId: ID,
+    $patientId: ID
+    $therapistId: ID!
+    $sessionDate: DateTime!
+    $sessionType: String!
+    $durationMinutes: Int
+    $notes: String
+    $groupId: ID
     $videoUrl: String
   ) {
     createSession(
-      patientId: $patientId,
-      therapistId: $therapistId,
-      sessionDate: $sessionDate,
-      sessionType: $sessionType,
-      durationMinutes: $durationMinutes,
-      notes: $notes,
-      groupId: $groupId,
+      patientId: $patientId
+      therapistId: $therapistId
+      sessionDate: $sessionDate
+      sessionType: $sessionType
+      durationMinutes: $durationMinutes
+      notes: $notes
+      groupId: $groupId
       videoUrl: $videoUrl
     ) {
       session {
