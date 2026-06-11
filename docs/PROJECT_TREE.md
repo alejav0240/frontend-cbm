@@ -1,46 +1,54 @@
-# Estructura de Archivos del Proyecto
+# Estructura del Proyecto (Feature-Sliced Design)
 
 ```text
 frontend/
-├── app/                        # Rutas y Layouts (Next.js App Router)
-│   ├── api/                    # Endpoints de API (Upload, etc.)
-│   ├── dashboard/              # Vista principal del Dashboard
-│   ├── equipo/                 # Gestión de equipo (Rutas)
-│   ├── login/                  # Página de autenticación
-│   ├── globals.css             # Estilos globales
-│   └── layout.tsx              # Layout raíz
-├── config/                     # Configuración de App
-│   ├── providers/              # Providers (Apollo, Theme, etc.)
-│   └── dashboard-router.tsx    # Router interno del dashboard
-├── docs/                       # Documentación técnica
-│   ├── ESTADO_PROYECTO.md      # Estado actual y arquitectura
-│   └── PROJECT_TREE.md         # Este archivo (Árbol de archivos)
-├── modules/                    # Módulos de Negocio (Dominios)
-│   ├── atencion/               # Dominio de Atención
-│   │   ├── pacientes/          # Gestión de Pacientes
-│   │   │   ├── hooks/          # Hooks: usePatients, useCreatePatient, etc.
-│   │   │   ├── components/     # Componentes: Forms, Tables
-│   │   │   ├── graphql/        # Queries y Mutations
-│   │   │   └── types/          # Definiciones TypeScript
-│   │   ├── sesiones/           # Gestión de Sesiones
-│   │   │   ├── hooks/          # Hooks: useSessions, useCreateSession, etc.
-│   │   │   ├── components/     # Componentes: SessionForm, Stats
-│   │   │   └── ...
-│   │   └── agenda/             # Calendario y Citas
-│   ├── clinica/                # Dominio Clínico (Planes, Expedientes)
-│   ├── operaciones/            # Dominio de Operaciones (Pagos, Inventario)
-│   │   └── pagos/              # Módulo de Pagos y Descuentos
-│   │       ├── hooks/          # Hooks: usePayments, useCreatePayment, etc.
-│   │       └── ...
-│   └── sistema/                # Dominio de Sistema (Usuarios, Roles)
-├── shared/                     # Recursos Compartidos
-│   ├── ui/                     # Componentes de UI (Modales, Navbar, etc.)
-│   ├── store/                  # Gestión de estado global (Zustand)
-│   ├── lib/                    # Utilidades y configuración Apollo
-│   ├── data/                   # Datos estáticos y semillas
-│   └── types/                  # Tipos globales
-├── public/                     # Activos estáticos (Imágenes, logos)
-├── package.json                # Dependencias y scripts
-├── tailwind.config.ts          # Configuración de Tailwind
-└── tsconfig.json               # Configuración de TypeScript
+├── app/                        # Rutas y Layouts (App Router)
+│   ├── (dashboard)/            # Grupo de rutas protegidas
+│   │   ├── layout.tsx          # Layout con Sidebar/Topbar
+│   │   ├── page.tsx            # Dashboard Overview
+│   │   ├── pacientes/          # /dashboard/pacientes
+│   │   ├── pagos/              # /dashboard/pagos
+│   │   └── ...                 # Demás rutas migradas
+│   ├── login/                  # Página de Login
+│   ├── globals.css             # Tailwind & Global styles
+│   └── layout.tsx              # Root Layout (MainProvider)
+│
+├── views/                      # Capa de composición de páginas
+│   ├── dashboard/              # Composición de la vista Overview
+│   ├── pacientes/              # Composición de la vista Pacientes
+│   └── ...
+│
+├── widgets/                    # Bloques complejos autónomos
+│   ├── navegacion/             # Sidebar y Topbar
+│   ├── tabla-pacientes/        # Tabla interactiva
+│   ├── dashboard-metricas/     # Tarjetas de KPIs
+│   └── ...
+│
+├── features/                   # Lógica de interacción de usuario
+│   ├── gestion-paciente/       # Formularios de alta/edición
+│   ├── filtrar-pacientes/      # Lógica de búsqueda
+│   ├── sesion-en-progreso/     # Temporizadores y grabación
+│   └── ...
+│
+├── entities/                   # Lógica de dominio (Core)
+│   ├── paciente/               # Dominio Paciente
+│   │   ├── api/                # Hooks de Apollo
+│   │   ├── model/              # Tipos, Zod schemas, DTOs
+│   │   ├── lib/                # Exportadores PDF/Excel
+│   │   └── ui/                 # Componentes visuales básicos
+│   ├── sesion/
+│   ├── pago/
+│   └── ...
+│
+├── shared/                     # Recursos transversales
+│   ├── api/                    # Apollo Client y Auth centralizado
+│   ├── ui/                     # UI Kit (Botones, Modales, Inputs)
+│   ├── model/                  # Stores Zustand (UI, Auth)
+│   ├── lib/                    # Utils, Hooks globales, Permisos
+│   └── data/                   # Seed data, configuraciones estáticas
+│
+├── public/                     # Imágenes y activos estáticos
+├── docs/                       # Documentación del sistema
+├── package.json
+└── tsconfig.json
 ```

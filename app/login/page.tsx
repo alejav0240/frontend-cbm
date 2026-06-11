@@ -11,29 +11,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@apollo/client/react";
 import MusicalNotes from "@/shared/ui/MusicalNotes";
 import { useTheme } from "next-themes";
-import { LOGIN_MUTATION } from "@/modules/auth/graphql";
-import {
-  LoginFormData,
-  loginSchema,
-} from "@/modules/auth/types/auth.form.schema";
-import { useAuthStore } from "@/modules/auth/hooks/useAuthStore";
+import { INICIO_SESION_MUTACION } from "@/shared/api/auth";
+import { esquemaLogin, DatosFormularioLogin } from "@/shared/lib/esquemas-auth";
+import { useAuthStore } from "@/shared/model/useAuthStore";
 
 export default function Login() {
   const { theme, setTheme } = useTheme();
   const isDarkMode = theme === "dark";
   const router = useRouter();
-  const { setUser } = useAuthStore();
+  const { setUsuario } = useAuthStore();
   const [isNavigating, setIsNavigating] = useState(false);
 
-  const [login, { loading }] = useMutation<{
-    tokenAuth: {
-      user: any;
-      token: string;
-    };
-  }>(LOGIN_MUTATION, {
-    onCompleted: (data) => {
-      if (data.tokenAuth?.user) {
-        setUser(data.tokenAuth.user);
+  const [login, { loading }] = useMutation(INICIO_SESION_MUTACION, {
+    onCompleted: (data: any) => {
+      if (data.tokenAuth?.token) {
+        localStorage.setItem("token", data.tokenAuth.token);
+        localStorage.setItem("refreshToken", data.tokenAuth.refreshToken);
         toast.success("¡Bienvenido de nuevo!");
         setIsNavigating(true);
         router.push("/dashboard");
@@ -51,12 +44,12 @@ export default function Login() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<DatosFormularioLogin>({
+    resolver: zodResolver(esquemaLogin),
   });
 
   const onFormSubmit = useCallback(
-    (data: LoginFormData) => {
+    (data: DatosFormularioLogin) => {
       if (isBusy) return;
       login({
         variables: {
@@ -76,7 +69,6 @@ export default function Login() {
     <div className="min-h-screen bg-[#fdfcfb] dark:bg-background flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-500">
       <MusicalNotes />
 
-      {/* Overlay de carga al navegar al dashboard */}
       {isNavigating && (
         <div className="fixed inset-0 z-50 bg-white/80 dark:bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
           <div className="w-10 h-10 border-4 border-[#008080] border-t-transparent rounded-full animate-spin" />

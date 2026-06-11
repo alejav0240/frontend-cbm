@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useAuthStore } from "@/modules/auth/hooks/useAuthStore";
+import { useAuthStore } from "@/shared/model/useAuthStore";
 import { canAccess } from "@/shared/data/permissions";
 
 interface PermissionGuardProps {
@@ -15,9 +15,9 @@ export function PermissionGuard({
   children,
   fallback = null,
 }: PermissionGuardProps) {
-  const { user } = useAuthStore();
+  const { usuario } = useAuthStore();
   if (!permission) return <>{children}</>;
-  return canAccess(user?.modules, permission) ? (
+  return canAccess(usuario?.modules, permission) ? (
     <>{children}</>
   ) : (
     <>{fallback}</>
@@ -25,6 +25,6 @@ export function PermissionGuard({
 }
 
 export function useCan(permission: string) {
-  const { user } = useAuthStore();
-  return canAccess(user?.modules, permission);
+  const { usuario } = useAuthStore();
+  return canAccess(usuario?.modules, permission);
 }

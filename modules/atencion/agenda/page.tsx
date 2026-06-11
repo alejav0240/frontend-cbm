@@ -1,7 +1,0 @@
-export function AgendaView() {
-  return (
-    <div>
-      <h1>Agenda</h1>
-    </div>
-  );
-}

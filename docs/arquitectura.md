@@ -1,95 +1,64 @@
-# Arquitectura
+# Arquitectura - CBM Frontend (FSD)
 
-## Estructura de carpetas
+Este proyecto utiliza **Feature-Sliced Design (FSD)**, una metodología arquitectónica para el desarrollo de aplicaciones frontend que prioriza la escalabilidad, el desacoplamiento y la mantenibilidad.
 
-```
+## Pilares Tecnológicos
+- **Framework:** Next.js 15 (App Router) + Turbopack
+- **Capa de Datos:** Apollo Client (GraphQL)
+- **Gestión de Estado:** Zustand (UI Global) + Apollo Cache (Server State)
+- **Formularios:** React Hook Form + Zod
+- **Estilos:** Tailwind CSS
+
+## Estructura de Capas (FSD)
+
+```text
 frontend/
-├── app/                          # Next.js App Router
-│   ├── layout.tsx                # Root layout (MainProvider)
-│   ├── page.tsx                  # Redirect a /dashboard
-│   ├── login/page.tsx            # Página de login
-│   └── dashboard/
-│       ├── layout.tsx            # Layout con Sidebar + Topbar
-│       └── page.tsx              # Renderiza DashboardRouter
-│
-├── config/
-│   ├── dashboard-router.tsx      # Router SPA: currentPage → View
-│   └── providers/
-│       ├── main-provider.tsx     # ThemeProvider + ApolloWrapper + Toaster
-│       ├── theme-provider.tsx    # next-themes
-│       └── DashboardContext.tsx  # ⚠️ Deprecado — migrando a Zustand
-│
-├── modules/                      # Módulos de dominio
-│   ├── auth/                     # Autenticación
-│   ├── atencion/                 # Dashboard, Pacientes, Agenda, Sesiones, Ciclos, Portal Familiar
-│   ├── clinica/                  # Expedientes, Evaluaciones, Planes, Escalas, Informes
-│   ├── operaciones/              # Pagos, Gastos, Inventario, Análisis, Instituciones
-│   ├── comunidad/                # Blog, Cursos, Recursos, Marketing
-│   └── sistema/                  # Usuarios, Roles, Formularios, Ajustes
-│
-├── shared/
-│   ├── store/                    # Stores Zustand globales
-│   │   ├── dashboardStore.ts     # Navegación SPA, paciente seleccionado, búsqueda global
-│   │   └── uiStore.ts            # Estado UI (sidebar)
-│   ├── ui/                       # Componentes compartidos
-│   │   ├── Sidebar.tsx
-│   │   ├── Topbar.tsx
-│   │   ├── Pagination.tsx
-│   │   ├── ConfirmModal.tsx
-│   │   ├── PDFExportModal.tsx
-│   │   ├── MusicalNotes.tsx
-│   │   └── components/           # Sub-componentes UI
-│   │       ├── Modal.tsx
-│   │       ├── PermissionGuard.tsx
-│   │       ├── SearchableSelect.tsx
-│   │       ├── CalendarPicker.tsx
-│   │       └── SidebarItem.tsx
-│   ├── lib/
-│   │   ├── apollo/               # Cliente Apollo, links, token manager
-│   │   ├── hooks/
-│   │   │   └── useDebounce.ts
-│   │   └── permissions/
-│   │       └── permissions.config.ts
-│   ├── data/
-│   │   ├── permissions.ts        # canAccess(), tipos de permisos
-│   │   ├── services.ts
-│   │   └── staff.ts
-│   ├── types/
-│   │   └── forms.home.schema.ts
-│   └── constants/
-│
-└── docs/                         # Esta documentación
+├── app/                  # Entrada de la aplicación, rutas y layouts
+├── views/                # Composiciones de página (anteriormente /pages)
+├── widgets/              # Bloques complejos autónomos (Tablas, Sidebar, Métricas)
+├── features/             # Acciones de usuario con lógica de negocio (Filtros, Grabación)
+├── entities/             # Lógica de dominio, modelos y API Apollo
+└── shared/               # UI Kit base, clientes de API y utilidades globales
 ```
 
-## Patrón de módulo
+### 1. Entities (Capa de Dominio)
+Contiene el "qué" de la aplicación. Cada entidad (ej. `paciente`, `sesion`, `pago`) se estructura internamente en:
+- `api/`: Consultas y mutaciones GraphQL + Hooks de Apollo.
+- `model/`: Tipos TypeScript, Esquemas Zod y DTOs de exportación.
+- `lib/`: Lógica de transformación, generadores de PDF/Excel y utilidades específicas.
+- `ui/`: Componentes visuales de bajo nivel (ej. `PacienteCard`).
 
-Cada sub-módulo sigue esta estructura interna:
+### 2. Features (Capa de Interacción)
+Implementa las acciones que el usuario puede realizar.
+- `filtrar-pacientes`: Lógica de búsqueda con debounce.
+- `gestion-paciente`: Formularios de creación y edición.
+- `sesion-en-progreso`: Lógica de grabación, temporizadores y notas clínicas.
 
-```
-modules/<grupo>/<submodulo>/
-├── page.tsx          # View (named export: <Nombre>View)
-├── index.ts          # Barrel — re-exporta todo lo público del módulo
-├── components/       # Componentes visuales del módulo
-├── hooks/            # Hooks de datos y UI
-├── graphql/          # Queries y mutaciones GQL
-├── schemas/          # Schemas Zod + tipos inferidos
-├── types/            # Interfaces y tipos del dominio
-├── services/         # Lógica de negocio (PDF, Excel, etc.)
-└── store/            # Store Zustand local (si aplica)
-```
+### 3. Widgets (Capa de Composición)
+Combina entidades y features en bloques de interfaz autónomos.
+- `tabla-pacientes`: Lista interactiva con filtros.
+- `dashboard-metricas`: Resumen visual de KPIs.
+- `navegacion`: Sidebar y Topbar inteligentes.
 
-## Navegación SPA
+### 4. Views (Capa de Vistas)
+Orquestadores de widgets y features. Son componentes de alto nivel que se inyectan en las rutas del `app/`.
 
-El dashboard funciona como SPA. No usa rutas de Next.js para la navegación interna:
+## Patrón de Exportación y Desacoplamiento (DTO)
 
-1. `useDashboardStore.currentPage` (tipo `PageType`) determina qué view mostrar
-2. `DashboardRouter` (`config/dashboard-router.tsx`) hace el switch y renderiza el View
-3. `Sidebar` llama `setCurrentPage(id)` al hacer click en un item
+Para evitar que los servicios de exportación (PDF/Excel) se rompan ante cambios en el backend, utilizamos **DTOs (Data Transfer Objects)** en la capa `entities/*/lib`.
 
-## Convenciones
+1. **Adaptador:** La vista transforma el modelo del servidor al DTO de exportación.
+2. **Generador:** El generador de PDF/Excel solo conoce el DTO, no el modelo de Apollo.
 
-- Named exports en todos los componentes y hooks (no `export default` salvo excepciones heredadas)
-- `'use client'` solo en componentes que usan hooks de React o APIs del browser
-- Tipos e interfaces centralizados en `types/` de cada módulo
-- Schemas Zod en `schemas/` — los types se infieren con `z.infer<>`
-- Imports usando alias `@/` (apunta a la raíz del proyecto)
+## Navegación
+
+El proyecto ha eliminado la navegación SPA basada en estado. Se utiliza el **App Router de Next.js** de forma nativa:
+- Las rutas viven en `app/(dashboard)/*`.
+- Se utiliza el componente `Link` de Next.js para una navegación optimizada.
+- El bundle de JavaScript se divide automáticamente por ruta (Code Splitting).
+
+## Convenciones de Nomenclatura
+- **Carpetas:** `kebab-case`.
+- **Componentes:** `PascalCase`.
+- **Lógica de Negocio:** Español (ej. `usePacientes`, `esquemaPaciente`).
+- **Imports:** Absolutos usando `@/layers/...`.

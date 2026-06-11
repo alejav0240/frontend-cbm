@@ -1,81 +1,46 @@
-# Autenticación y Permisos
+# Autenticación y Permisos (Shared)
 
-## Flujo de autenticación
+## Flujo de Autenticación
 
-1. Usuario envía credenciales en `/login`
-2. Se ejecuta `LOGIN_MUTATION` → backend devuelve `token` + `refreshToken` + `user`
-3. El token se almacena via `tokenManager`
-4. El `user` se guarda en `useAuthStore` con `setUser()`
-5. Apollo inyecta el token automáticamente en cada request via `authLink`
+1. El usuario envía credenciales desde la página `/login`.
+2. Se ejecuta `INICIO_SESION_MUTACION` (`shared/api/auth.ts`).
+3. El backend devuelve `token` y `refreshToken`.
+4. El `token` se almacena localmente y se gestiona mediante `TokenManager` (`shared/lib/apollo/utils/tokenManager.ts`).
+5. Se consulta `CONSULTA_YO` para obtener los datos completos del perfil.
+6. El usuario se guarda en `useAuthStore` (`shared/model/useAuthStore.ts`) con el estado `estaAutenticado: true`.
 
-## Queries
+## Capas Involucradas
 
-```graphql
-# Login
-mutation TokenAuth($username: String!, $password: String!) {
-  tokenAuth(...) { token, refreshToken, user { ... } }
-}
+- **`shared/api/auth.ts`**: Definición de consultas y mutaciones de identidad.
+- **`shared/model/useAuthStore.ts`**: Store de Zustand para el estado global del usuario y sesión.
+- **`shared/lib/usePermisos.ts`**: Hook principal para validación de accesos en toda la app.
+- **`shared/ui/components/PermissionGuard.tsx`**: Componente visual para ocultar/mostrar elementos según permisos.
 
-# Obtener usuario actual (para refrescar sesión)
-query Me {
-  me { id, databaseId, username, email, fullName, modules, role { id, name }, ... }
-}
-```
+## Sistema de Permisos
 
-## AuthUser
+Los permisos se manejan bajo el formato `"entidad:accion"`.
 
-```ts
-interface AuthUser {
-  id: string;
-  databaseId: string;
-  username: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  ci?: string;
-  celular?: string;
-  status?: string;
-  visibility?: string;
-  isStaff?: boolean;
-  foto?: string;
-  cv?: string;
-  modules?: string[];        // ["pacientes:view", "pacientes:add", ...]
-  role?: { id: string; name: string };
-}
-```
+### Comprobación en Componentes
 
-## Sistema de permisos
-
-Los permisos se almacenan en `user.modules` como strings con formato `"modulo:accion"`.
-
-### Acciones disponibles
-- `view` — Ver listado
-- `add` — Crear registros
-- `change` — Editar registros
-- `delete` — Eliminar registros
-
-### Verificar permisos
-
-```ts
-// En componentes
-import { PermissionGuard, useCan } from '@/shared/ui/components/PermissionGuard';
+```tsx
+import { PermissionGuard } from '@/shared/ui/components/PermissionGuard';
 
 <PermissionGuard permission="pacientes:add">
-  <button>Nuevo</button>
+  <button>Nuevo Paciente</button>
 </PermissionGuard>
-
-const canDelete = useCan('pacientes:delete');
-
-// En lógica (fuera de componentes)
-import { canAccess } from '@/shared/data/permissions';
-canAccess(user?.modules, 'pacientes:add')  // boolean
 ```
 
-### Filtrado del menú
+### Comprobación en Lógica (Hooks)
 
-El `Sidebar` filtra automáticamente los items del menú según los permisos del usuario usando `canAccess`. Un item sin `permission` siempre se muestra.
+```ts
+import { useTienePermiso } from '@/shared/lib/usePermisos';
 
-## usePermissions hook — `modules/auth/hooks/usePermissions.ts`
+const canDelete = useTienePermiso('pagos:delete');
+```
 
-Hook completo para lógica de permisos avanzada. Consultar el archivo para la API completa.
+## Cerrar Sesión
+
+El método `cerrarSesion()` en `useAuthStore` realiza las siguientes acciones:
+1. Elimina los tokens del almacenamiento local.
+2. Limpia el estado del usuario en memoria.
+3. El `DashboardLayout` detectará la falta de sesión y redirigirá automáticamente a `/login`.

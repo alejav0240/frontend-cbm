@@ -139,8 +139,8 @@ export default function Navbar() {
   // Detectar si un link está activo
   const isLinkActive = useCallback(
     (link: (typeof navLinks)[0]) => {
-      if (link.section === "blog") return pathname.startsWith("/blog");
-      if (link.section === "equipo") return pathname.startsWith("/equipo");
+      if (link.section === "blog") return !!pathname?.startsWith("/blog");
+      if (link.section === "equipo") return !!pathname?.startsWith("/equipo");
       return isHome && activeSection === link.section;
     },
     [isHome, activeSection, pathname],
