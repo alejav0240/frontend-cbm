@@ -20,6 +20,7 @@ import {
   generateSessionWord,
 } from "@/modules/atencion/sesiones/services/sessionExport";
 import { NormalizedSession } from "@/modules/atencion/sesiones/types/session";
+import {useCurrentPage, useDashboardStore} from "@/shared/store/dashboardStore";
 
 export function SesionesView() {
   const {
@@ -72,6 +73,7 @@ export function SesionesView() {
     [selectedSessionForSummary],
   );
   //todo: falat integrar con onStartSession onCompleteSession
+    const {setCurrentPage:setNavigate} = useDashboardStore();
   return (
     <div className="space-y-8">
       <SessionsStats />
@@ -98,7 +100,7 @@ export function SesionesView() {
           totalPages={totalPages}
           onExportSession={handleOpenSessionExport}
           onViewDetails={(s) => setSelectedSession(s as NormalizedSession)}
-          onStartSession={() => {}}
+          onStartSession={() => {setNavigate('sesion')}}
           onCompleteSession={() => {}}
           onDeleteSession={(id: number) => {
             setSessionToDelete(String(id));

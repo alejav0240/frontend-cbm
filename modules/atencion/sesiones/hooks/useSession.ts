@@ -11,6 +11,7 @@ import {
   UPDATE_SESSION,
   UPDATE_SESSION_PAYMENT,
   DELETE_SESSION,
+  ADD_SESSION_RESOURCE,
 } from "@/modules/atencion/sesiones/graphql/mutation";
 
 const LOADING_KEY = "sesiones.list";
@@ -55,14 +56,18 @@ export function useSessions(filters: filtersData) {
   const [deleteMutation] = useMutation(DELETE_SESSION, {
     onCompleted: () => refetch(),
   });
+  const [addResourceMutation] = useMutation(
+      ADD_SESSION_RESOURCE,
+      { onCompleted: () => refetch() },
+  )
 
   return {
     sessions,
     addSession: (variables: object) => createMutation({ variables }),
     updateSession: (variables: object) => updateMutation({ variables }),
-    updatePayment: (id: string, paymentStatus: string) =>
-      updatePaymentMutation({ variables: { id, paymentStatus } }),
+    updatePayment: (id: string, paymentStatus: string) => updatePaymentMutation({ variables: { id, paymentStatus } }),
     deleteSession: (id: string) => deleteMutation({ variables: { id } }),
+    addResourceMutation,
     isCreating,
     isUpdating,
     isLoading: loading,

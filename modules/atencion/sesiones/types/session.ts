@@ -24,6 +24,19 @@ export interface SesionType {
   therapist: { fullName: string };
 }
 
+export interface therapeuticSessions  {
+  id: string;
+  sessionNumber: number;
+  sessionDate: Date;
+  sessionStatus: string;
+  paymentStatusDisplay: string;
+  durationMinutes: number;
+  notes: string[];
+  therapist:{
+    fullName: string;
+  };
+};
+
 export interface SesionData {
   sessions: SesionType[];
 }

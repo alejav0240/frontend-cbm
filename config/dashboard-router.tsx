@@ -128,6 +128,11 @@ const AjustesView = React.lazy(() =>
     default: m.AjustesView,
   })),
 );
+const SesionView = React.lazy(()=>
+    import("@/modules/atencion/sesionEnProgreso/page").then((m) => ({
+        default: m.SesionView,
+    })),
+);
 
 function RouterContent() {
   const { currentPage } = useDashboardStore();
@@ -141,6 +146,8 @@ function RouterContent() {
       return <AgendaView />;
     case "sesiones":
       return <SesionesView />;
+    case "sesion":
+      return <SesionView />;
     case "ciclos":
       return <CiclosView />;
     case "portal-familiar":

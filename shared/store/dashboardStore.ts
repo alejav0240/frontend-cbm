@@ -32,7 +32,9 @@ export type PageType =
   | "roles"
   | "formularios"
   | "ajustes"
-  | "perfil";
+  | "perfil"|
+  //global
+  "sesion";
 
 export interface SelectedPatient {
   id: string;

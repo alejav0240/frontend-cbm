@@ -40,6 +40,7 @@ export default function DashboardLayout({
   if (loading || isLoading) return <LoadingScreen />;
   if (error || !data?.me) return null;
 
+
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-background flex transition-colors duration-500">
       <Sidebar />
