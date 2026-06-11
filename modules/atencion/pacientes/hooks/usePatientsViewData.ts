@@ -2,6 +2,9 @@
 
 import { useState, useMemo } from "react";
 import { usePatients } from "./usePatient";
+import { useCreatePatient } from "./useCreatePatient";
+import { useUpdatePatient } from "./useUpdatePatient";
+import { useDeletePatient } from "./useDeletePatient";
 import { usePatientGrowth } from "./usePatientGrowth";
 import { usePatientsModals } from "./usePatientsModals";
 import { useDashboardStore } from "@/shared/store/dashboardStore";
@@ -48,11 +51,6 @@ export function usePatientsViewData() {
     patients,
     totalCount,
     totalPages,
-    addPatient,
-    updatePatient,
-    updateClinicalNotes,
-    deletePatient,
-    isAdding,
     refetch,
   } = usePatients({
     search: debouncedSearchTerm,
@@ -60,6 +58,10 @@ export function usePatientsViewData() {
     status: filterStatus,
     pageSize: 8,
   });
+
+  const { addPatient, isAdding } = useCreatePatient(refetch);
+  const { updatePatient, updateClinicalNotes } = useUpdatePatient(refetch);
+  const { deletePatient } = useDeletePatient(refetch);
 
   const normalizedPatients = useMemo(
     () =>

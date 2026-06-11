@@ -9,6 +9,9 @@ import type { SessionFormData } from "@/modules/atencion/sesiones/schemas/schema
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { useSessionsModals } from "./useSessionsModals";
 import { useSessions } from "./useSession";
+import { useCreateSession } from "./useCreateSession";
+import { useUpdateSession } from "./useUpdateSession";
+import { useDeleteSession } from "./useDeleteSession";
 import { useSearchPatients } from "@/modules/atencion/pacientes/hooks/usePatient";
 import { useSearchUsers } from "@/modules/sistema/usuarios/hooks/useUsers";
 import { NormalizedSession } from "@/modules/atencion/sesiones/types/session";
@@ -48,10 +51,7 @@ export function useSessionsData() {
 
   const {
     sessions: rawSessions,
-    isCreating,
-    addSession,
-    updateSession,
-    deleteSession,
+    isLoading,
     refetch,
   } = useSessions({
     patientId: "",
@@ -60,6 +60,10 @@ export function useSessionsData() {
     therapistId: "",
     sessionType: "",
   });
+
+  const { addSession, isCreating } = useCreateSession(refetch);
+  const { updateSession } = useUpdateSession(refetch);
+  const { deleteSession } = useDeleteSession(refetch);
 
   const { patient: patientResults, isLoading: isLoadingPatients } =
     useSearchPatients({ search: debouncedPatientSearch });
