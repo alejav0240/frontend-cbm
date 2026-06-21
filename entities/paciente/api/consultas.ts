@@ -28,10 +28,12 @@ export const OBTENER_PACIENTES = gql`
         birthDate
         createdAt
         imageUrl
+        residence
         tutor {
           id
           firstName
           celular
+          email
         }
       }
     }
@@ -88,16 +90,44 @@ export const OBTENER_DETALLES_PACIENTE = gql`
         edges {
           node {
             id
-            sessionNumber
-            sessionDate
-            sessionStatus
-            paymentStatusDisplay
-            therapist {
+            numeroSesion: sessionNumber
+            fechaSesion: sessionDate
+            estadoSesion: sessionStatus
+            estadoPagoMostrado: paymentStatusDisplay
+            terapeuta: therapist {
               fullName
             }
             videoUrl
             notes
           }
+        }
+      }
+    }
+  }
+`;
+
+export const OBTENER_PROGRESO_DE_ESCALA = gql`
+  query EscaleERI($patientId: ID, $scaleId: ID) {
+    scaleEvaluations(patientId: $patientId, scaleId: $scaleId) {
+      evaluatedAt
+      totalScore
+      inSession
+      id
+    }
+  }
+`;
+
+export const OBTENER_PROGRESO_SUBESCALA = gql`
+  query EscalaDEMUCA($patientId: ID, $scaleId: ID) {
+    scaleEvaluations(patientId: $patientId, scaleId: $scaleId) {
+      id
+      inSession
+      subscaleResponses {
+        id
+        score
+        subscale {
+          name
+          category
         }
       }
     }

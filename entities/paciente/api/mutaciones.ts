@@ -76,3 +76,23 @@ export const ELIMINAR_PACIENTE = gql`
     }
   }
 `;
+
+export const ACTUALIZAR_NOTAS_CLINICAS = gql`
+  mutation UpdateClinicalNotes(
+    $patientId: ID!
+    $authorId: ID!
+    $notes: [BasicNote]!
+  ) {
+    updateClinicalNotes(
+      patientId: $patientId
+      authorId: $authorId
+      notes: $notes
+    ) {
+      notesUpdated {
+        id
+        category
+        content
+      }
+    }
+  }
+`;
