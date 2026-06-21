@@ -4,15 +4,15 @@ export const OBTENER_POSTS_BLOG = gql`
   query ObtenerPostsBlog($status: String) {
     blogPosts(status: $status) {
       id
-      title
-      excerpt
-      content
-      category
-      author
-      imageUrl
-      readTime
-      status
-      createdAt
+      titulo: title
+      resumen: excerpt
+      contenido: content
+      categoria: category
+      autor: author
+      urlImagen: imageUrl
+      tiempoLectura: readTime
+      estado: status
+      fechaCreacion: createdAt
       updatedAt
     }
   }

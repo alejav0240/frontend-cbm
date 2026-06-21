@@ -6,6 +6,8 @@ export const generarPacientesPDF = async (filas: PacienteExportarFila[]) => {
     import("jspdf-autotable"),
   ]);
 
+  console.log(filas);
+
   const doc = new jsPDF();
   doc.setFontSize(18);
   doc.text("Reporte de Pacientes", 14, 22);
@@ -14,13 +16,25 @@ export const generarPacientesPDF = async (filas: PacienteExportarFila[]) => {
   doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 14, 30);
 
   autoTable(doc, {
-    head: [["ID", "Nombre", "Diagnóstico", "Estado", "Tutor"]],
+    head: [
+      [
+        "ID",
+        "Nombre",
+        "Edad",
+        "Diagnóstico",
+        "Tutor",
+        "Telefono",
+        "Residencia",
+      ],
+    ],
     body: filas.map((f) => [
       f.cedula || f.id,
       f.nombre,
+      f.edad ?? "",
       f.diagnostico ?? "",
-      f.estado,
       f.tutor ?? "",
+      f.telefonoTutor ?? "",
+      f.residencia ?? "",
     ]),
     startY: 40,
     theme: "striped",

@@ -4,18 +4,18 @@ export const OBTENER_ESCALAS = gql`
   query ObtenerEscalas {
     scales {
       id
-      name
-      description
-      scaleType
-      subscales {
+      nombre: name
+      descripcion: description
+      tipoEscala: scaleType
+      subescalas: subscales {
         id
-        name
-        maxValue
+        nombre: name
+        valorMaximo: maxValue
       }
-      values {
+      valores: values {
         id
-        label
-        value
+        etiqueta: label
+        valor: value
       }
     }
   }
@@ -25,22 +25,22 @@ export const OBTENER_EVALUACIONES = gql`
   query ObtenerEvaluaciones($patientId: ID) {
     scaleEvaluations(patientId: $patientId) {
       id
-      evaluatedAt
-      totalScore
-      patient {
+      fechaEvaluacion: evaluatedAt
+      puntajeTotal: totalScore
+      paciente: patient {
         id
         fullName
       }
-      scale {
+      escala: scale {
         id
-        name
+        nombre: name
       }
-      subscaleResponses {
+      respuestasSubescala: subscaleResponses {
         id
-        score
-        subscale {
+        puntaje: score
+        subescala: subscale {
           id
-          name
+          nombre: name
         }
       }
     }

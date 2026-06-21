@@ -1,31 +1,41 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_PLANES_INTERVENCION = gql`
-  query ObtenerPlanesIntervencion($patientId: ID, $search: String, $page: Int, $pageSize: Int) {
-    interventionPlans(patientId: $patientId, search: $search, page: $page, pageSize: $pageSize) {
+  query ObtenerPlanesIntervencion(
+    $patientId: ID
+    $search: String
+    $page: Int
+    $pageSize: Int
+  ) {
+    interventionPlans(
+      patientId: $patientId
+      search: $search
+      page: $page
+      pageSize: $pageSize
+    ) {
       results {
         id
-        mainObjective
-        startDate
-        endDate
-        progressPercent
-        status
-        patient {
+        objetivoPrincipal: mainObjective
+        fechaInicio: startDate
+        fechaFin: endDate
+        porcentajeProgreso: progressPercent
+        estado: status
+        paciente: patient {
           id
           fullName
         }
-        steps {
+        pasos: steps {
           id
-          moment
-          durationMinutes
-          objective
-          focus
-          musicalResources
-          musicalEmphasis
-          approach
-          mltMethod
-          orderIndex
-          isCompleted
+          momento: moment
+          duracionMinutos: durationMinutes
+          objetivo: objective
+          enfoque: focus
+          recursosMusicales: musicalResources
+          enfasisMusical: musicalEmphasis
+          abordaje: approach
+          metodoMlt: mltMethod
+          indiceOrden: orderIndex
+          estaCompletado: isCompleted
         }
       }
       totalCount

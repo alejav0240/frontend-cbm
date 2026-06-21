@@ -2,26 +2,22 @@ import { useQuery } from "@apollo/client/react";
 import { OBTENER_ARTICULOS_INVENTARIO } from "./consultas";
 import { ArticuloInventario, InventarioFiltros } from "../model/tipos";
 import { useMemo } from "react";
+import { ObtenerArticulosInventarioQuery } from "@/shared/api/generated/graphql";
 
 export const useInventario = (filtros: InventarioFiltros = {}) => {
-  const { data, loading, error, refetch } = useQuery<any>(OBTENER_ARTICULOS_INVENTARIO, {
-    variables: {
-      status: filtros.estado,
-      type: filtros.tipo,
-    },
-    notifyOnNetworkStatusChange: true,
-  });
+  const { data, loading, error, refetch } =
+    useQuery<ObtenerArticulosInventarioQuery>(OBTENER_ARTICULOS_INVENTARIO, {
+      variables: {
+        status: filtros.estado,
+        type: filtros.tipo,
+      },
+      notifyOnNetworkStatusChange: true,
+    });
 
-  const articulos: ArticuloInventario[] = useMemo(() => {
-    return (data?.inventoryItems || []).map((item: any) => ({
-      id: item.id,
-      nombre: item.name,
-      tipo: item.type,
-      condicion: item.condition,
-      estado: item.status,
-      aula: item.room,
-      estadoMostrado: item.statusDisplay,
-    }));
+  const articulos = useMemo(() => {
+    return (data?.inventoryItems || []).filter(
+      Boolean,
+    ) as unknown as ArticuloInventario[];
   }, [data]);
 
   return {

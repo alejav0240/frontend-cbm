@@ -2,15 +2,15 @@ import { gql } from "@apollo/client";
 
 export const CREAR_GASTO = gql`
   mutation CrearGasto(
-    $description: String!,
-    $category: String!,
-    $amount: Float!,
+    $description: String!
+    $category: String!
+    $amount: Float!
     $expenseDate: DateTime!
   ) {
     createExpense(
-      description: $description,
-      category: $category,
-      amount: $amount,
+      description: $description
+      category: $category
+      amount: $amount
       expenseDate: $expenseDate
     ) {
       expense {

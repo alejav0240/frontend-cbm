@@ -1,27 +1,39 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_PAGOS = gql`
-  query ObtenerPagos($patientId: ID, $paymentStatus: String, $search: String, $page: Int, $pageSize: Int) {
-    payments(patientId: $patientId, paymentStatus: $paymentStatus, search: $search, page: $page, pageSize: $pageSize) {
+  query ObtenerPagos(
+    $patientId: ID
+    $paymentStatus: String
+    $search: String
+    $page: Int
+    $pageSize: Int
+  ) {
+    payments(
+      patientId: $patientId
+      paymentStatus: $paymentStatus
+      search: $search
+      page: $page
+      pageSize: $pageSize
+    ) {
       objects {
         id
-        sessionsCount
-        pricePerSession
-        amountPaid
-        totalAmount
-        debt
-        paymentMethod
-        paymentDate
-        paymentStatus
-        patient {
+        cantidadSesiones: sessionsCount
+        precioPorSesion: pricePerSession
+        montoPagado: amountPaid
+        montoTotal: totalAmount
+        deuda: debt
+        metodoPago: paymentMethod
+        fechaPago: paymentDate
+        estadoPago: paymentStatus
+        paciente: patient {
           id
           fullName
         }
-        discount {
+        descuento: discount {
           id
-          name
-          value
-          type
+          nombre: name
+          valor: value
+          tipo: type
         }
       }
       totalCount
@@ -35,10 +47,10 @@ export const OBTENER_DESCUENTOS = gql`
   query ObtenerDescuentos {
     discounts {
       id
-      name
-      value
-      type
-      description
+      nombre: name
+      valor: value
+      tipo: type
+      descripcion: description
     }
   }
 `;

@@ -4,12 +4,12 @@ export const OBTENER_CURSOS = gql`
   query ObtenerCursos($state: String) {
     courses(state: $state) {
       id
-      name
-      description
-      price
-      state
-      studentsCount
-      totalIncome
+      nombre: name
+      descripcion: description
+      precio: price
+      estado: state
+      conteoEstudiantes: studentsCount
+      ingresosTotales: totalIncome
     }
   }
 `;
@@ -18,14 +18,14 @@ export const OBTENER_INSCRIPCIONES_CURSO = gql`
   query ObtenerInscripcionesCurso($courseId: ID) {
     courseEnrollments(courseId: $courseId) {
       id
-      fullName
+      nombreCompleto: fullName
       carnet
-      enrolledAt
-      payment {
+      fechaInscripcion: enrolledAt
+      pago: payment {
         id
-        amount
-        paymentMethod
-        paymentStatus
+        monto: amount
+        metodoPago: paymentMethod
+        estadoPago: paymentStatus
       }
     }
   }

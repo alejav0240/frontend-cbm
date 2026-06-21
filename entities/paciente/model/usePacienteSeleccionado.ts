@@ -12,8 +12,10 @@ interface PacienteSeleccionadoEstado {
   limpiarPaciente: () => void;
 }
 
-export const usePacienteSeleccionadoStore = create<PacienteSeleccionadoEstado>((set) => ({
-  paciente: null,
-  setPaciente: (paciente) => set({ paciente }),
-  limpiarPaciente: () => set({ paciente: null }),
-}));
+export const usePacienteSeleccionadoStore = create<PacienteSeleccionadoEstado>(
+  (set) => ({
+    paciente: null,
+    setPaciente: (paciente) => set({ paciente }),
+    limpiarPaciente: () => set({ paciente: null }),
+  }),
+);

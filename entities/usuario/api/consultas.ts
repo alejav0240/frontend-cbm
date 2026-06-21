@@ -1,8 +1,20 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_USUARIOS = gql`
-  query ObtenerUsuarios($page: Int, $pageSize: Int, $search: String, $roleName: String, $excludeRole: String) {
-    users(page: $page, pageSize: $pageSize, search: $search, roleName: $roleName, excludeRole: $excludeRole) {
+  query ObtenerUsuarios(
+    $page: Int
+    $pageSize: Int
+    $search: String
+    $roleName: String
+    $excludeRole: String
+  ) {
+    users(
+      page: $page
+      pageSize: $pageSize
+      search: $search
+      roleName: $roleName
+      excludeRole: $excludeRole
+    ) {
       currentPage
       totalPages
       totalCount
@@ -17,9 +29,9 @@ export const OBTENER_USUARIOS = gql`
         status
         foto
         ci
-        role {
+        rol: role {
           id
-          name
+          nombre: name
         }
       }
     }
@@ -30,9 +42,9 @@ export const BUSCAR_TERAPEUTAS = gql`
   query BuscarTerapeutas(
     $search: String
     $pageSize: Int
-    $roleName: String 
+    $roleName: String
     $excludeRole: String
-    $page: Int 
+    $page: Int
   ) {
     users(
       search: $search

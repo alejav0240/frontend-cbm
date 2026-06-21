@@ -4,14 +4,14 @@ export const OBTENER_INSTITUCIONES = gql`
   query ObtenerInstituciones {
     institutions {
       id
-      name
-      address
-      contactName
-      contactEmail
-      contactPhone
-      groups {
+      nombre: name
+      direccion: address
+      nombreContacto: contactName
+      emailContacto: contactEmail
+      telefonoContacto: contactPhone
+      grupos: groups {
         id
-        name
+        nombre: name
       }
     }
   }
@@ -21,15 +21,15 @@ export const OBTENER_DETALLE_INSTITUCION = gql`
   query ObtenerDetalleInstitucion($id: ID!) {
     institution(id: $id) {
       id
-      name
-      address
-      contactName
-      contactEmail
-      contactPhone
-      groups {
+      nombre: name
+      direccion: address
+      nombreContacto: contactName
+      emailContacto: contactEmail
+      telefonoContacto: contactPhone
+      grupos: groups {
         id
-        name
-        description
+        nombre: name
+        descripcion: description
       }
     }
   }

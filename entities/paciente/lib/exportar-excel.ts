@@ -2,17 +2,19 @@ import { PacienteExportarFila } from "../model/dto";
 
 export const generarPacientesExcel = async (
   filas: PacienteExportarFila[],
-  nombreArchivo = "reporte_pacientes"
+  nombreArchivo = "reporte_pacientes",
 ) => {
   const XLSX = await import("xlsx");
-  
+
   const datos = filas.map((f) => ({
     "ID / Carnet": f.cedula || f.id,
     Nombre: f.nombre,
+    Edad: f.edad ?? "",
     Diagnóstico: f.diagnostico ?? "",
-    Estado: f.estado,
+    Residencia: f.residencia ?? "",
     Tutor: f.tutor ?? "",
     "Teléfono Tutor": f.telefonoTutor ?? "",
+    "Email Tutor": f.emailTutor ?? "",
     "Fecha Registro": f.fechaRegistro ?? "",
   }));
 

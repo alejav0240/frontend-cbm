@@ -2,23 +2,21 @@ import { useQuery } from "@apollo/client/react";
 import { OBTENER_CAMPANAS_MARKETING } from "./consultas";
 import { CampanaMarketing } from "../model/tipos";
 import { useMemo } from "react";
+import { ObtenerCampanasMarketingQuery } from "@/shared/api/generated/graphql";
 
 export const useCampanasMarketing = (estado?: string, plataforma?: string) => {
-  const { data, loading, error, refetch } = useQuery<any>(OBTENER_CAMPANAS_MARKETING, {
-    variables: { status: estado, platform: plataforma },
-  });
+  const { data, loading, error, refetch } =
+    useQuery<ObtenerCampanasMarketingQuery>(OBTENER_CAMPANAS_MARKETING, {
+      variables: { status: estado, platform: plataforma },
+    });
 
-  const campanas: CampanaMarketing[] = useMemo(() => {
-    return (data?.marketingCampaigns || []).map((c: any) => ({
-      id: c.id,
-      nombre: c.name,
-      plataforma: c.platform,
-      estado: c.status,
-      presupuesto: c.budget,
-      gastado: c.spent,
-      presupuestoRestante: c.remainingBudget,
-      conteoLeads: (c.leads || []).length,
-    }));
+  const campanas = useMemo(() => {
+    return ((data?.marketingCampaigns || []).filter(Boolean) as any[]).map(
+      (c) => ({
+        ...c,
+        conteoLeads: (c.leads || []).length,
+      }),
+    ) as CampanaMarketing[];
   }, [data]);
 
   return {

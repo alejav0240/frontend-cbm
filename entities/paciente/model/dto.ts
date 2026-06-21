@@ -3,8 +3,11 @@ export interface PacienteExportarFila {
   nombre: string;
   cedula: string;
   diagnostico?: string;
-  estado: string;
   tutor?: string;
   telefonoTutor?: string;
+  emailTutor?: string;
   fechaRegistro?: string;
+  edad?: string;
+  residencia?: string;
+  status?: string;
 }

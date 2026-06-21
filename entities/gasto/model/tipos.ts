@@ -2,8 +2,8 @@ export interface Gasto {
   id: string;
   descripcion: string;
   categoria: string;
-  monto: number;
-  fechaGasto: Date;
+  monto: string;
+  fechaGasto: string;
   estado: string;
 }
 

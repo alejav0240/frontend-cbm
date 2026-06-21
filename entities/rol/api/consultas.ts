@@ -4,9 +4,9 @@ export const OBTENER_ROLES = gql`
   query ObtenerRoles {
     roles {
       id
-      name
-      permissions
-      usersCount
+      nombre: name
+      permisos: permissions
+      conteoUsuarios: usersCount
     }
   }
 `;

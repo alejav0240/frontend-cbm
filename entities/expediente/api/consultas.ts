@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_INFORMES = gql`
-  query ObtenerInformes($patientId: String = "") {
+  query ObtenerInformes($patientId: ID!) {
     therapyReports(patientId: $patientId) {
       id
       createdAt

@@ -2,26 +2,23 @@ import { useQuery } from "@apollo/client/react";
 import { OBTENER_RECURSOS_DIGITALES } from "./consultas";
 import { RecursoDigital, RecursoFiltros } from "../model/tipos";
 import { useMemo } from "react";
+import { ObtenerRecursosDigitalesQuery } from "@/shared/api/generated/graphql";
 
 export const useRecursosDigitales = (filtros: RecursoFiltros) => {
-  const { data, loading, error, refetch } = useQuery<any>(OBTENER_RECURSOS_DIGITALES, {
-    variables: {
-      type: filtros.tipo,
-      search: filtros.busqueda,
-      page: filtros.pagina,
-      pageSize: filtros.pageSize,
-    },
-  });
+  const { data, loading, error, refetch } =
+    useQuery<ObtenerRecursosDigitalesQuery>(OBTENER_RECURSOS_DIGITALES, {
+      variables: {
+        type: filtros.tipo,
+        search: filtros.busqueda,
+        page: filtros.pagina,
+        pageSize: filtros.pageSize,
+      },
+    });
 
-  const recursos: RecursoDigital[] = useMemo(() => {
-    return (data?.digitalResources?.results || []).map((r: any) => ({
-      id: r.id,
-      titulo: r.title,
-      tipo: r.type,
-      categoria: r.category,
-      url: r.url,
-      tipoMostrado: r.typeDisplay,
-    }));
+  const recursos = useMemo(() => {
+    return (data?.digitalResources?.results || []).filter(
+      Boolean,
+    ) as unknown as RecursoDigital[];
   }, [data]);
 
   return {

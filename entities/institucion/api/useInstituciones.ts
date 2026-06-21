@@ -2,23 +2,17 @@ import { useQuery } from "@apollo/client/react";
 import { OBTENER_INSTITUCIONES } from "./consultas";
 import { Institucion } from "../model/tipos";
 import { useMemo } from "react";
+import { ObtenerInstitucionesQuery } from "@/shared/api/generated/graphql";
 
 export const useInstituciones = () => {
-  const { data, loading, error, refetch } = useQuery<any>(OBTENER_INSTITUCIONES);
+  const { data, loading, error, refetch } = useQuery<ObtenerInstitucionesQuery>(
+    OBTENER_INSTITUCIONES,
+  );
 
-  const instituciones: Institucion[] = useMemo(() => {
-    return (data?.institutions || []).map((inst: any) => ({
-      id: inst.id,
-      nombre: inst.name,
-      direccion: inst.address,
-      nombreContacto: inst.contactName,
-      emailContacto: inst.contactEmail,
-      telefonoContacto: inst.contactPhone,
-      grupos: (inst.groups || []).map((g: any) => ({
-        id: g.id,
-        nombre: g.name,
-      })),
-    }));
+  const instituciones = useMemo(() => {
+    return (data?.institutions || []).filter(
+      Boolean,
+    ) as unknown as Institucion[];
   }, [data]);
 
   return {
