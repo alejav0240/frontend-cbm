@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import {gql} from "@apollo/client";
 
 export const OBTENER_ASIGNACIONES_FORMULARIO = gql`
   query ObtenerAsignacionesFormulario($patientId: ID) {
@@ -57,4 +57,39 @@ export const OBTENER_FORMULARIOS = gql`
       }
     }
   }
+`;
+
+export const OBTENER_FORMULARIO = gql`
+query ObtenerFormulario($id: ID!) {
+  form(id: $id) {
+    description
+    id
+    name
+    questions {
+      isRequired
+      orderIndex
+      question
+      questionType
+      id
+    }
+  }
+}
+`
+
+export const OBTENER_RESPUESTAS_FORMULARIO = gql`
+query ObtenerRespuestasFormulario($assignedToId: ID, $formId: ID, $patientId: ID) {
+  formAssignments(
+    assignedToId: $assignedToId
+    formId: $formId
+    patientId: $patientId
+  ) {
+    id
+    responses {
+      question {
+        question
+      }
+      response
+    }
+  }
+}
 `;

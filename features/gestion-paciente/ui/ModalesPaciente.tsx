@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Modal } from "@/shared/ui/components/Modal";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import {
@@ -49,7 +49,7 @@ export const ModalesPaciente = ({
   alEnviarFormularioClinico,
   pacienteSeleccionado,
 }: ModalesPacienteProps) => {
-  const prepararDatosExportacion = (): PacienteExportarFila[] => {
+  const datosExportacion = useMemo((): PacienteExportarFila[] => {
     return listaPacientes.map((p) => ({
       id: p.id,
       nombre: p.nombre,
@@ -69,7 +69,7 @@ export const ModalesPaciente = ({
       residencia: p?.residence ?? "Sin Residencia",
       status: p.status,
     }));
-  };
+  }, [listaPacientes]);
 
   const pacientePDFExporter: Exporter<PacienteExportarFila> = {
     id: "pdf",
@@ -91,6 +91,11 @@ export const ModalesPaciente = ({
       await generarPacientesExcel(data);
     },
   };
+
+  const exporters = useMemo(
+    () => [pacientePDFExporter, pacienteExcelExporter],
+    [],
+  );
 
   return (
     <>
@@ -131,7 +136,7 @@ export const ModalesPaciente = ({
         title="Exportar usuarios"
         isOpen={mostrarExportar}
         onClose={alCerrarExportar}
-        data={prepararDatosExportacion()}
+        data={datosExportacion}
         fileName="usuarios"
         columns={[
           {
@@ -156,7 +161,7 @@ export const ModalesPaciente = ({
             ],
           },
         ]}
-        exporters={[pacientePDFExporter, pacienteExcelExporter]}
+        exporters={exporters}
       />
       {/* ExportModal pendiente de configuración de servicios de PDF/Excel */}
     </>

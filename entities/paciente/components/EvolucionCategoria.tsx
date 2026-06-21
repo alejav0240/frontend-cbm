@@ -31,8 +31,6 @@ export function EvolucionCategoria({data}: PatientAITrendChartProps) {
         return Object.keys(data[0]).filter((key) => key !== "evaluationId");
     }, [data]);
 
-    console.log(keysCategorias);
-
     // 2. Mapear nombres de categorías a los colores de tu archivo de configuración
     const obtenerColorCategoria = (categoria: string): string => {
         const claveAlineada = categoria

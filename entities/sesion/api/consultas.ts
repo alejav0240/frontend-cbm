@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import {gql} from "@apollo/client";
 
 export const OBTENER_SESIONES = gql`
   query ObtenerSesiones(
@@ -65,105 +65,103 @@ export const OBTENER_SESIONES = gql`
 `;
 
 export const OBTENER_CICLOS = gql`
-  query ObtenerCiclos(
-    $patientId: ID
-    $paymentStatus: String
-    $sessionStatus: String
-    $sessionType: String
-    $therapistId: ID
-    $page: Int
-    $pageSize: Int
+  query ObtenerCiclos($patientId: ID, $paymentStatus: String, $sessionStatus: String, $sessionType: String, $therapistId: ID, $page: Int, $pageSize: Int) {
+  sessions(
+    patientId: $patientId
+    byCycles: true
+    page: $page
+    pageSize: $pageSize
+    paymentStatus: $paymentStatus
+    sessionType: $sessionType
+    sessionStatus: $sessionStatus
+    therapistId: $therapistId
   ) {
-    sessions(
-      patientId: $patientId
-      byCycles: true
-      page: $page
-      pageSize: $pageSize
-      paymentStatus: $paymentStatus
-      sessionType: $sessionType
-      sessionStatus: $sessionStatus
-      therapistId: $therapistId
-    ) {
-      currentPage
-      totalCount
-      totalPages
-      byCycles
-      cycles {
-        paymentSummary {
-          exempt
-          paid
-          pending
-        }
+    currentPage
+    totalCount
+    totalPages
+    byCycles
+    cycles {
+      paymentSummary {
+        exempt
+        paid
+        pending
+        __typename
+      }
+      cycleNumber
+      completedCount
+      firstSessionDate
+      id
+      lastSessionDate
+      sessionCount
+      status
+      sessions {
+        durationMinutes
+        databaseId
         cycleNumber
-        completedCount
-        firstSessionDate
-        id
-        lastSessionDate
-        sessionCount
-        status
-        sessions {
-          durationMinutes
-          databaseId
-          cycleNumber
-          createdAt
-          notes
-          videoUrl
-          sessionTypeDisplay
-          paymentStatusDisplay
-          sessionDate
-          sessionNumber
-          sessionStatus
-          sessionResources {
-            resource {
-              id
-              title
-              type
-              url
-            }
-          }
-          scaleEvaluations {
+        createdAt
+        notes
+        videoUrl
+        sessionTypeDisplay
+        paymentStatusDisplay
+        sessionDate
+        sessionNumber
+        sessionStatus
+        sessionResources {
+          resource {
             id
-            evaluatedAt
-            totalScore
-            scale {
-              id
-              name
-              scaleType
-            }
-            subscaleResponses {
-              subscale {
-                name
-              }
-              score
-            }
-            valueResponses {
-              scaleValue {
-                label
-                value
-              }
-            }
+            title
+            type
+            url
+            __typename
           }
-          formAssignments {
+          __typename
+        }
+        sessionResources {
+          resource {
+            title
+            __typename
+          }
+          __typename
+        }
+        __typename
+        sessionInventory {
+          id
+          item {
+            name
+          }
+        }
+        scaleEvaluations {
+          id
+          evaluatedAt
+          totalScore
+          scale {
             id
-            completionRatio
-            form {
-              id
+            name
+            scaleType
+            __typename
+          }
+          subscaleResponses {
+            subscale {
               name
+              __typename
             }
-            responses {
-              question {
-                question
-              }
-              response
-            }
+            score
+            __typename
           }
-          sessionResources {
-            resource {
-              title
+          valueResponses {
+            scaleValue {
+              label
+              value
+              __typename
             }
+            __typename
           }
+          __typename
         }
       }
+      __typename
     }
+    __typename
   }
+}
 `;

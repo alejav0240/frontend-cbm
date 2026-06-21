@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Download, Eye, Filter } from "lucide-react";
 
 import Modal from "@/shared/ui/components/Modal";
@@ -138,40 +138,57 @@ export default function GenericExportModal<T>({
       | EXPORT
       |--------------------------------------------------------------------------
       */
-  const updatePreview = useCallback(async () => {
-    if (filteredData.length === 0) {
+  // Use refs to break the dependency-chain loop:
+  // The preview effect only depends on stable/user-initiated values (isOpen, filterValues),
+  // while derived data (filteredData, exporters) is read from refs.
+  const filteredDataRef = useRef(filteredData);
+  filteredDataRef.current = filteredData;
+
+  const exportersRef = useRef(exporters);
+  exportersRef.current = exporters;
+
+  const [previewKey, setPreviewKey] = useState(0);
+
+  // Signal the preview-effect when the modal opens or a filter changes.
+  // isOpen and filterValues are stable — filterValues only changes on user interaction.
+  useEffect(() => {
+    if (!isOpen) {
       setPdfUrl(null);
       return;
     }
-    const pdfExporter = exporters.find((e) => e.id === "pdf");
-    if (!pdfExporter?.preview) return;
-    setIsPreviewLoading(true);
-    try {
-      const blob = await pdfExporter.preview(filteredData);
-      const url = URL.createObjectURL(blob);
-      setPdfUrl(url);
-    } catch (error) {
-      console.error("Error generating PDF preview:", error);
-    } finally {
-      setIsPreviewLoading(false);
-    }
-  }, [filteredData, exporters]);
+    setPreviewKey((k) => k + 1);
+  }, [isOpen, filterValues]);
 
+  // Actually generate the preview, reading latest data/exporters from refs.
+  // Deps only include stable booleans/numbers so this effect never causes a loop.
   useEffect(() => {
-    return () => {
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
+    if (!isOpen || previewKey === 0) return;
+    let cancelled = false;
+    const generate = async () => {
+      const data = filteredDataRef.current;
+      if (data.length === 0) {
+        setPdfUrl(null);
+        return;
+      }
+      const pdfExporter = exportersRef.current.find((e) => e.id === "pdf");
+      if (!pdfExporter?.preview) return;
+      setIsPreviewLoading(true);
+      try {
+        const blob = await pdfExporter.preview(data);
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+      } catch (error) {
+        if (!cancelled) console.error("Error generating PDF preview:", error);
+      } finally {
+        if (!cancelled) setIsPreviewLoading(false);
       }
     };
-  }, [pdfUrl]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const generate = async () => {
-      await updatePreview();
-    };
     generate();
-  }, [isOpen, updatePreview]);
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, previewKey]);
 
   const handleExport = async (exporter: Exporter<T>) => {
     try {
