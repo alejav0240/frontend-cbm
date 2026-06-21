@@ -19,8 +19,12 @@ export const PagosPage = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold dark:text-white">Gestión de Pagos</h1>
-          <p className="text-gray-400 text-sm">Administra los ingresos y saldos pendientes de tus pacientes</p>
+          <h1 className="text-2xl font-bold dark:text-white">
+            Gestión de Pagos
+          </h1>
+          <p className="text-gray-400 text-sm">
+            Administra los ingresos y saldos pendientes de tus pacientes
+          </p>
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-5 py-3 bg-white dark:bg-accent border border-gray-200 dark:border-white/5 rounded-2xl text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 transition-all shadow-sm">
@@ -45,7 +49,13 @@ export const PagosPage = () => {
                 : "bg-white dark:bg-accent text-gray-400 hover:text-[#008080]"
             }`}
           >
-            {estado === "Todos" ? "Todos" : estado === "PAID" ? "Pagados" : estado === "PARTIAL" ? "Parciales" : "Pendientes"}
+            {estado === "Todos"
+              ? "Todos"
+              : estado === "PAID"
+                ? "Pagados"
+                : estado === "PARTIAL"
+                  ? "Parciales"
+                  : "Pendientes"}
           </button>
         ))}
       </div>

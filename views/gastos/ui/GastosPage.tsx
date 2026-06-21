@@ -12,8 +12,12 @@ export const GastosPage = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold dark:text-white">Control de Gastos</h1>
-          <p className="text-gray-400 text-sm">Registra y supervisa los egresos operativos del centro</p>
+          <h1 className="text-2xl font-bold dark:text-white">
+            Control de Gastos
+          </h1>
+          <p className="text-gray-400 text-sm">
+            Registra y supervisa los egresos operativos del centro
+          </p>
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-5 py-3 bg-white dark:bg-accent border border-gray-200 dark:border-white/5 rounded-2xl text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 transition-all shadow-sm">
@@ -33,7 +37,9 @@ export const GastosPage = () => {
             <TrendingDown size={24} />
           </div>
           <div>
-            <p className="text-xs font-bold text-red-600/60 uppercase tracking-widest">Gasto Mensual</p>
+            <p className="text-xs font-bold text-red-600/60 uppercase tracking-widest">
+              Gasto Mensual
+            </p>
             <h3 className="text-2xl font-bold text-red-600">Bs. 4,250.00</h3>
           </div>
         </div>

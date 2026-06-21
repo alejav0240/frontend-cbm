@@ -41,7 +41,8 @@ import { useSidebar } from "@/shared/model/useInterfazStore";
 import { useSesionActivaStore } from "@/entities/sesion";
 
 export const Sidebar = () => {
-  const { abierta, alternarSidebar, menuMovilAbierto, setMenuMovilAbierto } = useSidebar();
+  const { abierta, alternarSidebar, menuMovilAbierto, setMenuMovilAbierto } =
+    useSidebar();
   const { sesion } = useSesionActivaStore();
   const pathname = usePathname();
   const router = useRouter();
@@ -50,14 +51,16 @@ export const Sidebar = () => {
   const menuGroups = [
     {
       title: "Sesión Activa",
-      items: sesion ? [
-        {
-          id: "sesion-activa",
-          href: "/dashboard/sesion-en-progreso",
-          label: "En Progreso",
-          icon: <Play size={18} className="text-red-500 animate-pulse" />,
-        }
-      ] : []
+      items: sesion
+        ? [
+            {
+              id: "sesion-activa",
+              href: "/dashboard/sesion-en-progreso",
+              label: "En Progreso",
+              icon: <Play size={18} className="text-red-500 animate-pulse" />,
+            },
+          ]
+        : [],
     },
     {
       title: "Atención",
@@ -276,6 +279,7 @@ export const Sidebar = () => {
 
   return (
     <>
+      {/* Backdrop móvil */}
       <AnimatePresence>
         {menuMovilAbierto && (
           <motion.div
@@ -288,6 +292,7 @@ export const Sidebar = () => {
         )}
       </AnimatePresence>
 
+      {/* Botón de apertura móvil */}
       <button
         onClick={() => setMenuMovilAbierto(true)}
         className="fixed top-4 left-4 z-50 md:hidden bg-white dark:bg-accent p-2 rounded-lg shadow-lg"
@@ -295,18 +300,31 @@ export const Sidebar = () => {
         <Menu size={20} />
       </button>
 
+      {/* Sidebar - Escritorio */}
       <motion.aside
         initial={false}
         animate={{ width: sidebarWidth }}
         className="bg-white/80 dark:bg-accent/80 backdrop-blur-2xl border-r border-gray-200 dark:border-white/5 flex flex-col sticky top-0 h-screen overflow-hidden z-50 hidden md:flex"
       >
-        <div className={`p-8 flex items-center ${!abierta ? "justify-center" : "justify-between"}`}>
+        {/* Cabecera */}
+        <div
+          className={`p-8 flex items-center ${!abierta ? "justify-center" : "justify-between"}`}
+        >
           <Link href="/dashboard" className="flex items-center gap-3 group">
             <div className="relative w-12 h-12 shrink-0 group-hover:rotate-12 group-hover:scale-110 transition-all duration-500">
-              <Image src="/logocortoicono.png" alt="Logo" fill className="object-contain" />
+              <Image
+                src="/logocortoicono.png"
+                alt="Logo"
+                fill
+                className="object-contain"
+              />
             </div>
             {abierta && (
-              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col">
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex flex-col"
+              >
                 <span className="font-bold text-xl dark:text-white tracking-tight serif whitespace-nowrap leading-none">
                   Musico<span className="text-[#008080]">terapia</span>
                 </span>
@@ -316,11 +334,18 @@ export const Sidebar = () => {
               </motion.div>
             )}
           </Link>
-          <button onClick={alternarSidebar} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-            <ChevronRight size={20} className={`transition-transform duration-300 ${abierta ? "rotate-180" : ""}`} />
+          <button
+            onClick={alternarSidebar}
+            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <ChevronRight
+              size={20}
+              className={`transition-transform duration-300 ${abierta ? "rotate-180" : ""}`}
+            />
           </button>
         </div>
 
+        {/* Navegación */}
         <nav className="flex-1 px-4 space-y-8 overflow-y-auto scrollbar-hide pb-8">
           {filteredGroups.map((group, idx) => (
             <div key={group.title}>
@@ -350,18 +375,23 @@ export const Sidebar = () => {
           ))}
         </nav>
 
+        {/* Cerrar Sesión */}
         <div className="p-4 border-t border-gray-100 dark:border-white/5">
           <button
             onClick={handleLogout}
             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all font-medium text-sm group ${!abierta ? "justify-center px-0" : ""}`}
             title={!abierta ? "Cerrar Sesión" : undefined}
           >
-            <LogOut size={18} className="group-hover:-translate-x-1 transition-transform shrink-0" />
+            <LogOut
+              size={18}
+              className="group-hover:-translate-x-1 transition-transform shrink-0"
+            />
             {abierta && <span>Cerrar Sesión</span>}
           </button>
         </div>
       </motion.aside>
 
+      {/* Sidebar móvil - Drawer */}
       <AnimatePresence>
         {menuMovilAbierto && (
           <motion.aside
@@ -371,10 +401,20 @@ export const Sidebar = () => {
             transition={{ type: "tween", duration: 0.25 }}
             className="fixed top-0 left-0 h-screen w-[280px] bg-white dark:bg-accent flex flex-col z-50 shadow-2xl md:hidden"
           >
+            {/* Cabecera */}
             <div className="p-8 flex items-center justify-between">
-              <Link href="/dashboard" className="flex items-center gap-3" onClick={() => setMenuMovilAbierto(false)}>
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-3"
+                onClick={() => setMenuMovilAbierto(false)}
+              >
                 <div className="relative w-12 h-12 shrink-0">
-                  <Image src="/logocortoicono.png" alt="Logo" fill className="object-contain" />
+                  <Image
+                    src="/logocortoicono.png"
+                    alt="Logo"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-bold text-xl dark:text-white tracking-tight serif whitespace-nowrap leading-none">
@@ -385,11 +425,15 @@ export const Sidebar = () => {
                   </span>
                 </div>
               </Link>
-              <button onClick={() => setMenuMovilAbierto(false)} className="p-2 text-gray-400 hover:text-red-500">
+              <button
+                onClick={() => setMenuMovilAbierto(false)}
+                className="p-2 text-gray-400 hover:text-red-500"
+              >
                 <X size={20} />
               </button>
             </div>
 
+            {/* Navegación */}
             <nav className="flex-1 px-4 space-y-8 overflow-y-auto pb-8">
               {filteredGroups.map((group) => (
                 <div key={group.title}>
@@ -412,12 +456,16 @@ export const Sidebar = () => {
               ))}
             </nav>
 
+            {/* Cerrar Sesión */}
             <div className="p-4 border-t border-gray-100 dark:border-white/5">
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all font-medium text-sm group"
               >
-                <LogOut size={18} className="group-hover:-translate-x-1 transition-transform shrink-0" />
+                <LogOut
+                  size={18}
+                  className="group-hover:-translate-x-1 transition-transform shrink-0"
+                />
                 <span>Cerrar Sesión</span>
               </button>
             </div>

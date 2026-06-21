@@ -28,7 +28,7 @@ export const EstadisticasPacientes = ({
     const anterior = datosCrecimiento[datosCrecimiento.length - 2].total;
     const actual = datosCrecimiento[datosCrecimiento.length - 1].total;
     if (anterior === 0) return null;
-    return Math.round(((actual - anterior) / anterior) * 100);
+    return Math.round(((actual! - anterior!) / anterior!) * 100);
   }, [datosCrecimiento]);
 
   return (
@@ -40,14 +40,22 @@ export const EstadisticasPacientes = ({
         <div className="h-48 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={datosCrecimiento}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#88888822" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#88888822"
+              />
               <XAxis
                 dataKey="month"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: "#888" }}
               />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#888" }} />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: "#888" }}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "var(--accent)",

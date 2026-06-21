@@ -12,8 +12,12 @@ export const InventarioPage = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold dark:text-white">Inventario de Recursos</h1>
-          <p className="text-gray-400 text-sm">Control de instrumentos, materiales y equipos del centro</p>
+          <h1 className="text-2xl font-bold dark:text-white">
+            Inventario de Recursos
+          </h1>
+          <p className="text-gray-400 text-sm">
+            Control de instrumentos, materiales y equipos del centro
+          </p>
         </div>
         <button className="flex items-center gap-2 px-5 py-3 bg-[#008080] text-white rounded-2xl text-sm font-bold hover:bg-[#006666] transition-all shadow-lg">
           <Plus size={18} />
@@ -22,7 +26,10 @@ export const InventarioPage = () => {
       </div>
 
       <div className="relative group max-w-md">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#008080] transition-colors" size={18} />
+        <Search
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#008080] transition-colors"
+          size={18}
+        />
         <input
           type="text"
           placeholder="Buscar artículos..."

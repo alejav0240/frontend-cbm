@@ -11,7 +11,10 @@ interface TablaSesionesProps {
   alVerDetalles: (sesion: SesionNormalizada) => void;
 }
 
-export const TablaSesiones = ({ sesiones, alVerDetalles }: TablaSesionesProps) => {
+export const TablaSesiones = ({
+  sesiones,
+  alVerDetalles,
+}: TablaSesionesProps) => {
   const { setSesion } = useSesionActivaStore();
   const router = useRouter();
 
@@ -30,12 +33,24 @@ export const TablaSesiones = ({ sesiones, alVerDetalles }: TablaSesionesProps) =
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="bg-gray-50/50 dark:bg-white/2 border-b border-gray-100 dark:border-white/5">
-            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Sesión</th>
-            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Paciente</th>
-            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Terapeuta</th>
-            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Estado</th>
-            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Pago</th>
-            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Acciones</th>
+            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              Sesión
+            </th>
+            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              Paciente
+            </th>
+            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              Terapeuta
+            </th>
+            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              Estado
+            </th>
+            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              Pago
+            </th>
+            <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              Acciones
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-50 dark:divide-white/5">
@@ -53,8 +68,12 @@ export const TablaSesiones = ({ sesiones, alVerDetalles }: TablaSesionesProps) =
                     <History size={18} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold dark:text-white">Sesión #{sesion.numeroSesion}</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{sesion.fecha} - {sesion.hora}</p>
+                    <p className="text-sm font-bold dark:text-white">
+                      Sesión #{sesion.numeroSesion}
+                    </p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                      {sesion.fecha} - {sesion.hora}
+                    </p>
                   </div>
                 </div>
               </td>
@@ -73,13 +92,19 @@ export const TablaSesiones = ({ sesiones, alVerDetalles }: TablaSesionesProps) =
                   ) : (
                     <XCircle size={14} className="text-red-500" />
                   )}
-                  <span className="text-sm dark:text-gray-300">{sesion.estadoMostrado}</span>
+                  <span className="text-sm dark:text-gray-300">
+                    {sesion.estadoMostrado}
+                  </span>
                 </div>
               </td>
               <td className="px-8 py-5">
-                <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                  sesion.pago === "PAID" ? "bg-green-100 text-green-600 dark:bg-green-500/10" : "bg-amber-100 text-amber-600 dark:bg-amber-500/10"
-                }`}>
+                <span
+                  className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                    sesion.pago === "PAID"
+                      ? "bg-green-100 text-green-600 dark:bg-green-500/10"
+                      : "bg-amber-100 text-amber-600 dark:bg-amber-500/10"
+                  }`}
+                >
                   {sesion.pagoMostrado}
                 </span>
               </td>

@@ -29,16 +29,22 @@ export const TablaRoles = ({ roles }: TablaRolesProps) => {
               <span>{rol.conteoUsuarios} Usuarios</span>
             </div>
           </div>
-          
-          <h3 className="text-xl font-bold dark:text-white mb-2">{rol.nombre}</h3>
+
+          <h3 className="text-xl font-bold dark:text-white mb-2">
+            {rol.nombre}
+          </h3>
           <p className="text-sm text-gray-400 mb-6 line-clamp-2">
-            Control de acceso con {rol.permisos.length} permisos específicos asignados.
+            Control de acceso con {rol.permisos.length} permisos específicos
+            asignados.
           </p>
 
           <div className="flex flex-wrap gap-2 mb-8">
             {rol.permisos.slice(0, 3).map((permiso) => (
-              <span key={permiso} className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter bg-gray-50 dark:bg-white/2 px-2 py-1 rounded-md">
-                {permiso.replace(':', ' ')}
+              <span
+                key={permiso}
+                className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter bg-gray-50 dark:bg-white/2 px-2 py-1 rounded-md"
+              >
+                {permiso.replace(":", " ")}
               </span>
             ))}
             {rol.permisos.length > 3 && (
@@ -49,8 +55,13 @@ export const TablaRoles = ({ roles }: TablaRolesProps) => {
           </div>
 
           <div className="flex items-center justify-between pt-6 border-t border-gray-50 dark:border-white/5">
-            <span className="text-xs font-bold text-[#008080] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Configurar Accesos</span>
-            <ChevronRight size={18} className="text-gray-300 group-hover:text-[#008080] transition-all transform group-hover:translate-x-1" />
+            <span className="text-xs font-bold text-[#008080] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+              Configurar Accesos
+            </span>
+            <ChevronRight
+              size={18}
+              className="text-gray-300 group-hover:text-[#008080] transition-all transform group-hover:translate-x-1"
+            />
           </div>
         </motion.div>
       ))}
