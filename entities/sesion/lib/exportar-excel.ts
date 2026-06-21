@@ -2,10 +2,10 @@ import { SesionExportarFila } from "../model/dto";
 
 export const generarSesionesExcel = async (
   filas: SesionExportarFila[],
-  nombreArchivo = "reporte_sesiones"
+  nombreArchivo = "reporte_sesiones",
 ) => {
   const XLSX = await import("xlsx");
-  
+
   const datos = filas.map((f) => ({
     "#": f.numeroSesion,
     Paciente: f.pacienteNombre,

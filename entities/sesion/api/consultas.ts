@@ -2,11 +2,14 @@ import { gql } from "@apollo/client";
 
 export const OBTENER_SESIONES = gql`
   query ObtenerSesiones(
-    $patientId: ID = ""
-    $paymentStatus: String = ""
-    $sessionType: String = ""
-    $sessionStatus: String = ""
-    $therapistId: ID = ""
+    $patientId: ID
+    $paymentStatus: String
+    $sessionType: String
+    $sessionStatus: String
+    $therapistId: ID
+    $page: Int
+    $pageSize: Int
+    $byCycles: Boolean
   ) {
     sessions(
       patientId: $patientId
@@ -14,35 +17,152 @@ export const OBTENER_SESIONES = gql`
       sessionStatus: $sessionStatus
       therapistId: $therapistId
       sessionType: $sessionType
+      byCycles: $byCycles
+      page: $page
+      pageSize: $pageSize
     ) {
-      id
-      createdAt
-      durationMinutes
-      cycleNumber
-      notes
-      paymentStatusDisplay
-      paymentStatus
-      sessionDate
-      sessionNumber
-      sessionStatus
-      sessionType
-      sessionTypeDisplay
-      updatedAt
-      videoUrl
-      group {
+      byCycles
+      currentPage
+      totalCount
+      totalPages
+      sessions {
         id
-        description
-        name
-        institution {
-          name
+        fechaCreacion: createdAt
+        duracionMinutos: durationMinutes
+        numeroCiclo: cycleNumber
+        notas: notes
+        estadoPagoMostrado: paymentStatusDisplay
+        estadoPago: paymentStatus
+        fechaSesion: sessionDate
+        numeroSesion: sessionNumber
+        estadoSesion: sessionStatus
+        tipoSesion: sessionType
+        tipoSesionMostrado: sessionTypeDisplay
+        videoUrl
+        grupo: group {
+          id
+          descripcion: description
+          nombre: name
+          institucion: institution {
+            nombre: name
+            __typename
+          }
+          __typename
         }
+        paciente: patient {
+          id
+          fullName
+          __typename
+        }
+        terapeuta: therapist {
+          fullName
+          __typename
+        }
+        __typename
       }
-      patient {
+    }
+  }
+`;
+
+export const OBTENER_CICLOS = gql`
+  query ObtenerCiclos(
+    $patientId: ID
+    $paymentStatus: String
+    $sessionStatus: String
+    $sessionType: String
+    $therapistId: ID
+    $page: Int
+    $pageSize: Int
+  ) {
+    sessions(
+      patientId: $patientId
+      byCycles: true
+      page: $page
+      pageSize: $pageSize
+      paymentStatus: $paymentStatus
+      sessionType: $sessionType
+      sessionStatus: $sessionStatus
+      therapistId: $therapistId
+    ) {
+      currentPage
+      totalCount
+      totalPages
+      byCycles
+      cycles {
+        paymentSummary {
+          exempt
+          paid
+          pending
+        }
+        cycleNumber
+        completedCount
+        firstSessionDate
         id
-        fullName
-      }
-      therapist {
-        fullName
+        lastSessionDate
+        sessionCount
+        status
+        sessions {
+          durationMinutes
+          databaseId
+          cycleNumber
+          createdAt
+          notes
+          videoUrl
+          sessionTypeDisplay
+          paymentStatusDisplay
+          sessionDate
+          sessionNumber
+          sessionStatus
+          sessionResources {
+            resource {
+              id
+              title
+              type
+              url
+            }
+          }
+          scaleEvaluations {
+            id
+            evaluatedAt
+            totalScore
+            scale {
+              id
+              name
+              scaleType
+            }
+            subscaleResponses {
+              subscale {
+                name
+              }
+              score
+            }
+            valueResponses {
+              scaleValue {
+                label
+                value
+              }
+            }
+          }
+          formAssignments {
+            id
+            completionRatio
+            form {
+              id
+              name
+            }
+            responses {
+              question {
+                question
+              }
+              response
+            }
+          }
+          sessionResources {
+            resource {
+              title
+            }
+          }
+        }
       }
     }
   }

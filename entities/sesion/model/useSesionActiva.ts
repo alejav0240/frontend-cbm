@@ -23,6 +23,6 @@ export const useSesionActivaStore = create<SesionActivaEstado>()(
     }),
     {
       name: "sesion-activa-storage",
-    }
-  )
+    },
+  ),
 );

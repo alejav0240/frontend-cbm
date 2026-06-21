@@ -11,4 +11,6 @@ export interface SesionExportarFila {
   pago: string;
   duracion: string;
   notas?: string;
+  videoUrl?: string;
+  fechaCreacion?: string;
 }

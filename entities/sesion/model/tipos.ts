@@ -1,12 +1,12 @@
 export interface Sesion {
   id: string;
-  fechaCreacion: Date;
+  fechaCreacion: string;
   duracionMinutos: number;
   numeroCiclo: number;
   notas: string[];
   estadoPago: string;
   estadoPagoMostrado: string;
-  fechaSesion: Date;
+  fechaSesion: string;
   numeroSesion: number;
   estadoSesion: string;
   tipoSesion: string;
@@ -47,4 +47,7 @@ export interface SesionFiltros {
   estadoSesion?: string;
   terapeutaId?: string;
   tipoSesion?: string;
+  page?: number;
+  pageSize?: number;
+  verCiclo?: boolean;
 }

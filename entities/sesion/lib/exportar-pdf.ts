@@ -15,16 +15,16 @@ export const generarSesionesPDF = async (filas: SesionExportarFila[]) => {
 
   autoTable(doc, {
     head: [
-      ["#", "Paciente", "Fecha", "Hora", "Terapeuta", "Estado", "Pago"]
+      ["#", "Paciente", "Fecha", "Terapeuta", "Tipo", "Estado", "Duración"],
     ],
     body: filas.map((f) => [
       f.numeroSesion,
       f.pacienteNombre,
-      f.fecha,
-      f.hora,
+      `${f.fecha} ${f.hora}`,
       f.terapeuta,
+      f.tipo,
       f.estado,
-      f.pago,
+      f.duracion,
     ]),
     startY: 40,
     theme: "striped",
