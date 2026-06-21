@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  useTemporizador, 
-  useGrabacion, 
-  VistaCamara, 
-  WorkspaceSesion 
+import {
+  useTemporizador,
+  useGrabacion,
+  VistaCamara,
+  WorkspaceSesion,
 } from "@/features/sesion-en-progreso";
 import { useSesionActivaStore } from "@/entities/sesion";
 import { usePlanesTratamiento } from "@/entities/plan-tratamiento";
@@ -19,7 +19,7 @@ export const SesionEnProgresoPage = () => {
   const { sesion, limpiarSesion } = useSesionActivaStore();
   const { segundos, tiempoFormateado } = useTemporizador(!!sesion);
   const grabacion = useGrabacion();
-  
+
   const [notas, setNotas] = useState("");
   const [showFinishModal, setShowFinishModal] = useState(false);
 
@@ -49,9 +49,14 @@ export const SesionEnProgresoPage = () => {
         <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 mb-6">
           <AlertCircle size={40} />
         </div>
-        <h2 className="text-2xl font-bold dark:text-white mb-2">No hay sesión activa</h2>
-        <p className="text-gray-400 max-w-md mb-8">Inicia una sesión desde el listado de sesiones o la ficha del paciente.</p>
-        <button 
+        <h2 className="text-2xl font-bold dark:text-white mb-2">
+          No hay sesión activa
+        </h2>
+        <p className="text-gray-400 max-w-md mb-8">
+          Inicia una sesión desde el listado de sesiones o la ficha del
+          paciente.
+        </p>
+        <button
           onClick={() => router.push("/dashboard/sesiones")}
           className="px-8 py-3 bg-[#008080] text-white rounded-2xl font-bold"
         >
@@ -70,15 +75,21 @@ export const SesionEnProgresoPage = () => {
             <User size={20} />
           </div>
           <div>
-            <h2 className="text-sm font-bold dark:text-white">{sesion.pacienteNombre}</h2>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sesión en Progreso</p>
+            <h2 className="text-sm font-bold dark:text-white">
+              {sesion.pacienteNombre}
+            </h2>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              Sesión en Progreso
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3 px-6 py-2 bg-gray-900 rounded-full border border-white/10 shadow-inner">
             <Timer size={16} className="text-[#008080]" />
-            <span className="text-lg font-mono font-bold text-white tracking-wider">{tiempoFormateado}</span>
+            <span className="text-lg font-mono font-bold text-white tracking-wider">
+              {tiempoFormateado}
+            </span>
           </div>
 
           <button
@@ -98,7 +109,11 @@ export const SesionEnProgresoPage = () => {
           dispositivos={grabacion.dispositivos}
           dispositivoSeleccionado={grabacion.dispositivoSeleccionado}
           alCambiarCamara={grabacion.cambiarCamara}
-          alAlternarGrabacion={() => grabacion.estaGrabando ? grabacion.detenerGrabacion() : grabacion.iniciarGrabacion()}
+          alAlternarGrabacion={() =>
+            grabacion.estaGrabando
+              ? grabacion.detenerGrabacion()
+              : grabacion.iniciarGrabacion()
+          }
         />
 
         <WorkspaceSesion

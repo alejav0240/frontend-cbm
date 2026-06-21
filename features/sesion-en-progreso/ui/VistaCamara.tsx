@@ -33,7 +33,9 @@ export const VistaCamara = ({
         {estaGrabando && (
           <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-red-500 rounded-full animate-pulse shadow-lg">
             <div className="w-2 h-2 rounded-full bg-white" />
-            <span className="text-[10px] font-bold text-white uppercase tracking-widest">REC</span>
+            <span className="text-[10px] font-bold text-white uppercase tracking-widest">
+              REC
+            </span>
           </div>
         )}
       </div>
@@ -54,7 +56,9 @@ export const VistaCamara = ({
         <button
           onClick={alAlternarGrabacion}
           className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${
-            estaGrabando ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
+            estaGrabando
+              ? "bg-red-500 text-white shadow-lg shadow-red-500/20"
+              : "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
           }`}
         >
           {estaGrabando ? (
