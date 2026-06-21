@@ -10,7 +10,7 @@ export const usePermisos = () => {
     return (permiso: string): boolean => {
       if (!estaAutenticado || !usuario) return false;
       if (usuario.role?.name === "admin" || usuario.isStaff) return true;
-      
+
       const permisosUsuario = usuario.permissions || [];
       return permisosUsuario.includes(permiso);
     };

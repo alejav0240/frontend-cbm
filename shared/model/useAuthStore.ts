@@ -36,7 +36,8 @@ export const useAuthStore = create<AuthEstado>((set) => ({
   usuario: null,
   estaAutenticado: false,
   estaCargando: true,
-  setUsuario: (usuario) => set({ usuario, estaAutenticado: true, estaCargando: false }),
+  setUsuario: (usuario) =>
+    set({ usuario, estaAutenticado: true, estaCargando: false }),
   setEstaCargando: (v) => set({ estaCargando: v }),
   cerrarSesion: () => {
     localStorage.removeItem("token");
