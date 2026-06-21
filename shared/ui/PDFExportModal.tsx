@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { X, Download, Eye, Filter } from "lucide-react";
+import { Download, Eye, Filter } from "lucide-react";
 import Modal from "@/shared/ui/components/Modal";
 
 export interface FilterConfig {
