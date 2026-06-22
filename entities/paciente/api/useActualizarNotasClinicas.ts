@@ -1,6 +1,6 @@
 import {useMutation} from "@apollo/client/react";
 import {ACTUALIZAR_NOTAS_CLINICAS, usePacientes} from "@/entities/paciente";
-import {FormularioClinicoDataSchema} from "@/features/gestion-paciente/model/FormularioClinicoData.schema";
+import {DatosFormularioClinico} from "@/entities/paciente/model/esquema";
 import {
     UpdateClinicalNotesMutation,
     UpdateClinicalNotesMutationVariables,
@@ -21,7 +21,7 @@ export function useActualizarNotasClinicas() {
     const updateClinicalNotes = (
         patientId: string,
         authorId: string,
-        data: FormularioClinicoDataSchema,
+        data: DatosFormularioClinico,
     ) => {
         const notes = [
             {

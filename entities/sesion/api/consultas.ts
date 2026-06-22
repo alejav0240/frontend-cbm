@@ -55,6 +55,7 @@ export const OBTENER_SESIONES = gql`
           __typename
         }
         terapeuta: therapist {
+          id
           fullName
           __typename
         }

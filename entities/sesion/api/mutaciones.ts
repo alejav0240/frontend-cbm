@@ -32,21 +32,28 @@ export const CREAR_SESION = gql`
 export const ACTUALIZAR_SESION = gql`
   mutation ActualizarSesion(
     $id: ID!
-    $notes: String
+    $therapistId: ID
+    $sessionDate: DateTime
+    $sessionType: String
     $durationMinutes: Int
+    $notes: String
     $videoUrl: String
     $sessionStatus: String
   ) {
     updateSession(
       id: $id
-      notes: $notes
+      therapistId: $therapistId
+      sessionDate: $sessionDate
+      sessionType: $sessionType
       durationMinutes: $durationMinutes
+      notes: $notes
       videoUrl: $videoUrl
       sessionStatus: $sessionStatus
     ) {
       session {
         id
         sessionStatus
+        sessionDate
         notes
         durationMinutes
         videoUrl
