@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,6 +44,24 @@ export const Sidebar = () => {
   const { abierta, alternarSidebar, menuMovilAbierto, setMenuMovilAbierto } =
     useSidebar();
   const { sesion } = useSesionActivaStore();
+
+  const [tiempoSesion, setTiempoSesion] = useState(0);
+
+  useEffect(() => {
+    if (!sesion?.inicio) return;
+    const inicio = new Date(sesion.inicio).getTime();
+    const tick = () => setTiempoSesion(Math.max(0, Math.floor((Date.now() - inicio) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [sesion]);
+
+  const formatearTiempo = (totalSegundos: number) => {
+    const mins = Math.floor(totalSegundos / 60);
+    const secs = totalSegundos % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
+
   const pathname = usePathname();
   const router = useRouter();
   const { usuario, cerrarSesion } = useAuthStore();
@@ -360,16 +378,49 @@ export const Sidebar = () => {
                 </motion.p>
               )}
               <div className="space-y-1">
-                {group.items.map((item) => (
-                  <SidebarItem
-                    key={item.id}
-                    icon={item.icon}
-                    label={item.label}
-                    active={pathname === item.href}
-                    onClick={() => handleNavigation(item.href)}
-                    collapsed={!abierta}
-                  />
-                ))}
+                {group.items.map((item) =>
+                  item.id === "sesion-activa" ? (
+                    <button
+                      key={item.id}
+                      onClick={() => handleNavigation(item.href)}
+                      className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all font-medium text-sm group ${
+                        pathname === item.href
+                          ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
+                          : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
+                      } ${!abierta ? "justify-center px-0" : ""}`}
+                      title={!abierta ? item.label : undefined}
+                    >
+                      <span
+                        className={`transition-transform duration-300 ${
+                          pathname === item.href
+                            ? "scale-110"
+                            : "group-hover:scale-110"
+                        }`}
+                      >
+                        {item.icon}
+                      </span>
+                      {abierta && (
+                        <div className="flex items-center justify-between flex-1 min-w-0">
+                          <span className="truncate">{item.label}</span>
+                          {sesion && (
+                            <span className="text-[10px] font-mono font-bold text-red-400 tabular-nums ml-2 shrink-0">
+                              {formatearTiempo(tiempoSesion)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </button>
+                  ) : (
+                    <SidebarItem
+                      key={item.id}
+                      icon={item.icon}
+                      label={item.label}
+                      active={pathname === item.href}
+                      onClick={() => handleNavigation(item.href)}
+                      collapsed={!abierta}
+                    />
+                  ),
+                )}
               </div>
             </div>
           ))}
@@ -441,16 +492,46 @@ export const Sidebar = () => {
                     {group.title}
                   </p>
                   <div className="space-y-1">
-                    {group.items.map((item) => (
-                      <SidebarItem
-                        key={item.id}
-                        icon={item.icon}
-                        label={item.label}
-                        active={pathname === item.href}
-                        onClick={() => handleNavigation(item.href)}
-                        collapsed={false}
-                      />
-                    ))}
+                    {group.items.map((item) =>
+                      item.id === "sesion-activa" ? (
+                        <button
+                          key={item.id}
+                          onClick={() => handleNavigation(item.href)}
+                          className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all font-medium text-sm group ${
+                            pathname === item.href
+                              ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
+                              : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
+                          }`}
+                        >
+                          <span
+                            className={`transition-transform duration-300 ${
+                              pathname === item.href
+                                ? "scale-110"
+                                : "group-hover:scale-110"
+                            }`}
+                          >
+                            {item.icon}
+                          </span>
+                          <div className="flex items-center justify-between flex-1 min-w-0">
+                            <span className="truncate">{item.label}</span>
+                            {sesion && (
+                              <span className="text-[10px] font-mono font-bold text-red-400 tabular-nums ml-2 shrink-0">
+                                {formatearTiempo(tiempoSesion)}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      ) : (
+                        <SidebarItem
+                          key={item.id}
+                          icon={item.icon}
+                          label={item.label}
+                          active={pathname === item.href}
+                          onClick={() => handleNavigation(item.href)}
+                          collapsed={false}
+                        />
+                      ),
+                    )}
                   </div>
                 </div>
               ))}

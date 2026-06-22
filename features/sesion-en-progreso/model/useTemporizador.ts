@@ -1,7 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 
-export const useTemporizador = (estaActivo: boolean = true) => {
-  const [segundos, setSegundos] = useState(0);
+export const useTemporizador = (
+  estaActivo: boolean = true,
+  startTime?: Date,
+) => {
+  const [segundos, setSegundos] = useState(() => {
+    if (startTime) {
+      return Math.max(0, Math.floor((Date.now() - startTime.getTime()) / 1000));
+    }
+    return 0;
+  });
 
   useEffect(() => {
     let intervalo: any;
@@ -22,6 +30,7 @@ export const useTemporizador = (estaActivo: boolean = true) => {
   return {
     segundos,
     tiempoFormateado: formatearTiempo(segundos),
+    formatearTiempo,
     reiniciar: () => setSegundos(0),
   };
 };
