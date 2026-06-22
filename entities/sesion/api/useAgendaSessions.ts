@@ -1,8 +1,8 @@
-import {useQuery} from "@apollo/client/react";
-import {OBTENER_SESIONES} from "./consultas";
-import {SesionAgenda} from "../model/tipos-agenda";
-import {useMemo} from "react";
-import {ObtenerSesionesQuery} from "@/shared/api/generated/graphql";
+import { useQuery } from "@apollo/client/react";
+import { OBTENER_SESIONES } from "./consultas";
+import { SesionAgenda } from "../model/tipos-agenda";
+import { useMemo } from "react";
+import { ObtenerSesionesQuery } from "@/shared/api/generated/graphql";
 
 interface UseAgendaSessionsProps {
   month: Date;
@@ -50,11 +50,14 @@ function mapStatus(status: string): string {
   }
 }
 
-export function useAgendaSessions({month, therapistId}: UseAgendaSessionsProps) {
+export function useAgendaSessions({
+  month,
+  therapistId,
+}: UseAgendaSessionsProps) {
   const year = month.getFullYear();
   const monthNum = month.getMonth();
 
-  const {data, loading, error, refetch} = useQuery<ObtenerSesionesQuery>(
+  const { data, loading, error, refetch } = useQuery<ObtenerSesionesQuery>(
     OBTENER_SESIONES,
     {
       variables: {
@@ -74,7 +77,11 @@ export function useAgendaSessions({month, therapistId}: UseAgendaSessionsProps) 
       .filter((s) => {
         if (!s.fechaSesion) return false;
         const d = new Date(s.fechaSesion as string);
-        return !isNaN(d.getTime()) && d.getFullYear() === year && d.getMonth() === monthNum;
+        return (
+          !isNaN(d.getTime()) &&
+          d.getFullYear() === year &&
+          d.getMonth() === monthNum
+        );
       })
       .map((s) => {
         const fechaStr = s.fechaSesion as string;

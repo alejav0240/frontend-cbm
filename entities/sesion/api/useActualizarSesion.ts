@@ -1,10 +1,10 @@
-import {useMutation} from "@apollo/client/react";
-import {ACTUALIZAR_SESION} from "./mutaciones";
+import { useMutation } from "@apollo/client/react";
+import { ACTUALIZAR_SESION } from "./mutaciones";
 import {
   ActualizarSesionMutation,
   ActualizarSesionMutationVariables,
 } from "@/shared/api/generated/graphql";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 interface ActualizarSesionInput {
   therapistId?: string | null;
@@ -17,7 +17,7 @@ interface ActualizarSesionInput {
 }
 
 export function useActualizarSesion() {
-  const [actualizar, {loading}] = useMutation<
+  const [actualizar, { loading }] = useMutation<
     ActualizarSesionMutation,
     ActualizarSesionMutationVariables
   >(ACTUALIZAR_SESION);
@@ -25,7 +25,7 @@ export function useActualizarSesion() {
   const actualizarSesion = async (id: string, input: ActualizarSesionInput) => {
     try {
       await actualizar({
-        variables: {id, ...input},
+        variables: { id, ...input },
       });
       toast.success("Sesión actualizada");
     } catch (err: any) {
@@ -34,5 +34,5 @@ export function useActualizarSesion() {
     }
   };
 
-  return {actualizarSesion, actualizando: loading};
+  return { actualizarSesion, actualizando: loading };
 }

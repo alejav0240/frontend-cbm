@@ -62,6 +62,25 @@ export const ACTUALIZAR_SESION = gql`
   }
 `;
 
+export const CREAR_CICLO = gql`
+  mutation CreateCycle(
+    $patientId: ID!
+    $therapistId: ID!
+    $startDate: Date!
+    $numSessions: Int
+  ) {
+    createCycle(
+      patientId: $patientId
+      therapistId: $therapistId
+      startDate: $startDate
+      numSessions: $numSessions
+    ) {
+      success
+      message
+    }
+  }
+`;
+
 export const ELIMINAR_SESION = gql`
   mutation EliminarSesion($id: ID!) {
     deleteSession(id: $id) {

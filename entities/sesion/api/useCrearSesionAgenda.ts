@@ -1,10 +1,10 @@
-import {useMutation} from "@apollo/client/react";
-import {CREAR_SESION} from "./mutaciones";
+import { useMutation } from "@apollo/client/react";
+import { CREAR_SESION } from "./mutaciones";
 import {
   CrearSesionMutation,
   CrearSesionMutationVariables,
 } from "@/shared/api/generated/graphql";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 interface CrearSesionInput {
   patientId: string;
@@ -16,9 +16,10 @@ interface CrearSesionInput {
 }
 
 export function useCrearSesionAgenda() {
-  const [crear, {loading}] = useMutation<CrearSesionMutation, CrearSesionMutationVariables>(
-    CREAR_SESION,
-  );
+  const [crear, { loading }] = useMutation<
+    CrearSesionMutation,
+    CrearSesionMutationVariables
+  >(CREAR_SESION);
 
   const crearSesion = async (input: CrearSesionInput) => {
     try {
@@ -40,5 +41,5 @@ export function useCrearSesionAgenda() {
     }
   };
 
-  return {crearSesion, creando: loading};
+  return { crearSesion, creando: loading };
 }

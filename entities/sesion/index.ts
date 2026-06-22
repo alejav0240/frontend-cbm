@@ -4,6 +4,7 @@ export * from "./model/dto";
 export * from "./api/consultas";
 export * from "./api/mutaciones";
 export * from "./api/useSesiones";
+export * from "./api/useCiclosPacientes";
 export * from "./api/useAgendaSessions";
 export * from "./api/useCrearSesionAgenda";
 export * from "./api/useActualizarEstadoSesion";

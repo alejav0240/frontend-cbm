@@ -1,4 +1,4 @@
-import {gql} from "@apollo/client";
+import { gql } from "@apollo/client";
 
 export const OBTENER_SESIONES = gql`
   query ObtenerSesiones(
@@ -66,103 +66,164 @@ export const OBTENER_SESIONES = gql`
 `;
 
 export const OBTENER_CICLOS = gql`
-  query ObtenerCiclos($patientId: ID, $paymentStatus: String, $sessionStatus: String, $sessionType: String, $therapistId: ID, $page: Int, $pageSize: Int) {
-  sessions(
-    patientId: $patientId
-    byCycles: true
-    page: $page
-    pageSize: $pageSize
-    paymentStatus: $paymentStatus
-    sessionType: $sessionType
-    sessionStatus: $sessionStatus
-    therapistId: $therapistId
+  query ObtenerCiclos(
+    $patientId: ID
+    $paymentStatus: String
+    $sessionStatus: String
+    $sessionType: String
+    $therapistId: ID
+    $page: Int
+    $pageSize: Int
   ) {
-    currentPage
-    totalCount
-    totalPages
-    byCycles
-    cycles {
-      paymentSummary {
-        exempt
-        paid
-        pending
-        __typename
-      }
-      cycleNumber
-      completedCount
-      firstSessionDate
-      id
-      lastSessionDate
-      sessionCount
-      status
-      sessions {
-        durationMinutes
-        databaseId
+    sessions(
+      patientId: $patientId
+      byCycles: true
+      page: $page
+      pageSize: $pageSize
+      paymentStatus: $paymentStatus
+      sessionType: $sessionType
+      sessionStatus: $sessionStatus
+      therapistId: $therapistId
+    ) {
+      currentPage
+      totalCount
+      totalPages
+      byCycles
+      cycles {
+        patientId
+        patientName
+        patient {
+          id
+          fullName
+          tutor {
+            celular
+            __typename
+          }
+          __typename
+        }
+        paymentSummary {
+          exempt
+          paid
+          pending
+          __typename
+        }
         cycleNumber
-        createdAt
-        notes
-        videoUrl
-        sessionTypeDisplay
-        paymentStatusDisplay
-        sessionDate
-        sessionNumber
-        sessionStatus
-        sessionResources {
-          resource {
-            id
-            title
-            type
-            url
-            __typename
-          }
+        completedCount
+        firstSessionDate
+        id
+        lastSessionDate
+        sessionCount
+        status
+        therapists {
+          id
+          fullName
           __typename
         }
-        sessionResources {
-          resource {
-            title
+        sessions {
+          durationMinutes
+          databaseId
+          cycleNumber
+          createdAt
+          notes
+          videoUrl
+          sessionTypeDisplay
+          paymentStatusDisplay
+          sessionDate
+          sessionNumber
+          sessionStatus
+          sessionResources {
+            resource {
+              id
+              title
+              type
+              url
+              __typename
+            }
+            __typename
+          }
+          sessionResources {
+            resource {
+              title
+              __typename
+            }
             __typename
           }
           __typename
+          sessionInventory {
+            id
+            item {
+              name
+            }
+          }
+          scaleEvaluations {
+            id
+            evaluatedAt
+            totalScore
+            scale {
+              id
+              name
+              scaleType
+              __typename
+            }
+            subscaleResponses {
+              subscale {
+                name
+                __typename
+              }
+              score
+              __typename
+            }
+            valueResponses {
+              scaleValue {
+                label
+                value
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
         }
         __typename
-        sessionInventory {
-          id
-          item {
-            name
-          }
-        }
-        scaleEvaluations {
-          id
-          evaluatedAt
-          totalScore
-          scale {
-            id
-            name
-            scaleType
-            __typename
-          }
-          subscaleResponses {
-            subscale {
-              name
-              __typename
-            }
-            score
-            __typename
-          }
-          valueResponses {
-            scaleValue {
-              label
-              value
-              __typename
-            }
-            __typename
-          }
-          __typename
-        }
       }
       __typename
     }
-    __typename
   }
-}
+`;
+
+export const OBTENER_CICLOS_PACIENTES = gql`
+  query ObtenerCiclosPacientes(
+    $pageSize: Int
+    $page: Int
+    $search: String
+    $therapistId: ID
+  ) {
+    patientsLastCycle(
+      page: $page
+      pageSize: $pageSize
+      search: $search
+      therapistId: $therapistId
+    ) {
+      currentPage
+      totalCount
+      totalPages
+      results {
+        patientName
+        cycleNumber
+        status
+        sessionCount
+        completedCount
+        paymentSummary {
+          paid
+          pending
+          exempt
+        }
+        sessions {
+          id
+          sessionDate
+          sessionStatus
+        }
+      }
+    }
+  }
 `;
