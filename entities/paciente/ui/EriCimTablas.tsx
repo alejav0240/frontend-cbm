@@ -36,7 +36,8 @@ function EscalaSection({
   data: ProgresoEscala[];
 }) {
   const ordenado = [...data].sort(
-    (a, b) => new Date(a.evaluatedAt).getTime() - new Date(b.evaluatedAt).getTime(),
+    (a, b) =>
+      new Date(a.evaluatedAt).getTime() - new Date(b.evaluatedAt).getTime(),
   );
 
   const chartData = ordenado.map((e) => ({
@@ -49,7 +50,9 @@ function EscalaSection({
 
   const promedio =
     ordenado.length > 0
-      ? (ordenado.reduce((s, e) => s + e.totalScore, 0) / ordenado.length).toFixed(1)
+      ? (
+          ordenado.reduce((s, e) => s + e.totalScore, 0) / ordenado.length
+        ).toFixed(1)
       : "—";
 
   return (
@@ -68,8 +71,12 @@ function EscalaSection({
       </div>
 
       <div className="mb-4 text-sm text-gray-500">
-        Promedio: <span className="font-bold dark:text-white" style={{ color }}>{promedio}</span>
-        {" | "}Registros: <span className="font-bold dark:text-white">{ordenado.length}</span>
+        Promedio:{" "}
+        <span className="font-bold dark:text-white" style={{ color }}>
+          {promedio}
+        </span>
+        {" | "}Registros:{" "}
+        <span className="font-bold dark:text-white">{ordenado.length}</span>
       </div>
 
       <div className="h-48 mb-6">
@@ -79,10 +86,27 @@ function EscalaSection({
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#88888815" />
-              <XAxis dataKey="fecha" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#888" }} dy={8} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#888" }} />
+            <LineChart
+              data={chartData}
+              margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#88888815"
+              />
+              <XAxis
+                dataKey="fecha"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#888" }}
+                dy={8}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#888" }}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#1f2937",
@@ -94,7 +118,14 @@ function EscalaSection({
                 itemStyle={{ color: "#f3f4f6" }}
                 labelStyle={{ color: "#9ca3af", fontWeight: "bold" }}
               />
-              <Line type="monotone" dataKey="puntaje" stroke={color} strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              <Line
+                type="monotone"
+                dataKey="puntaje"
+                stroke={color}
+                strokeWidth={2.5}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+              />
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -104,26 +135,41 @@ function EscalaSection({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 dark:border-white/5">
-              <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-widest text-gray-400">Fecha</th>
-              <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-widest text-gray-400">Puntaje</th>
-              <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-widest text-gray-400">En sesión</th>
+              <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-widest text-gray-400">
+                Fecha
+              </th>
+              <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-widest text-gray-400">
+                Puntaje
+              </th>
+              <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-widest text-gray-400">
+                En sesión
+              </th>
             </tr>
           </thead>
           <tbody>
             {ordenado.length === 0 ? (
               <tr>
-                <td colSpan={3} className="text-center py-8 text-gray-400">Sin evaluaciones registradas</td>
+                <td colSpan={3} className="text-center py-8 text-gray-400">
+                  Sin evaluaciones registradas
+                </td>
               </tr>
             ) : (
               ordenado.map((e) => (
-                <tr key={e.id} className="border-b border-gray-50 dark:border-white/5">
+                <tr
+                  key={e.id}
+                  className="border-b border-gray-50 dark:border-white/5"
+                >
                   <td className="py-2 px-3 dark:text-white">
                     {new Date(e.evaluatedAt).toLocaleDateString("es-ES")}
                   </td>
                   <td className="py-2 px-3">
-                    <span className="font-semibold" style={{ color }}>{e.totalScore}</span>
+                    <span className="font-semibold" style={{ color }}>
+                      {e.totalScore}
+                    </span>
                   </td>
-                  <td className="py-2 px-3 text-gray-500">{e.inSession ? "Sí" : "No"}</td>
+                  <td className="py-2 px-3 text-gray-500">
+                    {e.inSession ? "Sí" : "No"}
+                  </td>
                 </tr>
               ))
             )}

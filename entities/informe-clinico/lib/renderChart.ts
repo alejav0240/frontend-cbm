@@ -29,7 +29,10 @@ export function renderChartToCanvas(
   ctx.textAlign = "center";
   ctx.fillText(label, width / 2, 14);
 
-  const validData = data.filter((d) => d.valor !== null) as { sesion: string; valor: number }[];
+  const validData = data.filter((d) => d.valor !== null) as {
+    sesion: string;
+    valor: number;
+  }[];
 
   if (validData.length < 2) {
     ctx.fillStyle = "#999";
@@ -47,8 +50,10 @@ export function renderChartToCanvas(
   const yMin = Math.floor(minVal - padding);
   const yMax = Math.ceil(maxVal + padding);
 
-  const xScale = (i: number) => pad.left + (i / (validData.length - 1)) * chartW;
-  const yScale = (v: number) => pad.top + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
+  const xScale = (i: number) =>
+    pad.left + (i / (validData.length - 1)) * chartW;
+  const yScale = (v: number) =>
+    pad.top + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
 
   // Grid lines
   ctx.strokeStyle = "#eee";
