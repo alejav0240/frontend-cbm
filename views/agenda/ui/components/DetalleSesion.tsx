@@ -1,10 +1,21 @@
 "use client";
 
 import React from "react";
-import {CalendarIcon, Clock, User, Video, Play, Trash2, Check, Edit3, RefreshCw, ArrowRight} from "lucide-react";
-import {SesionAgenda} from "@/entities/sesion/model/tipos-agenda";
-import {useActualizarEstadoSesion} from "@/entities/sesion/api/useActualizarEstadoSesion";
-import {toast} from "sonner";
+import {
+  CalendarIcon,
+  Clock,
+  User,
+  Video,
+  Play,
+  Trash2,
+  Check,
+  Edit3,
+  RefreshCw,
+  ArrowRight,
+} from "lucide-react";
+import { SesionAgenda } from "@/entities/sesion/model/tipos-agenda";
+import { useActualizarEstadoSesion } from "@/entities/sesion/api/useActualizarEstadoSesion";
+import { toast } from "sonner";
 
 interface DetalleSesionProps {
   session: SesionAgenda;
@@ -15,8 +26,15 @@ interface DetalleSesionProps {
   onStartSession?: (session: SesionAgenda) => void;
 }
 
-export function DetalleSesion({session, onClose, onDeleted, onEdit, onReschedule, onStartSession}: DetalleSesionProps) {
-  const {actualizarEstado, actualizando} = useActualizarEstadoSesion();
+export function DetalleSesion({
+  session,
+  onClose,
+  onDeleted,
+  onEdit,
+  onReschedule,
+  onStartSession,
+}: DetalleSesionProps) {
+  const { actualizarEstado, actualizando } = useActualizarEstadoSesion();
 
   const statusColor =
     session.status === "Completada"
@@ -69,12 +87,18 @@ export function DetalleSesion({session, onClose, onDeleted, onEdit, onReschedule
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg ${statusColor}`}>
+        <div
+          className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg ${statusColor}`}
+        >
           {session.patientName.charAt(0)}
         </div>
         <div>
-          <h3 className="text-lg font-bold dark:text-white">{session.patientName}</h3>
-          <span className={`text-xs font-bold uppercase tracking-widest px-2 py-1 rounded-lg ${statusColor}`}>
+          <h3 className="text-lg font-bold dark:text-white">
+            {session.patientName}
+          </h3>
+          <span
+            className={`text-xs font-bold uppercase tracking-widest px-2 py-1 rounded-lg ${statusColor}`}
+          >
             {session.status}
           </span>
         </div>
@@ -84,43 +108,65 @@ export function DetalleSesion({session, onClose, onDeleted, onEdit, onReschedule
         <div className="flex items-center gap-3">
           <CalendarIcon className="w-4 h-4 text-gray-400" />
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Fecha</p>
-            <p className="text-sm font-semibold dark:text-white">{session.date || "—"}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              Fecha
+            </p>
+            <p className="text-sm font-semibold dark:text-white">
+              {session.date || "—"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <Clock className="w-4 h-4 text-gray-400" />
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hora</p>
-            <p className="text-sm font-semibold dark:text-white">{session.time}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              Hora
+            </p>
+            <p className="text-sm font-semibold dark:text-white">
+              {session.time}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <User className="w-4 h-4 text-gray-400" />
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Terapeuta</p>
-            <p className="text-sm font-semibold dark:text-white">{session.therapist}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              Terapeuta
+            </p>
+            <p className="text-sm font-semibold dark:text-white">
+              {session.therapist}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <Clock className="w-4 h-4 text-gray-400" />
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Duración</p>
-            <p className="text-sm font-semibold dark:text-white">{session.duration}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              Duración
+            </p>
+            <p className="text-sm font-semibold dark:text-white">
+              {session.duration}
+            </p>
           </div>
         </div>
       </div>
 
       {session.type && (
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Tipo:</span>
-          <span className="text-xs font-semibold dark:text-white">{session.type}</span>
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Tipo:
+          </span>
+          <span className="text-xs font-semibold dark:text-white">
+            {session.type}
+          </span>
         </div>
       )}
 
       {session.notes && (
         <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Notas</p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+            Notas
+          </p>
           <p className="text-sm dark:text-white">{session.notes}</p>
         </div>
       )}

@@ -1,17 +1,17 @@
 "use client";
 
-import React, {useEffect, useState} from "react";
-import {useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {CalendarIcon, Clock, Loader2, User} from "lucide-react";
-import {esquemaCita, DatosCita} from "../../model/esquema-cita";
-import {SearchableSelect} from "@/shared/ui/components/SearchableSelect";
-import {usePacientes} from "@/entities/paciente";
-import {useUsuarios} from "@/entities/usuario";
-import {SesionAgenda} from "@/entities/sesion/model/tipos-agenda";
-import {toast} from "sonner";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CalendarIcon, Clock, Loader2, User } from "lucide-react";
+import { esquemaCita, DatosCita } from "../../model/esquema-cita";
+import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
+import { usePacientes } from "@/entities/paciente";
+import { useUsuarios } from "@/entities/usuario";
+import { SesionAgenda } from "@/entities/sesion/model/tipos-agenda";
+import { toast } from "sonner";
 
-type FormMode = 'create' | 'edit' | 'reschedule';
+type FormMode = "create" | "edit" | "reschedule";
 
 interface FormNuevaCitaProps {
   defaultDate?: string;
@@ -38,22 +38,30 @@ function parseDuration(duration: string): number {
   return match ? parseInt(match[1], 10) : 45;
 }
 
-export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, editingSession, mode = 'create'}: FormNuevaCitaProps) {
-  const isEditing = mode !== 'create';
-  const esReagenda = mode === 'reschedule';
+export function FormNuevaCita({
+  defaultDate,
+  defaultHour,
+  onClose,
+  onSubmit,
+  editingSession,
+  mode = "create",
+}: FormNuevaCitaProps) {
+  const isEditing = mode !== "create";
+  const esReagenda = mode === "reschedule";
   const today = new Date().toISOString().split("T")[0];
-  const defaultTime = defaultHour !== undefined
-    ? `${String(defaultHour).padStart(2, "0")}:00`
-    : editingSession
-      ? parseTimeToHHMM(editingSession.time)
-      : "09:00";
+  const defaultTime =
+    defaultHour !== undefined
+      ? `${String(defaultHour).padStart(2, "0")}:00`
+      : editingSession
+        ? parseTimeToHHMM(editingSession.time)
+        : "09:00";
 
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    formState: {errors, isSubmitting},
+    formState: { errors, isSubmitting },
   } = useForm<DatosCita>({
     resolver: zodResolver(esquemaCita),
     defaultValues: {
@@ -62,14 +70,26 @@ export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, edit
       sessionDate: defaultDate || editingSession?.date || today,
       sessionTime: defaultTime,
       sessionType: editingSession?.type || "INDIVIDUAL",
-      durationMinutes: editingSession?.durationMinutes || parseDuration(editingSession?.duration || "") || 45,
+      durationMinutes:
+        editingSession?.durationMinutes ||
+        parseDuration(editingSession?.duration || "") ||
+        45,
       notes: editingSession?.notes || "",
     },
   });
 
-  const [searchPaciente, setSearchPaciente] = useState(editingSession?.patientName || "");
-  const {pacientes, cargando: cargandoP} = usePacientes({search: searchPaciente || "", pageSize: 20});
-  const {usuarios: terapeutas, cargando: cargandoT} = useUsuarios({pagina: 1, pageSize: 50, nombreRol: "TERAPEUTA"});
+  const [searchPaciente, setSearchPaciente] = useState(
+    editingSession?.patientName || "",
+  );
+  const { pacientes, cargando: cargandoP } = usePacientes({
+    search: searchPaciente || "",
+    pageSize: 20,
+  });
+  const { usuarios: terapeutas, cargando: cargandoT } = useUsuarios({
+    pagina: 1,
+    pageSize: 50,
+    nombreRol: "TERAPEUTA",
+  });
 
   const pacientesOpciones = pacientes.map((p) => ({
     value: p.id,
@@ -77,7 +97,9 @@ export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, edit
   }));
 
   const terapeutasOpciones = terapeutas
-    .filter((t): t is {id: string; fullName: string} & typeof t => Boolean(t.id && t.fullName))
+    .filter((t): t is { id: string; fullName: string } & typeof t =>
+      Boolean(t.id && t.fullName),
+    )
     .map((t) => ({
       value: t.id,
       label: t.fullName,
@@ -85,28 +107,34 @@ export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, edit
 
   useEffect(() => {
     if (!editingSession?.therapistId || terapeutas.length === 0) return;
-    const found = terapeutas.find(t => t.id === editingSession.therapistId);
+    const found = terapeutas.find((t) => t.id === editingSession.therapistId);
     if (found) {
-      setValue("therapistId", editingSession.therapistId, {shouldValidate: true});
+      setValue("therapistId", editingSession.therapistId, {
+        shouldValidate: true,
+      });
     }
   }, [editingSession?.therapistId, terapeutas, setValue]);
 
-  const pacienteDeshabilitado = isEditing && !esReagenda || esReagenda;
+  const pacienteDeshabilitado = (isEditing && !esReagenda) || esReagenda;
   const terapeutaDeshabilitado = isEditing && !esReagenda;
 
   const handleFormSubmit = async (data: DatosCita) => {
     try {
       const dateTime = `${data.sessionDate}T${data.sessionTime}:00`;
-      await onSubmit({...data, sessionDate: dateTime});
+      await onSubmit({ ...data, sessionDate: dateTime });
     } catch {
-      toast.error(isEditing ? "Error al actualizar la cita" : "Error al crear la cita");
+      toast.error(
+        isEditing ? "Error al actualizar la cita" : "Error al crear la cita",
+      );
     }
   };
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Paciente</label>
+        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+          Paciente
+        </label>
         {pacienteDeshabilitado ? (
           <div className="w-full px-4 py-3 bg-gray-100 dark:bg-white/5 rounded-xl text-sm dark:text-white font-medium">
             {editingSession?.patientName || "Sin paciente"}
@@ -115,7 +143,9 @@ export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, edit
           <SearchableSelect
             options={pacientesOpciones}
             value={watch("patientId")}
-            onChange={(val) => setValue("patientId", val, {shouldValidate: true})}
+            onChange={(val) =>
+              setValue("patientId", val, { shouldValidate: true })
+            }
             placeholder="Buscar paciente..."
             onSearch={setSearchPaciente}
             isLoading={cargandoP}
@@ -127,7 +157,9 @@ export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, edit
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Terapeuta</label>
+        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+          Terapeuta
+        </label>
         {terapeutaDeshabilitado ? (
           <div className="w-full px-4 py-3 bg-gray-100 dark:bg-white/5 rounded-xl text-sm dark:text-white font-medium">
             {editingSession?.therapist || "Sin terapeuta"}
@@ -136,7 +168,9 @@ export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, edit
           <SearchableSelect
             options={terapeutasOpciones}
             value={watch("therapistId")}
-            onChange={(val) => setValue("therapistId", val, {shouldValidate: true})}
+            onChange={(val) =>
+              setValue("therapistId", val, { shouldValidate: true })
+            }
             placeholder="Seleccionar terapeuta..."
             isLoading={cargandoT}
           />
@@ -148,7 +182,9 @@ export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, edit
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Fecha</label>
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Fecha
+          </label>
           <div className="relative">
             <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -163,7 +199,9 @@ export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, edit
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Hora</label>
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Hora
+          </label>
           <div className="relative">
             <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -180,7 +218,9 @@ export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, edit
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Tipo de Sesión</label>
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Tipo de Sesión
+          </label>
           <select
             {...register("sessionType")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
@@ -194,20 +234,26 @@ export function FormNuevaCita({defaultDate, defaultHour, onClose, onSubmit, edit
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Duración (min)</label>
-            <input
-                type="number"
-                {...register("durationMinutes", {valueAsNumber: true})}
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
-            />
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Duración (min)
+          </label>
+          <input
+            type="number"
+            {...register("durationMinutes", { valueAsNumber: true })}
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+          />
           {errors.durationMinutes && (
-            <p className="text-xs text-red-500">{errors.durationMinutes.message}</p>
+            <p className="text-xs text-red-500">
+              {errors.durationMinutes.message}
+            </p>
           )}
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Notas (opcional)</label>
+        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+          Notas (opcional)
+        </label>
         <textarea
           {...register("notes")}
           rows={3}
