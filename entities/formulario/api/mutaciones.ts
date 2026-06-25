@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import {gql} from "@apollo/client";
 
 export const SUBMIT_FULL_FORM = gql`
   mutation SubmitFullForm($assignmentId: ID!, $responses: [ResponseInput!]!) {
@@ -35,21 +35,17 @@ export const DELETE_FORM = gql`
 `;
 
 export const ASSIGN_FORM = gql`
-  mutation AssignForm(
-    $formId: ID!
-    $assignedToId: ID!
-    $assignedById: ID!
-    $patientId: ID
+mutation MyMutation($assignedById: ID!, $formId: ID!, $assignedToId: ID, $patientId: ID, $sessionId: ID) {
+  assignForm(
+    assignedById: $assignedById
+    formId: $formId
+    assignedToId: $assignedToId
+    patientId: $patientId
+    sessionId: $sessionId
   ) {
-    assignForm(
-      formId: $formId
-      assignedToId: $assignedToId
-      assignedById: $assignedById
-      patientId: $patientId
-    ) {
-      assignment {
-        id
-      }
+    assignment {
+      id
     }
   }
+}
 `;

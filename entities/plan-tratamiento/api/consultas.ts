@@ -23,6 +23,7 @@ export const OBTENER_PLANES_INTERVENCION = gql`
         paciente: patient {
           id
           fullName
+          __typename
         }
         pasos: steps {
           id
@@ -35,12 +36,14 @@ export const OBTENER_PLANES_INTERVENCION = gql`
           abordaje: approach
           metodoMlt: mltMethod
           indiceOrden: orderIndex
-          estaCompletado: isCompleted
+          __typename
         }
+        __typename
       }
       totalCount
       totalPages
       currentPage
+      __typename
     }
   }
 `;

@@ -7,12 +7,13 @@ import {
     VistaCamara,
     WorkspaceSesion,
 } from "@/features/sesion-en-progreso";
-import {useSesionActivaStore} from "@/entities/sesion";
-import {usePlanesTratamiento} from "@/entities/plan-tratamiento";
-import {useRecursosDigitales} from "@/entities/recurso";
-import {useEscalas} from "@/entities/evaluacion";
-import {useFormularios} from "@/entities/formulario";
-import {useInventario} from "@/entities/inventario";
+import {useSesionActivaStore, ACTUALIZAR_SESION} from "@/entities/sesion";
+import {usePlanesTratamiento, useAgregarPasosSesion} from "@/entities/plan-tratamiento";
+import {useRecursosDigitales, useAgregarRecursosSesion} from "@/entities/recurso";
+import {useEscalas, useAgregarEscalaSesion} from "@/entities/evaluacion";
+import {useFormularios, useAssignForm, useSubmitFullForm} from "@/entities/formulario";
+import {useInventario, useAgregarInventarioSesion} from "@/entities/inventario";
+import {useAuthStore} from "@/shared/model/useAuthStore";
 import {
     AlertCircle,
     Loader2,
@@ -28,6 +29,7 @@ import {toast} from "sonner";
 import {motion} from "motion/react";
 import {useSesionConfigStore} from "@/shared/model/useSesionConfigStore";
 import {alertarFinSesion} from "@/shared/lib/utils/alarmaDuracion";
+import {useMutation} from "@apollo/client/react";
 import {SessionHeader} from "@/views/sesion-en-progreso/ui/components/SessionHeader";
 import type {
     MappedResource,
@@ -63,7 +65,10 @@ export const SesionEnProgresoPage = () => {
     const router = useRouter();
     const {sesion, limpiarSesion} = useSesionActivaStore();
     const [isActive, setIsActive] = useState(true);
-    const {segundos, formatearTiempo} = useTemporizador(!!sesion && isActive, sesion?.inicio ? new Date(sesion.inicio) : undefined);
+    const {
+        segundos,
+        formatearTiempo
+    } = useTemporizador(!!sesion && isActive, sesion?.inicio ? new Date(sesion.inicio) : undefined);
     const grabacion = useGrabacion();
 
     const [notas, setNotas] = useState("");
@@ -79,6 +84,17 @@ export const SesionEnProgresoPage = () => {
     const alertaEnviadaRef = useRef(false);
 
     const duracionSesion = useSesionConfigStore((s) => s.duracionSesion);
+    const {usuario} = useAuthStore();
+    const [actualizarSesion] = useMutation(ACTUALIZAR_SESION);
+
+    const {agregarPasosSesion} = useAgregarPasosSesion();
+    const {agregarRecursosSesion} = useAgregarRecursosSesion();
+    const {agregarInventarioSesion} = useAgregarInventarioSesion();
+    const {agregarEscalaSesion} = useAgregarEscalaSesion();
+    const {assignForm} = useAssignForm();
+    const {submitFullForm} = useSubmitFullForm();
+
+    const [finalizando, setFinalizando] = useState(false);
 
     const {
         planes,
@@ -263,14 +279,140 @@ export const SesionEnProgresoPage = () => {
     ]);
 
     const handleFinalizar = async () => {
-        try {
-            grabacion.detenerGrabacion();
-            limpiarSesion();
-            toast.success("Sesión guardada exitosamente");
-            router.push("/dashboard/sesiones");
-        } catch {
-            toast.error("Error al guardar la sesión");
+        if (finalizando || !sesion) return;
+        setFinalizando(true);
+
+        const sessionId = sesion.id;
+        const pacienteId = sesion.pacienteId;
+        const evaluatorId = usuario?.id;
+
+        if (!evaluatorId) {
+            toast.error("No se encontró el usuario autenticado");
+            setFinalizando(false);
+            return;
         }
+
+        const errores: string[] = [];
+
+        // 1. Pasos completados
+        if (completedSteps.length > 0) {
+            try {
+                await agregarPasosSesion({planStepIds: completedSteps, sessionId});
+            } catch {
+                errores.push("pasos");
+            }
+        }
+
+        // 2. Recursos digitales
+        const digitalIds = selectedResources
+            .filter((id) => id.startsWith("digital-"))
+            .map((id) => id.replace(/^digital-/, ""));
+        if (digitalIds.length > 0) {
+            try {
+                await agregarRecursosSesion({resourceIds: digitalIds, sessionId});
+            } catch {
+                errores.push("recursos digitales");
+            }
+        }
+
+        // 3. Inventario
+        const invIds = selectedResources
+            .filter((id) => id.startsWith("inv-"))
+            .map((id) => id.replace(/^inv-/, ""));
+        if (invIds.length > 0) {
+            try {
+                await agregarInventarioSesion({itemIds: invIds, sessionId});
+            } catch {
+                errores.push("inventario");
+            }
+        }
+
+        // 4. Escalas
+        for (const scaleId of selectedScales) {
+            try {
+                const subscales = Object.entries(formResponses)
+                    .filter(([k]) => k.startsWith(`scale_${scaleId}_sub_`))
+                    .map(([k, v]) => ({
+                        subscaleId: k.replace(`scale_${scaleId}_sub_`, ""),
+                        score: v as number,
+                    }));
+
+                const valueKey = `scale_${scaleId}_value`;
+                const valueId = formResponses[valueKey]
+                    ? String(formResponses[valueKey])
+                    : null;
+
+                await agregarEscalaSesion({
+                    patientId: pacienteId,
+                    evaluatorId,
+                    scaleId,
+                    sessionId,
+                    subscales: subscales.length > 0 ? subscales : null,
+                    valueId,
+                });
+            } catch {
+                errores.push(`escala ${scaleId}`);
+            }
+        }
+
+        // 5. Formularios
+        for (const formId of selectedForms) {
+            try {
+                const {data: assignData} = await assignForm({
+                    formId,
+                    assignedToId: null,
+                    assignedById: evaluatorId,
+                    patientId: pacienteId,
+                    sessionId,
+                });
+
+                const assignmentId =
+                    (assignData as any)?.assignForm?.assignment?.id;
+                if (assignmentId) {
+                    const responses = Object.entries(formResponses)
+                        .filter(([k]) => k.startsWith(`form_${formId}_field_`))
+                        .map(([k, v]) => ({
+                            questionId: k.replace(`form_${formId}_field_`, ""),
+                            responseText: String(v),
+                        }));
+
+                    if (responses.length > 0) {
+                        await submitFullForm({assignmentId, responses});
+                    }
+                }
+            } catch {
+                errores.push(`formulario ${formId}`);
+            }
+        }
+
+        // 6. Actualizar sesión
+        try {
+            await actualizarSesion({
+                variables: {
+                    id: sessionId,
+                    notes: notas || null,
+                    durationMinutes: Math.floor(segundos / 60),
+                    sessionStatus: "completa",
+                },
+            });
+        } catch {
+            errores.push("actualización de sesión");
+        }
+
+        // 7. Cleanup
+        grabacion.detenerGrabacion();
+        limpiarSesion();
+
+        if (errores.length === 0) {
+            toast.success("Sesión guardada exitosamente");
+        } else {
+            toast.warning(
+                `Sesión guardada con errores en: ${errores.join(", ")}`,
+            );
+        }
+
+        setFinalizando(false);
+        router.push("/dashboard/sesiones");
     };
 
     const insertarMarcaTiempo = useCallback(() => {
