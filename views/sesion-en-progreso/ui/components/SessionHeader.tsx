@@ -73,7 +73,8 @@ export function SessionHeader({
       "from-amber-500 to-amber-600",
       "from-emerald-500 to-emerald-600",
     ];
-    const index = name?.charCodeAt(0) % colors.length ?? 0;
+    const code = name ? name.charCodeAt(0) : 0;
+    const index = Number.isNaN(code) ? 0 : code % colors.length;
     return colors[index];
   };
 

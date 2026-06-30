@@ -8,13 +8,15 @@ import SessionCard from "@/entities/sesion/ui/SessionCard";
 
 interface SessionHistoryProps {
   patientSessions: any[];
-  onViewAIAnalysis: (sessionId: number, mode: "list" | "charts") => void;
+  onViewAIAnalysis: (sessionId: string | number, mode: "list" | "charts") => void;
   onEditSession: (session: any) => void;
-  onDeleteSession: (sessionId: number) => void;
+  onDeleteSession: (sessionId: string | number) => void;
   currentPage: number;
   totalPages: number;
   cicloNumber: number;
   onPageChange: (page: number) => void;
+  onViewDetails?: (session: any) => void;
+  onExport?: (session: any) => void;
 }
 
 export function HistorialSesiones({
@@ -26,6 +28,8 @@ export function HistorialSesiones({
   totalPages,
   cicloNumber,
   onPageChange,
+  onViewDetails,
+  onExport,
 }: SessionHistoryProps) {
   console.log("Historial sesiones");
   console.log(patientSessions);
@@ -76,9 +80,11 @@ export function HistorialSesiones({
               key={session.databaseId}
               session={session}
               idx={idx}
-              onViewAIAnalysis={handleViewAIAnalysis}
-              onEditSession={handleEditSession}
-              onDeleteSession={handleDeleteSession}
+              onViewAIAnalysis={onViewAIAnalysis}
+              onEditSession={onEditSession}
+              onDeleteSession={onDeleteSession}
+              onViewDetails={onViewDetails}
+              onExport={onExport}
             />
           ))
         ) : (

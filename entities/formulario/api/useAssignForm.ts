@@ -13,12 +13,12 @@ export function useAssignForm() {
   const [mutation, { loading, error, data }] = useMutation(ASSIGN_FORM);
 
   const assignForm = (variables: AssignFormVariables) =>
-    mutation({ variables });
+    mutation({ variables }) as Promise<any>;
 
   return {
     assignForm,
     asignando: loading,
     error,
-    data,
+    data: data as any,
   };
 }

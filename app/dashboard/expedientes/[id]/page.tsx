@@ -10,13 +10,19 @@ import { InformacionGeneral } from "@/entities/paciente/ui/InformacionGeneral";
 import { CuestionarioInicio } from "@/entities/paciente/ui/CuestionarioInicio";
 import { GraficoEvolucion } from "@/entities/paciente/ui/GraficoEvolucion";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import { Search, Loader2, FileText, FileDown } from "lucide-react";
 import { useObtenerProgresoEscala } from "@/entities/paciente/api/useObtenerProgresoEscala";
 import AnalisDemuca from "@/entities/paciente/ui/AnalisDemuca";
 import { EriCimTablas } from "@/entities/paciente/ui/EriCimTablas";
 import { HistorialSesiones } from "@/entities/sesion/ui/HistorialSesiones";
 import { useObtenerProgresoSubEscala } from "@/entities/paciente/api/useObtenerProgresoSubEscala";
-import { useCiclos } from "@/entities/sesion";
+import {
+  useCiclos,
+  useSesionDetalles,
+  mapearSesionADTO,
+  generarSesionDetalladaPDF,
+  generarSesionDetalladaWord,
+} from "@/entities/sesion";
 import type { FormularioClinicoDataSchema } from "@/features/gestion-paciente/model/FormularioClinicoData.schema";
 
 type SessionData = Record<string, unknown> & {
@@ -123,6 +129,26 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
+  // Detalle y exportación de sesión única
+  const [selectedSessionForDetails, setSelectedSessionForDetails] = useState<SessionData | null>(null);
+  const [selectedSessionForExport, setSelectedSessionForExport] = useState<SessionData | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  const { obtenerSesion, cargando: cargandoDetalles, sesion: sesionDetallada } = useSesionDetalles();
+
+  const handleViewSessionDetails = (session: any) => {
+    setSelectedSessionForDetails(session);
+    setShowDetailsModal(true);
+    obtenerSesion({ variables: { id: session.id || String(session.databaseId) } });
+  };
+
+  const handleExportSession = (session: any) => {
+    setSelectedSessionForExport(session);
+    setShowExportModal(true);
+    obtenerSesion({ variables: { id: session.id || String(session.databaseId) } });
+  };
+
   const { updateClinicalNotes, loading: updatingNotes } =
     useActualizarNotasClinicas();
 
@@ -174,7 +200,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
         assignmentId = newId;
       }
 
-      await submitFullForm({ assignmentId, responses });
+      await submitFullForm({ assignmentId: assignmentId as string, responses });
       setMostrarCuestionario(false);
       toast.success("Cuestionario guardado correctamente");
     } catch (error: any) {
@@ -182,7 +208,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     }
   };
 
-  const handleViewAIAnalysis = (sessionId: number, mode: "list" | "charts") => {
+  const handleViewAIAnalysis = (sessionId: string | number, mode: "list" | "charts") => {
     setSelectedSessionForAI(String(sessionId));
     setAiViewMode(mode);
   };
@@ -354,6 +380,8 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
           setSessionToDelete(String(sessionId));
           setShowDeleteSessionConfirm(true);
         }}
+        onViewDetails={handleViewSessionDetails}
+        onExport={handleExportSession}
       />
 
       {/* Modal: Actualizar Información Clínica */}
@@ -505,6 +533,275 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
         message="¿Estás seguro de que deseas eliminar este registro de sesión? Esta acción no se puede deshacer."
         confirmLabel="Eliminar Sesión"
       />
+
+      {/* Modal: Ver Detalles de Sesión */}
+      <Modal
+        isOpen={showDetailsModal}
+        onClose={() => {
+          setShowDetailsModal(false);
+          setSelectedSessionForDetails(null);
+        }}
+        title={`Detalles de Sesión #${selectedSessionForDetails?.sessionNumber || ""}`}
+        maxWidth="max-w-4xl"
+      >
+        {cargandoDetalles ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <Loader2 className="animate-spin text-[#008080]" size={36} />
+            <p className="text-sm font-bold text-gray-400 uppercase tracking-widest font-sans">
+              Cargando información detallada...
+            </p>
+          </div>
+        ) : sesionDetallada ? (
+          <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+            {/* Información General */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/50 dark:border-zinc-800">
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">Paciente</span>
+                <span className="text-sm font-semibold dark:text-white font-sans">{paciente?.fullName || paciente?.name || "—"}</span>
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">Fecha</span>
+                <span className="text-sm font-semibold dark:text-white font-sans">
+                  {sesionDetallada.sessionDate ? new Date(sesionDetallada.sessionDate).toLocaleDateString("es-ES") : "—"}
+                </span>
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">Duración</span>
+                <span className="text-sm font-semibold dark:text-white font-sans">{sesionDetallada.durationMinutes || 0} min</span>
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">Terapeuta</span>
+                <span className="text-sm font-semibold dark:text-white font-sans">{sesionDetallada.therapist?.fullname || "No asignado"}</span>
+              </div>
+            </div>
+
+            {/* Notas Clínicas */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#008080] font-sans">
+                Notas Clínicas
+              </h4>
+              <div className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80">
+                <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed whitespace-pre-line font-sans">
+                  {sesionDetallada.notes || "No hay observaciones registradas."}
+                </p>
+              </div>
+            </div>
+
+            {/* Recursos y Materiales */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Recursos Digitales */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#008080] font-sans">Recursos Digitales</h4>
+                <div className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 min-h-[60px] flex flex-wrap gap-2 items-center">
+                  {sesionDetallada.sessionResources && sesionDetallada.sessionResources.length > 0 ? (
+                    sesionDetallada.sessionResources.map((r: any, idx: number) => (
+                      <span key={idx} className="text-xs bg-teal-500/10 text-[#008080] px-2.5 py-1 rounded-full font-medium font-sans">
+                        {r.resource?.title || "Recurso"}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-400 italic font-sans">Ninguno</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Materiales Aula */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#008080] font-sans">Materiales del Aula</h4>
+                <div className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 min-h-[60px] flex flex-wrap gap-2 items-center">
+                  {sesionDetallada.sessionInventory && sesionDetallada.sessionInventory.length > 0 ? (
+                    sesionDetallada.sessionInventory.map((i: any, idx: number) => (
+                      <span key={idx} className="text-xs bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 px-2.5 py-1 rounded-full font-medium font-sans">
+                        {i.item?.name || "Material"}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-400 italic font-sans">Ninguno</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Planificación de la Sesión */}
+            {sesionDetallada.sessionPlanSteps && sesionDetallada.sessionPlanSteps.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#008080] font-sans">Planificación y Pasos</h4>
+                <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-zinc-800">
+                  <table className="w-full text-left text-xs border-collapse font-sans">
+                    <thead>
+                      <tr className="bg-slate-100 dark:bg-zinc-800/60 text-slate-500 dark:text-zinc-400 font-bold border-b border-slate-200 dark:border-zinc-800">
+                        <th className="p-3">Momento</th>
+                        <th className="p-3">Objetivo</th>
+                        <th className="p-3">Método MLT</th>
+                        <th className="p-3 text-center">Duración</th>
+                        <th className="p-3 text-center">Completado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sesionDetallada.sessionPlanSteps.map((s: any) => (
+                        <tr key={s.id} className="border-b last:border-0 border-slate-200/60 dark:border-zinc-800/60 hover:bg-slate-50/50 dark:hover:bg-zinc-800/20">
+                          <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300">{s.planStep?.moment || "—"}</td>
+                          <td className="p-3 text-gray-500 dark:text-zinc-400">{s.planStep?.objective || "—"}</td>
+                          <td className="p-3 text-gray-500 dark:text-zinc-400">{s.planStep?.mltMethod || "—"}</td>
+                          <td className="p-3 text-center text-gray-500 dark:text-zinc-400">
+                            {s.actualDuration || 0} / {s.planStep?.durationMinutes || 0} min
+                          </td>
+                          <td className="p-3 text-center">
+                            {s.isCompleted ? (
+                              <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full font-sans">Sí</span>
+                            ) : (
+                              <span className="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full font-sans">No</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Evaluaciones Clínicas */}
+            {sesionDetallada.scaleEvaluations && sesionDetallada.scaleEvaluations.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#008080] font-sans">Evaluaciones Realizadas</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {sesionDetallada.scaleEvaluations.map((evalData: any) => (
+                    <div key={evalData.id} className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 space-y-2">
+                      <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800/60 pb-2">
+                        <span className="text-sm font-bold dark:text-white font-sans">{evalData.scale?.name || "Escala"}</span>
+                        <span className="text-xs font-extrabold text-[#008080] bg-teal-500/10 px-2 py-1 rounded-full font-sans">
+                          Puntuación: {evalData.totalScore}/10
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-1 pt-1">
+                        {evalData.subscaleResponses && evalData.subscaleResponses.map((r: any, idx: number) => (
+                          <div key={idx} className="flex justify-between text-xs text-gray-500 font-sans">
+                            <span>{r.subscale?.name || "Subescala"}</span>
+                            <span className="font-semibold">{r.score} (máx: {r.subscale?.maxValue || 10})</span>
+                          </div>
+                        ))}
+                        {evalData.valueResponses && evalData.valueResponses.map((v: any, idx: number) => (
+                          <div key={idx} className="flex justify-between text-xs text-gray-500 font-sans">
+                            <span>{v.scaleValue?.label || "Indicador"}</span>
+                            <span className="font-semibold">{v.scaleValue?.value || "—"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Formularios Clínicos */}
+            {sesionDetallada.formAssignments && sesionDetallada.formAssignments.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#008080] font-sans">Cuestionarios y Formularios</h4>
+                <div className="space-y-3">
+                  {sesionDetallada.formAssignments.map((formAssign: any, assignIdx: number) => (
+                    <div key={assignIdx} className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 space-y-3">
+                      <div className="border-b border-slate-200 dark:border-zinc-800/60 pb-2 flex justify-between items-center">
+                        <span className="text-xs font-bold text-gray-400 font-sans">Respuestas del Cuestionario</span>
+                        <span className="text-[10px] font-bold text-[#008080] bg-teal-500/10 px-2 py-0.5 rounded-full font-sans">
+                          {Math.round(formAssign.completionRatio * 100)}% Completado
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        {formAssign.responses && formAssign.responses.map((r: any, idx: number) => (
+                          <div key={idx} className="space-y-1">
+                            <p className="text-xs font-bold text-slate-700 dark:text-zinc-300 font-sans">Q: {r.question?.question}</p>
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 pl-3 border-l-2 border-slate-200 dark:border-zinc-800 italic font-sans">
+                              R: {r.response || "—"}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-center text-gray-500 py-8 font-sans">
+            No se pudo cargar la información de la sesión.
+          </p>
+        )}
+      </Modal>
+
+      {/* Modal: Exportar Informe de Sesión */}
+      <Modal
+        isOpen={showExportModal}
+        onClose={() => {
+          setShowExportModal(false);
+          setSelectedSessionForExport(null);
+        }}
+        title="Exportar Informe de Sesión"
+        maxWidth="max-w-md"
+      >
+        {cargandoDetalles ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <Loader2 className="animate-spin text-[#008080]" size={36} />
+            <p className="text-sm font-bold text-gray-400 uppercase tracking-widest font-sans">
+              Preparando datos de exportación...
+            </p>
+          </div>
+        ) : sesionDetallada ? (
+          <div className="space-y-6 py-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center leading-relaxed font-sans">
+              Selecciona el formato en el que deseas exportar el informe detallado de la **Sesión #{sesionDetallada.sessionNumber}**.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={async () => {
+                  try {
+                    const dto = mapearSesionADTO(sesionDetallada, paciente?.fullName || paciente?.name || "");
+                    const doc = await generarSesionDetalladaPDF(dto);
+                    doc.save(`informe_sesion_${sesionDetallada.sessionNumber}_${Date.now()}.pdf`);
+                    toast.success("PDF generado correctamente");
+                  } catch (error) {
+                    console.error(error);
+                    toast.error("Error al generar PDF");
+                  }
+                }}
+                className="flex flex-col items-center gap-3 p-6 bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 rounded-2xl border border-slate-200 dark:border-zinc-700/60 hover:scale-105 transition-all text-[#008080]"
+              >
+                <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center">
+                  <FileText size={24} />
+                </div>
+                <span className="text-sm font-bold font-sans">Exportar PDF</span>
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const dto = mapearSesionADTO(sesionDetallada, paciente?.fullName || paciente?.name || "");
+                    await generarSesionDetalladaWord(dto, `informe_sesion_${sesionDetallada.sessionNumber}`);
+                    toast.success("Documento Word generado correctamente");
+                  } catch (error) {
+                    console.error(error);
+                    toast.error("Error al generar Word");
+                  }
+                }}
+                className="flex flex-col items-center gap-3 p-6 bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 rounded-2xl border border-slate-200 dark:border-zinc-700/60 hover:scale-105 transition-all text-blue-500"
+              >
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                  <FileDown size={24} />
+                </div>
+                <span className="text-sm font-bold font-sans">Exportar Word</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-gray-500 py-8 font-sans">
+            No se pudo cargar la información de la sesión para exportar.
+          </p>
+        )}
+      </Modal>
     </div>
   );
 }

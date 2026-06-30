@@ -148,7 +148,7 @@ export const useCreateCycle = () => {
         startDate,
         numSessions,
       },
-    });
+    }) as Promise<any>;
   };
 
   return { createCycle, creando: loading };

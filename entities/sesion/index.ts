@@ -12,3 +12,7 @@ export * from "./api/useActualizarSesion";
 export * from "./model/useSesionActiva";
 export * from "./lib/exportar-pdf";
 export * from "./lib/exportar-excel";
+export * from "./api/useSesionDetalles";
+export * from "./lib/mapeador";
+export * from "./lib/exportar-sesion-pdf";
+export * from "./lib/exportar-sesion-word";
