@@ -6,16 +6,37 @@ import { OBTENER_EVALUACIONES } from "./consultas";
 import type { ObtenerEvaluacionesQuery } from "@/shared/api/generated/graphql";
 import type { Evaluacion } from "../model/tipos";
 
-export function useEvaluaciones(patientId?: string) {
+interface UseEvaluacionesParams {
+  patientId?: string;
+  scaleId?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export function useEvaluaciones(params?: UseEvaluacionesParams) {
+  const {
+    patientId,
+    scaleId,
+    page = 1,
+    pageSize = 10,
+  } = params ?? {};
+
   const { data, loading, error, refetch } =
     useQuery<ObtenerEvaluacionesQuery>(OBTENER_EVALUACIONES, {
-      variables: { patientId: patientId || undefined },
+      variables: {
+        patientId: patientId || undefined,
+        scaleId: scaleId || undefined,
+        page,
+        pageSize,
+      },
       notifyOnNetworkStatusChange: true,
     });
 
+  const paginated = data?.scaleEvaluations;
+
   const evaluaciones: Evaluacion[] = useMemo(
     () =>
-      (data?.scaleEvaluations ?? [])
+      (paginated?.results ?? [])
         .filter((e): e is NonNullable<typeof e> => e != null)
         .map((e) => ({
           id: e.id,
@@ -36,11 +57,14 @@ export function useEvaluaciones(patientId?: string) {
             subscaleName: r.subescala?.nombre ?? "",
           })),
         })),
-    [data],
+    [paginated],
   );
 
   return {
     evaluaciones,
+    total: paginated?.totalCount ?? 0,
+    currentPage: paginated?.currentPage ?? 1,
+    totalPages: paginated?.totalPages ?? 1,
     cargando: loading,
     error,
     refetch,

@@ -256,22 +256,25 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
   const informeClinicoData = useMemo((): InformeClinicoDTO[] => {
     if (!paciente) return [];
 
+    const eriResults = dataEri?.scaleEvaluations?.results ?? [];
+    const cimResults = dataCIM?.scaleEvaluations?.results ?? [];
+
     const escalas: InformeClinicoDTO["escalas"] = [];
-    if (dataEri?.scaleEvaluations?.length) {
+    if (eriResults.length) {
       escalas.push({
         nombre: "ERI",
         etiqueta: "Escala de Regulación Emocional",
-        puntuaciones: dataEri.scaleEvaluations.map((e: any) => ({
+        puntuaciones: eriResults.map((e: any) => ({
           sesion: new Date(e.evaluatedAt).toLocaleDateString("es-ES"),
           valor: e.totalScore,
         })),
       });
     }
-    if (dataCIM?.scaleEvaluations?.length) {
+    if (cimResults.length) {
       escalas.push({
         nombre: "CIM",
         etiqueta: "Cambio en la Identidad Musical",
-        puntuaciones: dataCIM.scaleEvaluations.map((e: any) => ({
+        puntuaciones: cimResults.map((e: any) => ({
           sesion: new Date(e.evaluatedAt).toLocaleDateString("es-ES"),
           valor: e.totalScore,
         })),
@@ -346,11 +349,9 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     [],
   );
 
-  // Agrupamos de forma segura. Si alguno no ha cargado, enviamos matriz vacía [].
-  const datosEscalas =
-    dataEri?.scaleEvaluations && dataCIM?.scaleEvaluations
-      ? [dataEri.scaleEvaluations, dataCIM.scaleEvaluations]
-      : [];
+  const eriData = dataEri?.scaleEvaluations?.results ?? [];
+  const cimData = dataCIM?.scaleEvaluations?.results ?? [];
+  const datosEscalas = [eriData, cimData];
 
   return (
     <div className="space-y-8">
@@ -380,7 +381,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
             <span className="text-purple-500 italic"> General</span>
           </h2>
         </div>
-        <AnalisDemuca dataDemuca={dataDemuca!} />
+        <AnalisDemuca dataDemuca={dataDemuca ?? []} />
       </div>
 
       {/*<EriCimTablas eriData={dataEri?.scaleEvaluations} cimData={dataCIM?.scaleEvaluations}/>*/}

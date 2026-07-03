@@ -64,7 +64,7 @@ export function EvaluationForm({
 
       <SearchableSelect 
         label="Escala de Evaluación"
-        options={evaluationScales.map(scale => ({ label: scale.name, value: scale.id.toString() }))}
+        options={evaluationScales.map(scale => ({ label: scale.nombre ?? scale.name, value: String(scale.id) }))}
         value={selectedScaleId?.toString() || ''}
         onChange={handleScaleChange}
         placeholder="Seleccionar Escala..."
@@ -72,26 +72,26 @@ export function EvaluationForm({
 
       {selectedScaleId && (
         <div className="p-6 bg-gray-50 dark:bg-white/2 rounded-3xl border border-gray-100 dark:border-white/5 space-y-4">
-          {currentScale?.scaleType.toLowerCase() === 'subscale' ? (
+          {(currentScale?.tipoEscala ?? currentScale?.scaleType)?.toLowerCase() === 'subscale' ? (
             <>
               <p className="text-xs font-bold text-[#008080] uppercase tracking-widest mb-4">Puntuación por Subescalas</p>
               <div className="grid gap-4">
-                {currentScale.subscales?.map((sub: any) => (
+                {(currentScale.subescalas ?? currentScale.subscales ?? [])?.map((sub: any) => (
                   <div key={sub.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
                     <div className="flex-1">
-                      <p className="text-xs font-bold dark:text-white">{sub.name}</p>
-                      <p className="text-[10px] text-gray-400">{sub.description}</p>
+                      <p className="text-xs font-bold dark:text-white">{sub.nombre ?? sub.name}</p>
+                      <p className="text-[10px] text-gray-400">{sub.descripcion ?? sub.description}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <input 
                         type="number"
-                        max={sub.maxValue}
+                        max={sub.valorMaximo ?? sub.maxValue}
                         min={0}
                         value={subscaleScores[sub.id] || 0}
                         onChange={(e) => handleSubscaleScoreChange(sub.id, parseInt(e.target.value) || 0)}
                         className="w-20 px-3 py-1.5 bg-gray-50 dark:bg-white/5 rounded-lg border-transparent focus:border-[#008080] outline-none text-xs dark:text-white text-center"
                       />
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">/ {sub.maxValue}</span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase">/ {sub.valorMaximo ?? sub.maxValue}</span>
                     </div>
                   </div>
                 ))}
@@ -101,19 +101,19 @@ export function EvaluationForm({
             <div className="space-y-4">
               <p className="text-xs font-bold text-[#008080] uppercase tracking-widest mb-4">Seleccionar Valor</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {currentScale?.values?.map((val: any) => (
+                {(currentScale?.valores ?? currentScale?.values ?? [])?.map((val: any) => (
                   <button
                     key={val.id}
                     type="button"
-                    onClick={() => setNewEval((prev: any) => ({ ...prev, score: val.value }))}
+                    onClick={() => setNewEval((prev: any) => ({ ...prev, score: val.valor ?? val.value }))}
                     className={`p-4 rounded-2xl border transition-all text-center ${
-                      newEval.score === val.value 
+                      newEval.score === (val.valor ?? val.value)
                         ? 'bg-[#008080] text-white border-[#008080] shadow-md' 
                         : 'bg-white dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-600 dark:text-gray-400 hover:border-[#008080]'
                     }`}
                   >
-                    <p className="text-xl font-bold mb-1">{val.value}</p>
-                    <p className="text-[10px] font-bold uppercase tracking-widest">{val.label}</p>
+                    <p className="text-xl font-bold mb-1">{val.valor ?? val.value}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest">{val.etiqueta ?? val.label}</p>
                   </button>
                 ))}
               </div>

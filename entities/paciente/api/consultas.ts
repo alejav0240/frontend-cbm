@@ -109,10 +109,12 @@ export const OBTENER_DETALLES_PACIENTE = gql`
 export const OBTENER_PROGRESO_DE_ESCALA = gql`
   query EscaleERI($patientId: ID, $scaleId: ID) {
     scaleEvaluations(patientId: $patientId, scaleId: $scaleId) {
-      evaluatedAt
-      totalScore
-      inSession
-      id
+      results {
+        evaluatedAt
+        totalScore
+        inSession
+        id
+      }
     }
   }
 `;
@@ -120,14 +122,16 @@ export const OBTENER_PROGRESO_DE_ESCALA = gql`
 export const OBTENER_PROGRESO_SUBESCALA = gql`
   query EscalaDEMUCA($patientId: ID, $scaleId: ID) {
     scaleEvaluations(patientId: $patientId, scaleId: $scaleId) {
-      id
-      inSession
-      subscaleResponses {
+      results {
         id
-        score
-        subscale {
-          name
-          category
+        inSession
+        subscaleResponses {
+          id
+          score
+          subscale {
+            name
+            category
+          }
         }
       }
     }

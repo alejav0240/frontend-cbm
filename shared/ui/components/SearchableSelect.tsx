@@ -6,10 +6,14 @@ import { Search, ChevronDown, CheckCircle2 } from "lucide-react";
 
 type SelectOption = string | { label: string; value: string; color?: string };
 
-const getLabel = (option: SelectOption) =>
-  typeof option === "string" ? option : option.label;
-const getValue = (option: SelectOption) =>
-  typeof option === "string" ? option : option.value;
+const getLabel = (option: SelectOption) => {
+  if (typeof option === "string") return option;
+  return option.label ?? "";
+};
+const getValue = (option: SelectOption) => {
+  if (typeof option === "string") return option;
+  return option.value ?? "";
+};
 const getColor = (option: SelectOption) =>
   typeof option === "string" ? undefined : option.color;
 

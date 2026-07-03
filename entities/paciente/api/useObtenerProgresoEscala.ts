@@ -14,7 +14,7 @@ export interface ProgresoEscala {
 }
 
 interface ResponseProgresoEscala {
-  scaleEvaluations: ProgresoEscala[];
+  scaleEvaluations: { results: ProgresoEscala[] };
 }
 
 export function useObtenerProgresoEscala({ patientId, escalaId }: PropsEscala) {

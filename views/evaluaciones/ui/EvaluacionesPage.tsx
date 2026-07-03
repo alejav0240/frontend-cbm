@@ -7,13 +7,26 @@ import { EvaluationsHeader } from "./components/EvaluationsHeader";
 import { EvaluationCard } from "./components/EvaluationCard";
 import { EvaluationDetailsModal } from "./components/EvaluationDetailsModal";
 import { EvaluationForm } from "./components/EvaluationForm";
+import { EvaluationsFilters } from "./components/EvaluationsFilters";
+import { EvaluationsStats } from "./components/EvaluationsStats";
 import { useEvaluaciones, useEscalas, useAgregarEscalaSesion } from "@/entities/escalas";
 import { useBuscarPacientes } from "@/entities/paciente";
 import { useAuthStore } from "@/shared/model/useAuthStore";
+import { Pagination } from "@/shared/ui/Pagination";
 import Modal from "@/shared/ui/components/Modal";
 
 export const EvaluacionesPage = () => {
-  const { evaluaciones, cargando, refetch } = useEvaluaciones();
+  const [search, setSearch] = useState("");
+  const [scaleFilter, setScaleFilter] = useState("");
+  const [page, setPage] = useState(1);
+
+  const { evaluaciones, total, currentPage, totalPages, cargando, refetch } =
+    useEvaluaciones({
+      scaleId: scaleFilter || undefined,
+      page,
+      pageSize: 10,
+    });
+
   const { escalas } = useEscalas();
   const { usuario } = useAuthStore();
   const { options: patientOptions, onSearch: onSearchPatient, buscando } =
@@ -22,6 +35,19 @@ export const EvaluacionesPage = () => {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedEval, setSelectedEval] = useState<any>(null);
+
+  const filteredEvaluaciones = useMemo(
+    () =>
+      !search.trim()
+        ? evaluaciones
+        : evaluaciones.filter(
+            (ev) =>
+              ev.patientName
+                .toLowerCase()
+                .includes(search.toLowerCase().trim()),
+          ),
+    [evaluaciones, search],
+  );
 
   const handleViewDetails = useCallback(
     (ev: any) => {
@@ -130,7 +156,6 @@ export const EvaluacionesPage = () => {
   const handleExport = useCallback(
     (evaluation: any) => (e: React.MouseEvent) => {
       e.stopPropagation();
-      console.log("Exportar evaluación:", evaluation.id);
       toast.success("Exportación iniciada");
     },
     [],
@@ -144,7 +169,29 @@ export const EvaluacionesPage = () => {
     [selectedScaleId, escalas],
   );
 
-  if (cargando) {
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearch(value);
+    },
+    [],
+  );
+
+  const handleScaleFilterChange = useCallback(
+    (value: string) => {
+      setScaleFilter(value);
+      setPage(1);
+    },
+    [],
+  );
+
+  const handlePageChange = useCallback(
+    (p: number) => {
+      setPage(p);
+    },
+    [],
+  );
+
+  if (cargando && evaluaciones.length === 0) {
     return (
       <div className="flex justify-center py-24">
         <Loader2 className="animate-spin text-[#008080]" size={36} />
@@ -156,35 +203,62 @@ export const EvaluacionesPage = () => {
     <div className="space-y-8">
       <EvaluationsHeader onCreateClick={() => setShowCreateModal(true)} />
 
-      {evaluaciones.length === 0 ? (
+      <EvaluationsStats evaluaciones={evaluaciones} total={total} />
+
+      <EvaluationsFilters
+        total={total}
+        search={search}
+        onSearchChange={handleSearchChange}
+        scaleId={scaleFilter}
+        onScaleChange={handleScaleFilterChange}
+        scales={escalas as any[]}
+      />
+
+      {filteredEvaluaciones.length === 0 ? (
         <div className="bg-white dark:bg-[#111] rounded-[32px] border border-gray-200 dark:border-white/5 p-12 text-center">
           <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 mx-auto mb-6">
             <ClipboardList size={40} />
           </div>
           <h2 className="text-xl font-bold dark:text-white mb-2">
-            Módulo de Evaluaciones
+            {search || scaleFilter
+              ? "Sin resultados"
+              : "Módulo de Evaluaciones"}
           </h2>
           <p className="text-gray-400 max-w-md mx-auto">
-            No hay evaluaciones registradas aún. Crea la primera para comenzar.
+            {search
+              ? `No se encontraron evaluaciones que coincidan con "${search}"`
+              : scaleFilter
+                ? "No hay evaluaciones con el filtro seleccionado"
+                : "No hay evaluaciones registradas aún. Crea la primera para comenzar."}
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {evaluaciones.map((ev, idx) => (
-            <EvaluationCard
-              key={ev.id}
-              evaluation={{
-                ...ev,
-                patient: ev.patientName,
-                status: "Completada",
-                score: ev.score ?? 0,
-              }}
-              onView={() => handleViewDetails(ev)}
-              onExport={handleExport(ev)}
-              idx={idx}
+        <>
+          <div className="space-y-4">
+            {filteredEvaluaciones.map((ev, idx) => (
+              <EvaluationCard
+                key={ev.id}
+                evaluation={{
+                  ...ev,
+                  patient: ev.patientName,
+                  status: "Completada",
+                  score: ev.score ?? 0,
+                }}
+                onView={() => handleViewDetails(ev)}
+                onExport={handleExport(ev)}
+                idx={idx}
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 && !search && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
             />
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       <Modal

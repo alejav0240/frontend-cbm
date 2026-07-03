@@ -21,7 +21,7 @@ export interface ProgresoSubEscala {
 }
 
 interface ResponseProgresoSubEscala {
-  scaleEvaluations: ProgresoSubEscala[];
+  scaleEvaluations: { results: ProgresoSubEscala[] };
 }
 
 export function useObtenerProgresoSubEscala({
@@ -40,7 +40,7 @@ export function useObtenerProgresoSubEscala({
   );
 
   return {
-    data: data?.scaleEvaluations,
+    data: data?.scaleEvaluations.results,
     loading,
     error,
     refetch,
