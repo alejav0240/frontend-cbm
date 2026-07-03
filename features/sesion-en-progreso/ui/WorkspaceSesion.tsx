@@ -10,7 +10,7 @@ import {EvaluationTab} from "@/features/sesion-en-progreso/ui/EvaluacionTab";
 
 interface WorkspaceSesionProps {
     tabActiva: "plan" | "notas" | "recursos" | "escalas";
-    setTabActiva: (tab: "plan" | "notas" | "recursos" | "evaluacion") => void;
+    setTabActiva: (tab: "plan" | "notas" | "recursos" | "escalas") => void;
     notas: string;
     alCambiarNotas: (notas: string) => void;
     timer: number;

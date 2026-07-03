@@ -87,13 +87,16 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
 
   const asignacion = asignaciones?.[0];
 
-  const valoresIniciales =
-    asignacion?.responses?.reduce<Record<string, string>>((acc, r) => {
-      if (r?.question?.id && r?.response) {
-        acc[r.question.id] = r.response;
-      }
-      return acc;
-    }, {}) ?? {};
+  const valoresIniciales: Record<string, string> =
+    asignacion?.originalData?.responses?.reduce(
+      (acc: Record<string, string>, r: { question?: { id: string }; response?: string }) => {
+        if (r?.question?.id && r?.response) {
+          acc[r.question.id] = r.response;
+        }
+        return acc;
+      },
+      {},
+    ) ?? {};
 
   const [formValues, setFormValues] =
     useState<Record<string, string>>(valoresIniciales);

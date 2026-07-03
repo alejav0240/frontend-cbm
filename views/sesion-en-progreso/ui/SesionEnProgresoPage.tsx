@@ -79,7 +79,7 @@ const MAPA_TIPO_ESCALA: Record<string, string> = {
     VALUE_LIST: "values",
 };
 
-type TabId = "plan" | "notas" | "recursos" | "evaluacion";
+type TabId = "plan" | "notas" | "recursos" | "escalas";
 
 type UploadResponse = {
     success: boolean;
@@ -646,7 +646,7 @@ export const SesionEnProgresoPage = () => {
                     "1": "plan",
                     "2": "notas",
                     "3": "recursos",
-                    "4": "evaluacion",
+                    "4": "escalas",
                 };
                 const tab = map[e.key];
                 if (tab) {
@@ -680,7 +680,7 @@ export const SesionEnProgresoPage = () => {
                     "1": "plan",
                     "2": "notas",
                     "3": "recursos",
-                    "4": "evaluacion",
+                    "4": "escalas",
                 };
                 const tab = mapNum[e.key];
                 if (tab) {

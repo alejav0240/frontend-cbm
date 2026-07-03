@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState} from 'react';
-import {useForm} from 'react-hook-form';
+import {useForm, type Resolver} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import Modal from '@/shared/ui/components/Modal';
 import {InputField} from '@/shared/ui/form/InputField';
@@ -34,7 +34,7 @@ export function FormularioCrearEscala({
         formState: {errors},
         reset,
     } = useForm<EscalaFormData>({
-        resolver: zodResolver(esquemaCrearEscala),
+        resolver: zodResolver(esquemaCrearEscala) as unknown as Resolver<EscalaFormData>,
         defaultValues: {
             name: '',
             description: '',
