@@ -9,6 +9,7 @@ export * from "./api/useAgendaSessions";
 export * from "./api/useCrearSesionAgenda";
 export * from "./api/useActualizarEstadoSesion";
 export * from "./api/useActualizarSesion";
+export * from "./api/useEliminarSesion";
 export * from "./model/useSesionActiva";
 export * from "./lib/exportar-pdf";
 export * from "./lib/exportar-excel";

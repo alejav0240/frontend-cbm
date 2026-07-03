@@ -19,6 +19,8 @@ import { useObtenerProgresoSubEscala } from "@/entities/paciente/api/useObtenerP
 import {
   useCiclos,
   useSesionDetalles,
+  useActualizarSesion,
+  useEliminarSesion,
   mapearSesionADTO,
   generarSesionDetalladaPDF,
   generarSesionDetalladaWord,
@@ -139,6 +141,8 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
   const [showExportModal, setShowExportModal] = useState(false);
 
   const { obtenerSesion, cargando: cargandoDetalles, sesion: sesionDetallada } = useSesionDetalles();
+  const { actualizarSesion, actualizando: actualizandoSesion } = useActualizarSesion();
+  const { eliminarSesion, eliminando: eliminandoSesion } = useEliminarSesion();
 
   const handleViewSessionDetails = (session: any) => {
     setSelectedSessionForDetails(session);
@@ -222,17 +226,29 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     setShowEditSessionModal(true);
   };
 
-  const handleSaveSessionEdit = (e: React.FormEvent) => {
+  const handleSaveSessionEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Guardar edición de sesión:", selectedSession?.id, editedNotes);
-    setShowEditSessionModal(false);
-    setSelectedSession(null);
+    if (!selectedSession?.id && !selectedSession?.databaseId) return;
+    const sessionId = selectedSession.id || String(selectedSession.databaseId);
+    try {
+      await actualizarSesion(sessionId, { notes: editedNotes });
+      setShowEditSessionModal(false);
+      setSelectedSession(null);
+      refetch();
+    } catch {
+      // toast ya se maneja en el hook
+    }
   };
 
-  const handleDeleteSession = () => {
-    if (sessionToDelete) {
-      console.log("Eliminar sesión:", sessionToDelete);
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    try {
+      await eliminarSesion(sessionToDelete);
       setSessionToDelete(null);
+      setShowDeleteSessionConfirm(false);
+      refetch();
+    } catch {
+      // toast ya se maneja en el hook
     }
   };
 

@@ -213,6 +213,9 @@ export const OBTENER_CICLOS_PACIENTES = gql`
         status
         sessionCount
         completedCount
+        patient {
+          id
+        }
         paymentSummary {
           paid
           pending

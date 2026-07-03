@@ -6,6 +6,7 @@ import { ObtenerCiclosPacientesQuery } from "@/shared/api/generated/graphql";
 export interface CicloPaciente {
   id: string;
   patientName: string;
+  patientId: string;
   cycleNumber: number;
   startDate: string;
   totalSessions: number;
@@ -23,7 +24,6 @@ export interface CicloPaciente {
     sessionStatus: string;
   }>;
   patientPhone: string;
-  patientId: string;
   therapists: string;
 }
 
@@ -53,6 +53,7 @@ export const useCiclosPacientes = (filtros: CicloPacienteFiltros = {}) => {
       .map((r) => ({
         id: `${r.patientName || "anonimo"}-${r.cycleNumber || 0}`,
         patientName: r.patientName || "",
+        patientId: (r as any).patient?.id || "",
         cycleNumber: r.cycleNumber || 0,
         startDate: r.sessions?.[0]?.sessionDate
           ? new Date(r.sessions[0].sessionDate as string).toLocaleDateString()
@@ -64,7 +65,6 @@ export const useCiclosPacientes = (filtros: CicloPacienteFiltros = {}) => {
         paymentSummary: r.paymentSummary,
         sessionsList: r.sessions?.filter(Boolean) || [],
         patientPhone: "",
-        patientId: "",
         therapists: "N/A",
       }));
   }, [data]);
