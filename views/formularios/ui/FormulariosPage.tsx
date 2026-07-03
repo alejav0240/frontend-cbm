@@ -1,72 +1,186 @@
 "use client";
 
-import React from "react";
-import { FileSearch, Plus, Layout, FormInput, Database } from "lucide-react";
+import React, { useState, useCallback } from "react";
+import { toast } from "sonner";
+import { FormsHeader } from "@/views/formularios/ui/components/FormsHeader";
+import { FormsTabs } from "@/views/formularios/ui/components/FormsTabs";
+import { TemplatesList } from "@/views/formularios/ui/components/TemplatesList";
+import {
+  useAsignacionesFormulario,
+  useFormularios,
+  useCreateForm,
+  useDeleteForm,
+  useAssignForm,
+} from "@/entities/formulario";
+import type {
+  FormTemplate,
+  FormResponse,
+  DatosCrearFormulario,
+  DatosAsignarFormulario,
+} from "@/entities/formulario";
+import { useAuthStore } from "@/shared/model/useAuthStore";
+import { AssignmentsTable } from "@/views/formularios/ui/components/AssignmentsTable";
+import { ResponsesTable } from "@/views/formularios/ui/components/ResponsesTable";
+import { FormCreateModal } from "@/views/formularios/ui/components/FormCreateModal";
+import { FormAssignModal } from "@/views/formularios/ui/components/FormAssignModal";
+import { FormPreviewModal } from "@/views/formularios/ui/components/FormPreviewModal";
+import { ResponseDetailModal } from "@/views/formularios/ui/components/ResponseDetailModal";
 
 export const FormulariosPage = () => {
+  const [activeTab, setActiveTab] = useState<
+    "templates" | "assignments" | "responses"
+  >("templates");
+  const { formularios, refetch: refetchForms } = useFormularios();
+  const { asignaciones, respuestaForm, refetch: refetchAssignments } =
+    useAsignacionesFormulario();
+  const [selectedResponse, setSelectedResponse] =
+    useState<FormResponse | null>(null);
+
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const [showAssign, setShowAssign] = useState<boolean>(false);
+  const [showPreview, setShowPreview] = useState<boolean>(false);
+  const [selectedForm, setSelectedForm] = useState<FormTemplate | null>(null);
+
+  const { usuario } = useAuthStore();
+  const { createForm, creando } = useCreateForm();
+  const { deleteForm } = useDeleteForm();
+  const { assignForm, asignando } = useAssignForm();
+
+  const handleCreateForm = useCallback(
+    async (data: DatosCrearFormulario) => {
+      try {
+        const questions = data.questions.map((q, i) => ({
+          question: q.question,
+          questionType: q.questionType,
+          isRequired: q.isRequired ?? false,
+          orderIndex: i,
+        }));
+        await createForm({
+          name: data.name,
+          description: data.description || null,
+          questions,
+        });
+        toast.success("Formulario creado exitosamente");
+        setShowForm(false);
+        refetchForms();
+      } catch {
+        toast.error("Error al crear el formulario");
+      }
+    },
+    [createForm, refetchForms],
+  );
+
+  const handleAssignForm = useCallback(
+    async (data: DatosAsignarFormulario) => {
+      if (!selectedForm || !usuario) return;
+      try {
+        await assignForm({
+          formId: selectedForm.id,
+          assignedById: usuario.databaseId,
+          assignedToId: null,
+          patientId: null,
+          sessionId: null,
+        });
+        toast.success(`Formulario asignado a rol: ${data.role}`);
+        setShowAssign(false);
+        setSelectedForm(null);
+        refetchAssignments();
+      } catch {
+        toast.error("Error al asignar el formulario");
+      }
+    },
+    [selectedForm, usuario, assignForm, refetchAssignments],
+  );
+
+  const handleDeleteForm = useCallback(
+    async (id: string) => {
+      try {
+        await deleteForm(id);
+        toast.success("Formulario eliminado");
+        refetchForms();
+      } catch {
+        toast.error("Error al eliminar el formulario");
+      }
+    },
+    [deleteForm, refetchForms],
+  );
+
+  const handlePreview = useCallback((form: FormTemplate) => {
+    setSelectedForm(form);
+    setShowPreview(true);
+  }, []);
+
+  const handleAssignClick = useCallback((form: FormTemplate) => {
+    setSelectedForm(form);
+    setShowAssign(true);
+  }, []);
+
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold dark:text-white">
-            Constructor de Formularios
-          </h1>
-          <p className="text-gray-400 text-sm">
-            Gestiona los campos y plantillas de registro clínico
-          </p>
-        </div>
-        <button className="flex items-center gap-2 px-5 py-3 bg-[#008080] text-white rounded-2xl text-sm font-bold shadow-lg">
-          <Plus size={18} />
-          Crear Plantilla
-        </button>
-      </div>
+      <FormsHeader onCreateForm={() => setShowForm(true)} />
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {[
-          {
-            icon: <Layout />,
-            title: "Registro Inicial",
-            count: "12 campos",
-            status: "Activo",
-          },
-          {
-            icon: <FormInput />,
-            title: "Evaluación MLT",
-            count: "45 campos",
-            status: "Activo",
-          },
-          {
-            icon: <Database />,
-            title: "Ficha Familiar",
-            count: "20 campos",
-            status: "Borrador",
-          },
-        ].map((form, idx) => (
-          <div
-            key={idx}
-            className="bg-white dark:bg-[#111] p-8 rounded-[32px] border border-gray-200 dark:border-white/5 hover:border-[#008080] transition-all cursor-pointer group"
-          >
-            <div className="flex justify-between items-start mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-[#008080]/10 flex items-center justify-center text-[#008080]">
-                {form.icon}
-              </div>
-              <span
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                  form.status === "Activo"
-                    ? "bg-green-100 text-green-600"
-                    : "bg-gray-100 text-gray-500"
-                }`}
-              >
-                {form.status}
-              </span>
-            </div>
-            <h3 className="text-lg font-bold dark:text-white mb-1">
-              {form.title}
-            </h3>
-            <p className="text-sm text-gray-400">{form.count}</p>
-          </div>
-        ))}
-      </div>
+      <FormsTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {activeTab === "templates" && (
+        <TemplatesList
+          templates={formularios}
+          onPreview={handlePreview}
+          onAssign={handleAssignClick}
+          onDelete={handleDeleteForm}
+        />
+      )}
+
+      {activeTab === "assignments" && (
+        <AssignmentsTable
+          assignments={asignaciones}
+          templates={formularios}
+          responses={respuestaForm}
+        />
+      )}
+
+      {activeTab === "responses" && (
+        <ResponsesTable
+          responses={respuestaForm}
+          assignments={asignaciones}
+          templates={formularios}
+          onViewDetails={setSelectedResponse}
+        />
+      )}
+
+      <FormCreateModal
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        onSubmit={handleCreateForm}
+        creando={creando}
+      />
+
+      <FormAssignModal
+        isOpen={showAssign}
+        onClose={() => {
+          setShowAssign(false);
+          setSelectedForm(null);
+        }}
+        selectedForm={selectedForm}
+        onAssign={handleAssignForm}
+        asignando={asignando}
+      />
+
+      <FormPreviewModal
+        isOpen={showPreview}
+        onClose={() => {
+          setShowPreview(false);
+          setSelectedForm(null);
+        }}
+        selectedForm={selectedForm}
+      />
+
+      <ResponseDetailModal
+        isOpen={!!selectedResponse}
+        onClose={() => setSelectedResponse(null)}
+        selectedResponse={selectedResponse}
+        assignments={asignaciones}
+        templates={formularios}
+      />
     </div>
   );
 };

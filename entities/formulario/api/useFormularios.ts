@@ -10,8 +10,9 @@ export const useFormularios = () => {
     },
   );
 
+  const forms = data?.forms ?? [];
   return {
-    formularios: data?.forms ?? [],
+    formularios: forms.filter((f): f is NonNullable<typeof f> => f != null),
     cargando: loading,
     error,
     refetch,
