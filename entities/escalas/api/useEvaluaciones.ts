@@ -1,0 +1,48 @@
+"use client";
+
+import { useMemo } from "react";
+import { useQuery } from "@apollo/client/react";
+import { OBTENER_EVALUACIONES } from "./consultas";
+import type { ObtenerEvaluacionesQuery } from "@/shared/api/generated/graphql";
+import type { Evaluacion } from "../model/tipos";
+
+export function useEvaluaciones(patientId?: string) {
+  const { data, loading, error, refetch } =
+    useQuery<ObtenerEvaluacionesQuery>(OBTENER_EVALUACIONES, {
+      variables: { patientId: patientId || undefined },
+      notifyOnNetworkStatusChange: true,
+    });
+
+  const evaluaciones: Evaluacion[] = useMemo(
+    () =>
+      (data?.scaleEvaluations ?? [])
+        .filter((e): e is NonNullable<typeof e> => e != null)
+        .map((e) => ({
+          id: e.id,
+          patientId: e.paciente?.id ?? "",
+          patientName: e.paciente?.fullName ?? "Sin paciente",
+          date: e.fechaEvaluacion
+            ? new Date(e.fechaEvaluacion as string).toLocaleDateString("es-ES")
+            : "—",
+          type: "Completada",
+          score: e.puntajeTotal,
+          status: "Completada",
+          scaleId: e.escala?.id ?? "",
+          scaleName: e.escala?.nombre ?? "",
+          subscaleResponses: (e.respuestasSubescala ?? []).map((r) => ({
+            id: r.id,
+            score: r.puntaje,
+            subscaleId: r.subescala?.id ?? "",
+            subscaleName: r.subescala?.nombre ?? "",
+          })),
+        })),
+    [data],
+  );
+
+  return {
+    evaluaciones,
+    cargando: loading,
+    error,
+    refetch,
+  };
+}
