@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import {gql} from "@apollo/client";
 
 export const CREAR_PAGO = gql`
   mutation CrearPago(
@@ -51,3 +51,25 @@ export const ELIMINAR_PAGO = gql`
     }
   }
 `;
+
+export const CREAR_DESCUENTO = gql`
+mutation CrearDescuento($description: String, $name: String!, $type: String!, $value: Float!) {
+  createDiscount(
+    name: $name
+    type: $type
+    value: $value
+    description: $description
+  ) {
+    discount {
+      name
+    }
+  }
+}`;
+
+export const ELIMINAR_DESCUENTO = gql`
+mutation EliminarDescuento($id: ID!) {
+  deleteDiscount(id: $id) {
+    success
+    message
+  }
+}`;

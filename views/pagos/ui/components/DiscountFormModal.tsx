@@ -1,36 +1,33 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal } from '@/components/ui/Modal';
-import { SearchableSelect } from '@/components/ui/SearchableSelect';
-import { Discount } from '@/types';
-import { toast } from 'sonner';
+import { Modal } from '@/shared/ui/components/Modal';
+import { SearchableSelect } from '@/shared/ui/components/SearchableSelect';
+
+export interface DiscountFormData {
+  name: string;
+  type: 'PERCENTAGE' | 'FIXED';
+  value: number;
+  description?: string | null;
+}
 
 interface DiscountFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (discount: Discount) => void;
+  onAdd: (data: DiscountFormData) => void;
 }
 
 export function DiscountFormModal({ isOpen, onClose, onAdd }: DiscountFormModalProps) {
   const [newDiscount, setNewDiscount] = useState({
     name: '',
-    type: 'percentage' as 'percentage' | 'fixed',
+    type: 'PERCENTAGE' as 'PERCENTAGE' | 'FIXED',
     value: 0,
     description: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const discount: Discount = {
-      ...newDiscount,
-      id: Date.now(),
-      status: 'Activo'
-    };
-    onAdd(discount);
-    onClose();
-    setNewDiscount({ name: '', type: 'percentage', value: 0, description: '' });
-    toast.success('Descuento creado correctamente');
+    onAdd(newDiscount);
   };
 
   return (
@@ -51,8 +48,8 @@ export function DiscountFormModal({ isOpen, onClose, onAdd }: DiscountFormModalP
           <SearchableSelect 
             label="Tipo"
             options={['Porcentaje', 'Monto Fijo']}
-            value={newDiscount.type === 'percentage' ? 'Porcentaje' : 'Monto Fijo'}
-            onChange={(val) => setNewDiscount({...newDiscount, type: val === 'Porcentaje' ? 'percentage' : 'fixed'})}
+            value={newDiscount.type === 'PERCENTAGE' ? 'Porcentaje' : 'Monto Fijo'}
+            onChange={(val) => setNewDiscount({...newDiscount, type: val === 'Porcentaje' ? 'PERCENTAGE' : 'FIXED'})}
           />
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Valor</label>

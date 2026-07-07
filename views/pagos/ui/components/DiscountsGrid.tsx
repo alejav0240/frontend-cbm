@@ -3,11 +3,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Trash2, Percent, DollarSign } from 'lucide-react';
-import { Discount } from '@/types';
+import { Descuento } from '@/entities/pago';
 
 interface DiscountsGridProps {
-  discounts: Discount[];
-  onDelete: (id: number) => void;
+  discounts: Descuento[];
+  onDelete: (id: string) => void;
 }
 
 export function DiscountsGrid({ discounts, onDelete }: DiscountsGridProps) {
@@ -28,13 +28,13 @@ export function DiscountsGrid({ discounts, onDelete }: DiscountsGridProps) {
             <Trash2 size={16} />
           </button>
           <div className="w-12 h-12 rounded-2xl bg-[#008080]/10 flex items-center justify-center text-[#008080] mb-4">
-            {discount.type === 'percentage' ? <Percent size={24} /> : <DollarSign size={24} />}
+            {discount.tipo === 'PERCENTAGE' ? <Percent size={24} /> : <DollarSign size={24} />}
           </div>
-          <h3 className="text-lg font-bold dark:text-white mb-1">{discount.name}</h3>
+          <h3 className="text-lg font-bold dark:text-white mb-1">{discount.nombre}</h3>
           <p className="text-2xl font-bold text-[#008080] mb-3">
-            {discount.type === 'percentage' ? `${discount.value}%` : `Bs. ${discount.value}`}
+            {discount.tipo === 'PERCENTAGE' ? `${discount.valor}%` : `Bs. ${discount.valor}`}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{discount.description}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{discount.descripcion}</p>
         </motion.div>
       ))}
     </div>

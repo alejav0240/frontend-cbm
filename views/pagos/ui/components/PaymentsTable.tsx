@@ -3,12 +3,25 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Trash2, Download } from 'lucide-react';
-import { Payment } from '@/types';
+import { Pago } from '@/entities/pago';
 
 interface PaymentsTableProps {
-  payments: Payment[];
-  onDelete: (id: number) => void;
-  onExportReceipt: (payment: Payment) => void;
+  payments: Pago[];
+  onDelete: (id: string) => void;
+  onExportReceipt: (payment: Pago) => void;
+}
+
+function formatStatus(status: string) {
+  switch (status) {
+    case 'PAID': return 'Pagado';
+    case 'PARTIAL': return 'Parcial';
+    case 'PENDING': return 'Pendiente';
+    default: return status;
+  }
+}
+
+function formatDate(date: Date | string) {
+  return new Intl.DateTimeFormat('es-ES').format(new Date(date));
 }
 
 export function PaymentsTable({ payments, onDelete, onExportReceipt }: PaymentsTableProps) {
@@ -19,7 +32,6 @@ export function PaymentsTable({ payments, onDelete, onExportReceipt }: PaymentsT
           <thead>
             <tr className="bg-gray-50/50 dark:bg-white/2 border-b border-gray-100 dark:border-white/5">
               <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Paciente</th>
-              <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Tipo</th>
               <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Monto</th>
               <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Fecha</th>
               <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Estado</th>
@@ -36,29 +48,26 @@ export function PaymentsTable({ payments, onDelete, onExportReceipt }: PaymentsT
                 transition={{ delay: idx * 0.05 }}
                 className="hover:bg-gray-50/80 dark:hover:bg-white/2 transition-colors group"
               >
-                <td className="px-8 py-5 text-sm dark:text-white font-bold group-hover:text-[#008080] transition-colors">{payment.patientName}</td>
-                <td className="px-8 py-5">
-                  <span className="px-3 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 text-[10px] font-bold rounded-lg uppercase tracking-widest">
-                    {payment.type}
-                  </span>
-                </td>
+                <td className="px-8 py-5 text-sm dark:text-white font-bold group-hover:text-[#008080] transition-colors">{payment.paciente.fullName}</td>
                 <td className="px-8 py-5 text-sm font-bold dark:text-white">
                   <div className="flex flex-col">
-                    <span>Bs. {payment.amount}</span>
-                    {payment.originalAmount && payment.originalAmount !== payment.amount && (
-                      <span className="text-[10px] text-gray-400 line-through">Bs. {payment.originalAmount}</span>
+                    <span>Bs. {payment.montoTotal}</span>
+                    {payment.deuda > 0 && (
+                      <span className="text-[10px] text-red-400">Deuda: Bs. {payment.deuda}</span>
                     )}
                   </div>
                 </td>
-                <td className="px-8 py-5 text-sm text-gray-500 dark:text-gray-400">{payment.date}</td>
+                <td className="px-8 py-5 text-sm text-gray-500 dark:text-gray-400">{formatDate(payment.fechaPago)}</td>
                 <td className="px-8 py-5">
                   <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                    payment.status === 'Pagado' ? 'bg-green-100 text-green-600 dark:bg-green-500/10' : 'bg-orange-100 text-orange-600 dark:bg-orange-500/10'
+                    payment.estadoPago === 'PAID' ? 'bg-green-100 text-green-600 dark:bg-green-500/10' :
+                    payment.estadoPago === 'PARTIAL' ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/10' :
+                    'bg-red-100 text-red-600 dark:bg-red-500/10'
                   }`}>
-                    {payment.status}
+                    {formatStatus(payment.estadoPago)}
                   </span>
                 </td>
-                <td className="px-8 py-5 text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">{payment.method}</td>
+                <td className="px-8 py-5 text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">{payment.metodoPago}</td>
                 <td className="px-8 py-5">
                   <div className="flex gap-2">
                     <button 

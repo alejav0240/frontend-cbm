@@ -1,9 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal } from '@/components/ui/Modal';
-import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { Modal } from '@/shared/ui/components/Modal';
+import { SearchableSelect } from '@/shared/ui/components/SearchableSelect';
+import { Descuento } from '@/entities/pago';
 import { toast } from 'sonner';
+
+export interface PaymentFormData {
+  patientId: string;
+  sessionsCount: number;
+  pricePerSession: number;
+  amountPaid: number;
+  paymentMethod: string;
+  discountId?: string | null;
+}
 
 interface PaymentFormModalProps {
   isOpen: boolean;
@@ -11,8 +21,8 @@ interface PaymentFormModalProps {
   isLoadingPatients?: boolean;
   patientOptions: { label: string; value: string }[];
   onSearchPatient: (term: string) => void;
-  discounts: any[];
-  onAdd: (paymentData: any) => void;
+  discounts: Descuento[];
+  onAdd: (paymentData: PaymentFormData) => void;
 }
 
 export function PaymentFormModal({ 
@@ -39,10 +49,11 @@ export function PaymentFormModal({
     const discount = discounts.find(d => d.id === discountId);
     if (!discount) return base;
 
-    if (discount.type === 'percentage') {
-      return base * (1 - discount.value / 100);
+    const valor = Number(discount.valor);
+    if (discount.tipo === 'PERCENTAGE') {
+      return base * (1 - valor / 100);
     } else {
-      return Math.max(0, base - discount.value);
+      return Math.max(0, base - valor);
     }
   };
 
@@ -102,7 +113,7 @@ export function PaymentFormModal({
         <div className="grid grid-cols-2 gap-6">
           <SearchableSelect 
             label="Descuento Aplicado"
-            options={[{ label: 'Ninguno', value: '' }, ...discounts.map(d => ({ label: d.name, value: d.id }))]}
+            options={[{ label: 'Ninguno', value: '' }, ...discounts.map(d => ({ label: d.nombre, value: d.id }))]}
             value={newPayment.discountId || ''}
             onChange={(val) => setNewPayment({...newPayment, discountId: val || undefined})}
           />

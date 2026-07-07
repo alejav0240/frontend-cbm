@@ -1,16 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Payment } from '@/types';
+import { Pago } from '@/entities/pago';
 
 interface PaymentsStatsProps {
-  payments: Payment[];
+  payments: Pago[];
 }
 
 export function PaymentsStats({ payments }: PaymentsStatsProps) {
-  const totalIncome = payments.reduce((acc, curr) => curr.status === 'Pagado' ? acc + (typeof curr.amount === 'number' ? curr.amount : 0) : acc, 0);
-  const pendingIncome = payments.reduce((acc, curr) => curr.status === 'Pendiente' ? acc + (typeof curr.amount === 'number' ? curr.amount : 0) : acc, 0);
-  const pendingCount = payments.filter(p => p.status === 'Pendiente').length;
+  const totalIncome = payments.reduce((acc, curr) => curr.estadoPago === 'PAID' ? acc + (curr.montoTotal || 0) : acc, 0);
+  const pendingIncome = payments.reduce((acc, curr) => curr.estadoPago === 'PENDING' ? acc + (curr.montoTotal || 0) : acc, 0);
+  const pendingCount = payments.filter(p => p.estadoPago === 'PENDING').length;
 
   return (
     <div className="grid sm:grid-cols-3 gap-6 mb-8">
