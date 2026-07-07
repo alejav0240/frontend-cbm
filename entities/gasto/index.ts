@@ -3,3 +3,8 @@ export * from "./model/dto";
 export * from "./api/consultas";
 export * from "./api/mutaciones";
 export * from "./api/useGastos";
+export * from "./api/useCrearGasto";
+export * from "./api/useActualizarEstadoGasto";
+export * from "./api/useEliminarGasto";
+export * from "./lib/exportar-pdf";
+export * from "./lib/exportar-excel";
