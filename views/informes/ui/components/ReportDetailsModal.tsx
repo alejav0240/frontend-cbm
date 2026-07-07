@@ -1,13 +1,24 @@
 'use client';
 
-import { FileText, Download } from 'lucide-react';
-import { Modal } from '@/components/ui/Modal';
-import { TherapyReport } from '@/types';
+import { FileText, Download, ExternalLink } from 'lucide-react';
+import Modal from '@/shared/ui/components/Modal';
+
+interface ReportDetailData {
+  id: string;
+  title: string;
+  patientName: string;
+  date: string;
+  status: string;
+  tutorName: string;
+  therapistName: string;
+  content: string;
+  reportUrl: string;
+}
 
 interface ReportDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  report: TherapyReport | null;
+  report: ReportDetailData | null;
 }
 
 export function ReportDetailsModal({ isOpen, onClose, report }: ReportDetailsModalProps) {
@@ -30,9 +41,14 @@ export function ReportDetailsModal({ isOpen, onClose, report }: ReportDetailsMod
               <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Enviado el {report.date}</p>
             </div>
           </div>
-          <button className="p-3 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/5 rounded-2xl text-gray-400 hover:text-[#008080] transition-all">
-            <Download size={20} />
-          </button>
+          <a
+            href={report.reportUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-3 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/5 rounded-2xl text-gray-400 hover:text-[#008080] transition-all inline-flex"
+          >
+            <ExternalLink size={20} />
+          </a>
         </div>
 
         <div className="grid grid-cols-2 gap-6">

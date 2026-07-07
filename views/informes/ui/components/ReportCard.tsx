@@ -2,11 +2,20 @@
 
 import { motion } from 'motion/react';
 import { FileText, User, Calendar, ChevronRight, CheckCircle2, Clock } from 'lucide-react';
-import { TherapyReport } from '@/types';
+
+interface ReportCardData {
+  id: string;
+  title: string;
+  patientName: string;
+  date: string;
+  status: string;
+  therapistName: string;
+  reportUrl: string;
+}
 
 interface ReportCardProps {
-  report: TherapyReport;
-  onClick: (report: TherapyReport) => void;
+  report: ReportCardData;
+  onClick: (report: ReportCardData) => void;
 }
 
 export function ReportCard({ report, onClick }: ReportCardProps) {

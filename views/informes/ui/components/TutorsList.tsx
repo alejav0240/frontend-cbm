@@ -1,10 +1,15 @@
 'use client';
 
 import { ArrowRight } from 'lucide-react';
-import { Patient } from '@/types';
+
+interface TutorPatient {
+  id: string;
+  name: string;
+  tutor: string;
+}
 
 interface TutorsListProps {
-  patients: Patient[];
+  patients: TutorPatient[];
 }
 
 export function TutorsList({ patients }: TutorsListProps) {
