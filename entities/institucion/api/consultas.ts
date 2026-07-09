@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import {gql} from "@apollo/client";
 
 export const OBTENER_INSTITUCIONES = gql`
   query ObtenerInstituciones {
@@ -30,6 +30,28 @@ export const OBTENER_DETALLE_INSTITUCION = gql`
         id
         nombre: name
         descripcion: description
+      }
+    }
+  }
+`;
+
+export const OBTENER_DETALLE_GRUPO = gql`
+  query GetGroupDetail($id: ID!) {
+    institutionGroup(id: $id) {
+      id
+      name
+      description
+      therapeuticSessions {
+        id
+        sessionNumber
+        sessionDate
+        sessionStatus
+        paymentStatus
+        durationMinutes
+        therapist {
+          fullName
+        }
+        notes
       }
     }
   }

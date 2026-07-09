@@ -13,3 +13,25 @@ export interface Institucion {
   telefonoContacto: string;
   grupos: GrupoInstitucion[];
 }
+
+export interface SesionGrupo {
+  id: string;
+  numeroSesion: number;
+  fechaSesion: string;
+  estadoSesion: string;
+  estadoPago: string;
+  duracionMinutos: number | null;
+  terapeuta: { fullName: string | null } | null;
+  notas: string | null;
+}
+
+export interface DetalleGrupo {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  sesiones: SesionGrupo[];
+}
+
+export interface DetalleInstitucion extends Institucion {
+  grupos: (GrupoInstitucion & { descripcion?: string })[];
+}
