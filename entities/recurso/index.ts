@@ -1,4 +1,10 @@
 export * from "./model/tipos";
+export * from "./model/dto";
 export * from "./api/consultas";
 export * from "./api/useRecursosDigitales";
 export * from "./api/useAgregarRecursosSesion";
+export * from "./api/useCrearRecurso";
+export * from "./api/useActualizarRecurso";
+export * from "./api/useEliminarRecurso";
+export { generarRecursosPDF } from "./lib/exportar-pdf";
+export { generarRecursosExcel } from "./lib/exportar-excel";
