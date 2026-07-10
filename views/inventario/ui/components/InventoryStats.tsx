@@ -2,17 +2,17 @@
 
 import React from 'react';
 import { Package, CheckCircle2, Wrench, Clock } from 'lucide-react';
-import { InventoryItem } from '@/types';
+import { ArticuloInventario } from '@/entities/inventario';
 
 interface InventoryStatsProps {
-  inventory: InventoryItem[];
+  inventory: ArticuloInventario[];
 }
 
 export function InventoryStats({ inventory }: InventoryStatsProps) {
   const totalItems = inventory.length;
-  const availableItems = inventory.filter(i => i.status === 'Disponible').length;
-  const maintenanceItems = inventory.filter(i => i.condition === 'Mantenimiento').length;
-  const inUseItems = inventory.filter(i => i.status === 'En uso').length;
+  const availableItems = inventory.filter(i => i.estado === 'AVAILABLE').length;
+  const maintenanceItems = inventory.filter(i => i.condicion === 'MAINTENANCE').length;
+  const inUseItems = inventory.filter(i => i.estado === 'IN_USE').length;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
