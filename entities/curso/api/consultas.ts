@@ -14,6 +14,26 @@ export const OBTENER_CURSOS = gql`
   }
 `;
 
+export const OBTENER_CURSO = gql`
+  query ObtenerCurso($id: ID!) {
+    course(id: $id) {
+      id
+      name
+      description
+      price
+      state
+      studentsCount
+      totalIncome
+      enrollments {
+        id
+        fullName
+        carnet
+        enrolledAt
+      }
+    }
+  }
+`;
+
 export const OBTENER_INSCRIPCIONES_CURSO = gql`
   query ObtenerInscripcionesCurso($courseId: ID) {
     courseEnrollments(courseId: $courseId) {
