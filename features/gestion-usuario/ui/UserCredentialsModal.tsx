@@ -1,16 +1,17 @@
 'use client';
 
 import React from 'react';
-import { Modal } from '@/components/ui/Modal';
+import { Modal } from '@/shared/ui/components/Modal';
 import { Eye, EyeOff } from 'lucide-react';
-import { User as UserType } from '@/types';
+import { Usuario } from '@/entities/usuario';
 
 interface UserCredentialsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: UserType | null;
+  user: Usuario | null;
   showPassword: boolean;
   onTogglePassword: () => void;
+  password?: string;
 }
 
 export function UserCredentialsModal({
@@ -18,7 +19,8 @@ export function UserCredentialsModal({
   onClose,
   user,
   showPassword,
-  onTogglePassword
+  onTogglePassword,
+  password: propPassword
 }: UserCredentialsModalProps) {
   return (
     <Modal 
@@ -31,13 +33,14 @@ export function UserCredentialsModal({
           <div className="p-6 bg-gray-50 dark:bg-white/5 rounded-3xl space-y-4">
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Usuario</p>
-              <p className="text-lg font-bold dark:text-white">{user.username || 'No asignado'}</p>
+                  <p className="text-lg font-bold dark:text-white">{user.username || 'No asignado'}</p>
+                  <p className="text-sm text-gray-500">{user.fullName}</p>
             </div>
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contraseña</p>
               <div className="flex items-center justify-between">
                 <p className="text-lg font-mono font-bold text-[#008080]">
-                  {showPassword ? (user.password || 'No asignada') : '••••••••'}
+                  {showPassword ? (propPassword || 'No asignada') : '••••••••'}
                 </p>
                 <button 
                   onClick={onTogglePassword}

@@ -5,10 +5,10 @@ export interface Usuario {
   fullName: string;
   isStaff: boolean;
   isActive: boolean;
-  celular: number;
-  status: boolean;
+  celular: string;
+  status: string;
   foto: string;
-  ci: number;
+  ci: string;
   rol: {
     id: string;
     nombre: string;

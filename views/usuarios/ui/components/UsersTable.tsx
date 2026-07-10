@@ -3,14 +3,14 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Shield, Key, Edit2, UserMinus, Trash2 } from 'lucide-react';
-import { User as UserType } from '@/types';
+import { Usuario } from '@/entities/usuario';
 
 interface UsersTableProps {
-  users: UserType[];
-  onShowCredentials: (user: UserType) => void;
-  onEdit: (user: UserType) => void;
-  onDeactivate: (id: number) => void;
-  onDelete: (id: number) => void;
+  users: Usuario[];
+  onShowCredentials: (user: Usuario) => void;
+  onEdit: (user: Usuario) => void;
+  onDeactivate: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export function UsersTable({
@@ -48,28 +48,28 @@ export function UsersTable({
                 <td className="px-8 py-5">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-[#008080]/10 text-[#008080] flex items-center justify-center font-bold">
-                      {user.name?.charAt(0) || '?'}
+                      {user.fullName?.charAt(0) || '?'}
                     </div>
-                    <span className="text-sm dark:text-white font-bold group-hover:text-[#008080] transition-colors">{user.name}</span>
+                    <span className="text-sm dark:text-white font-bold group-hover:text-[#008080] transition-colors">{user.fullName}</span>
                   </div>
                 </td>
-                <td className="px-8 py-5 text-sm text-gray-500 dark:text-gray-400">{user.carnet || '-'}</td>
+                <td className="px-8 py-5 text-sm text-gray-500 dark:text-gray-400">{user.ci || '-'}</td>
                 <td className="px-8 py-5">
                   <div className="flex items-center gap-2">
                     <Shield size={14} className="text-blue-500" />
-                    <span className="text-xs text-gray-600 dark:text-gray-400 font-bold uppercase tracking-widest">{user.type}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 font-bold uppercase tracking-widest">{user.rol?.nombre}</span>
                   </div>
                 </td>
-                <td className="px-8 py-5 text-sm text-gray-500 dark:text-gray-400">{user.phone}</td>
+                <td className="px-8 py-5 text-sm text-gray-500 dark:text-gray-400">{user.celular || '-'}</td>
                 <td className="px-8 py-5">
                   <div className="flex flex-col gap-1">
                     <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest w-fit ${
-                      user.status === 'ACTIVO' ? 'bg-green-100 text-green-600 dark:bg-green-500/10' : 'bg-gray-100 text-gray-600 dark:bg-white/5'
+                      user.isActive ? 'bg-green-100 text-green-600 dark:bg-green-500/10' : 'bg-gray-100 text-gray-600 dark:bg-white/5'
                     }`}>
-                      {user.status}
+                      {user.isActive ? 'ACTIVO' : 'INACTIVO'}
                     </span>
                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                      {user.visibility}
+                      {user.status}
                     </span>
                   </div>
                 </td>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { User, CreditCard, Phone, Key, AlertCircle } from 'lucide-react';
-import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { SearchableSelect } from '@/shared/ui/components/SearchableSelect';
 
 interface UserFormProps {
   name: string;

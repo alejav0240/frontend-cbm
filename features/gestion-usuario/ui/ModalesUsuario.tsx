@@ -1,0 +1,208 @@
+"use client";
+
+import React, { useMemo } from "react";
+import { Modal } from "@/shared/ui/components/Modal";
+import { ConfirmModal } from "@/shared/ui/ConfirmModal";
+import { Usuario, UsuarioExportarFila, generarUsuariosPDF, generarUsuariosExcel } from "@/entities/usuario";
+import { UserForm } from "./UserForm";
+import { UserCredentialsModal } from "./UserCredentialsModal";
+import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
+
+interface ModalesUsuarioProps {
+  mostrarFormulario: boolean;
+  alCerrarFormulario: () => void;
+  formProps: {
+    name: string;
+    setName: (val: string) => void;
+    carnet: string;
+    setCarnet: (val: string) => void;
+    phone: string;
+    setPhone: (val: string) => void;
+    username: string;
+    setUsername: (val: string) => void;
+    password: string;
+    setPassword: (val: string) => void;
+    type: string;
+    setType: (val: string) => void;
+    status: string;
+    setStatus: (val: string) => void;
+    visibility: string;
+    setVisibility: (val: string) => void;
+    isEditing: boolean;
+    errors: Record<string, string>;
+    onSubmit: (e: React.FormEvent) => void;
+    onCancel: () => void;
+  };
+  mostrarCredenciales: boolean;
+  alCerrarCredenciales: () => void;
+  usuarioCredenciales: Usuario | null;
+  credencialesPassword?: string;
+  mostrarPassword: boolean;
+  alternarPassword: () => void;
+  mostrarConfirmarEliminar: boolean;
+  alCerrarConfirmarEliminar: () => void;
+  alConfirmarEliminar: () => void;
+  tituloConfirmar: string;
+  mensajeConfirmar: string;
+  mostrarExportar: boolean;
+  alCerrarExportar: () => void;
+  listaUsuarios: Usuario[];
+}
+
+export const ModalesUsuario = ({
+  mostrarFormulario,
+  alCerrarFormulario,
+  formProps,
+  mostrarCredenciales,
+  alCerrarCredenciales,
+  usuarioCredenciales,
+  credencialesPassword,
+  mostrarPassword,
+  alternarPassword,
+  mostrarConfirmarEliminar,
+  alCerrarConfirmarEliminar,
+  alConfirmarEliminar,
+  tituloConfirmar,
+  mensajeConfirmar,
+  mostrarExportar,
+  alCerrarExportar,
+  listaUsuarios,
+}: ModalesUsuarioProps) => {
+  const datosExportacion = useMemo((): UsuarioExportarFila[] => {
+    return listaUsuarios.map((u) => ({
+      id: u.id,
+      nombre: u.fullName || "",
+      carnet: String(u.ci || ""),
+      email: u.email || "",
+      celular: String(u.celular || ""),
+      rol: u.rol?.nombre || "",
+      estado: u.isActive ? "ACTIVO" : "INACTIVO",
+      visibilidad: u.status || "",
+      username: u.username,
+      fechaRegistro: "",
+    }));
+  }, [listaUsuarios]);
+
+  const exporters = useMemo<Exporter<UsuarioExportarFila>[]>(
+    () => [
+      {
+        id: "pdf",
+        label: "Exportar PDF",
+        async execute(data, columns, fileName) {
+          const doc = await generarUsuariosPDF(data);
+          doc.save(`${fileName}_${Date.now()}.pdf`);
+        },
+        async preview(data) {
+          const doc = await generarUsuariosPDF(data);
+          return doc.output("blob");
+        },
+      },
+      {
+        id: "excel",
+        label: "Exportar Excel",
+        async execute(data) {
+          await generarUsuariosExcel(data);
+        },
+      },
+    ],
+    [],
+  );
+
+  return (
+    <>
+      <Modal
+        isOpen={mostrarFormulario}
+        onClose={alCerrarFormulario}
+        title={formProps.isEditing ? "Editar Usuario" : "Nuevo Usuario"}
+      >
+        <UserForm
+          name={formProps.name}
+          setName={formProps.setName}
+          carnet={formProps.carnet}
+          setCarnet={formProps.setCarnet}
+          phone={formProps.phone}
+          setPhone={formProps.setPhone}
+          username={formProps.username}
+          setUsername={formProps.setUsername}
+          password={formProps.password}
+          setPassword={formProps.setPassword}
+          type={formProps.type}
+          setType={formProps.setType}
+          status={formProps.status}
+          setStatus={formProps.setStatus}
+          visibility={formProps.visibility}
+          setVisibility={formProps.setVisibility}
+          onSubmit={formProps.onSubmit}
+          onCancel={formProps.onCancel}
+          isEditing={formProps.isEditing}
+          errors={formProps.errors}
+        />
+      </Modal>
+
+      <UserCredentialsModal
+        isOpen={mostrarCredenciales}
+        onClose={alCerrarCredenciales}
+        user={usuarioCredenciales}
+        showPassword={mostrarPassword}
+        onTogglePassword={alternarPassword}
+        password={credencialesPassword}
+      />
+
+      <ConfirmModal
+        isOpen={mostrarConfirmarEliminar}
+        onClose={alCerrarConfirmarEliminar}
+        onConfirm={alConfirmarEliminar}
+        title={tituloConfirmar}
+        message={mensajeConfirmar}
+        confirmLabel="Confirmar"
+      />
+
+      <GenericExportModal<UsuarioExportarFila>
+        title="Exportar Usuarios"
+        isOpen={mostrarExportar}
+        onClose={alCerrarExportar}
+        data={datosExportacion}
+        fileName="usuarios"
+        columns={[
+          { key: "nombre", label: "Nombre" },
+          { key: "carnet", label: "Carnet" },
+          { key: "email", label: "Email" },
+          { key: "celular", label: "Celular" },
+          { key: "rol", label: "Rol" },
+          { key: "estado", label: "Estado" },
+          { key: "visibilidad", label: "Visibilidad" },
+          { key: "username", label: "Usuario" },
+        ]}
+        filters={[
+          {
+            key: "rol",
+            label: "Tipo de Usuario",
+            type: "select",
+            options: [
+              { value: "TERAPEUTA", label: "Terapeuta" },
+              { value: "ADMINISTRADOR", label: "Administrador" },
+              { value: "SECRETARIA", label: "Secretaria" },
+              { value: "RECEPCION", label: "Recepción" },
+              { value: "TUTOR", label: "Tutor" },
+            ],
+          },
+          {
+            key: "estado",
+            label: "Estado",
+            type: "select",
+            options: [
+              { value: "ACTIVO", label: "Activo" },
+              { value: "INACTIVO", label: "Inactivo" },
+            ],
+          },
+          {
+            key: "nombre",
+            label: "Buscar por nombre",
+            type: "text",
+          },
+        ]}
+        exporters={exporters}
+      />
+    </>
+  );
+};
