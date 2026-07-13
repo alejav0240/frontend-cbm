@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
-import { Shield, Trash2, Users, Edit3 } from 'lucide-react';
-import { countPermissionModules } from '@/lib/permissions';
+import React from "react";
+import { motion } from "motion/react";
+import { Shield, Trash2, Users, Edit3 } from "lucide-react";
+import { countPermissionModules } from "@/shared/data/permissions";
 
 interface RoleCardProps {
   role: {
@@ -17,7 +17,12 @@ interface RoleCardProps {
   onEditPermissions: (role: any) => void;
 }
 
-export function RoleCard({ role, idx, onDelete, onEditPermissions }: RoleCardProps) {
+export function RoleCard({
+  role,
+  idx,
+  onDelete,
+  onEditPermissions,
+}: RoleCardProps) {
   const modulesCount = countPermissionModules(role.permissions);
 
   return (
@@ -32,14 +37,14 @@ export function RoleCard({ role, idx, onDelete, onEditPermissions }: RoleCardPro
           <Shield size={24} />
         </div>
         <div className="flex items-center gap-2">
-          <button 
+          <button
             onClick={() => onEditPermissions(role)}
             className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-[#008080] hover:bg-[#008080]/10 transition-colors"
             title="Editar permisos"
           >
             <Edit3 size={18} />
           </button>
-          <button 
+          <button
             onClick={() => onDelete(role.id)}
             className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
           >
@@ -50,7 +55,7 @@ export function RoleCard({ role, idx, onDelete, onEditPermissions }: RoleCardPro
 
       <div className="p-6 flex-1 flex flex-col">
         <h3 className="text-xl font-bold dark:text-white mb-2">{role.name}</h3>
-        
+
         <div className="mt-auto pt-6 flex justify-between items-center border-t border-gray-100 dark:border-white/5">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
             <Users size={16} />

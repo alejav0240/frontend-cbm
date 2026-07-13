@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
-import { Plus } from 'lucide-react';
+import React from "react";
+import { motion } from "motion/react";
+import { Plus } from "lucide-react";
 
 interface RolesHeaderProps {
   onAddRole: () => void;
@@ -22,7 +22,7 @@ export function RolesHeader({ onAddRole }: RolesHeaderProps) {
           Define qué puede hacer cada perfil de usuario en la plataforma.
         </p>
       </motion.div>
-      <button 
+      <button
         onClick={onAddRole}
         className="bg-[#008080] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#006666] transition-all flex items-center justify-center gap-2 shadow-lg"
       >
