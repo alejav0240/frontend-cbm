@@ -33,7 +33,12 @@ function getScoreBg(score: number | null): string {
   return "bg-red-500/10";
 }
 
-export function EvaluationCard({ evaluation, onView, onExport, idx }: EvaluationCardProps) {
+export function EvaluationCard({
+  evaluation,
+  onView,
+  onExport,
+  idx,
+}: EvaluationCardProps) {
   const scoreColor = getScoreColor(evaluation.score);
   const scoreBg = getScoreBg(evaluation.score);
 

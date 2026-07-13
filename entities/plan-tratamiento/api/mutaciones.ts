@@ -1,4 +1,4 @@
-import {gql} from "@apollo/client";
+import { gql } from "@apollo/client";
 
 export const BULK_ADD_STEPS_TO_SESSION = gql`
   mutation BulkAddStepsToSession($planStepIds: [ID!]!, $sessionId: ID!) {
@@ -9,8 +9,20 @@ export const BULK_ADD_STEPS_TO_SESSION = gql`
 `;
 
 export const CREATE_INTERVENTION_PLAN = gql`
-  mutation CreateInterventionPlan($patientId: ID!, $createdById: ID!, $mainObjective: String!, $startDate: Date, $endDate: Date) {
-    createInterventionPlan(patientId: $patientId, createdById: $createdById, mainObjective: $mainObjective, startDate: $startDate, endDate: $endDate) {
+  mutation CreateInterventionPlan(
+    $patientId: ID!
+    $createdById: ID!
+    $mainObjective: String!
+    $startDate: Date
+    $endDate: Date
+  ) {
+    createInterventionPlan(
+      patientId: $patientId
+      createdById: $createdById
+      mainObjective: $mainObjective
+      startDate: $startDate
+      endDate: $endDate
+    ) {
       plan {
         id
       }
@@ -19,8 +31,18 @@ export const CREATE_INTERVENTION_PLAN = gql`
 `;
 
 export const UPDATE_INTERVENTION_PLAN = gql`
-  mutation UpdateInterventionPlan($id: ID!, $mainObjective: String, $startDate: Date, $endDate: Date) {
-    updateInterventionPlan(id: $id, mainObjective: $mainObjective, startDate: $startDate, endDate: $endDate) {
+  mutation UpdateInterventionPlan(
+    $id: ID!
+    $mainObjective: String
+    $startDate: Date
+    $endDate: Date
+  ) {
+    updateInterventionPlan(
+      id: $id
+      mainObjective: $mainObjective
+      startDate: $startDate
+      endDate: $endDate
+    ) {
       plan {
         id
       }
@@ -36,28 +58,27 @@ export const DELETE_INTERVENTION_PLAN = gql`
   }
 `;
 
-
 export const CREATE_STEP_PLAN = gql`
   mutation CreateStepPlan(
-    $planId: ID!, 
-    $moment: String!, 
-    $objective: String!, 
-    $durationMinutes: Int,
-    $focus: String,
-    $musicalResources: String,
-    $musicalEmphasis: String,
-    $approach: String,
+    $planId: ID!
+    $moment: String!
+    $objective: String!
+    $durationMinutes: Int
+    $focus: String
+    $musicalResources: String
+    $musicalEmphasis: String
+    $approach: String
     $mltMethod: String
   ) {
     createStepPlan(
-      planId: $planId, 
-      moment: $moment, 
-      objective: $objective, 
-      durationMinutes: $durationMinutes,
-      focus: $focus,
-      musicalResources: $musicalResources,
-      musicalEmphasis: $musicalEmphasis,
-      approach: $approach,
+      planId: $planId
+      moment: $moment
+      objective: $objective
+      durationMinutes: $durationMinutes
+      focus: $focus
+      musicalResources: $musicalResources
+      musicalEmphasis: $musicalEmphasis
+      approach: $approach
       mltMethod: $mltMethod
     ) {
       step {
@@ -69,25 +90,25 @@ export const CREATE_STEP_PLAN = gql`
 
 export const UPDATE_STEP_PLAN = gql`
   mutation UpdateStepPlan(
-    $id: ID!, 
-    $moment: String, 
-    $objective: String, 
-    $durationMinutes: Int,
-    $focus: String,
-    $musicalResources: String,
-    $musicalEmphasis: String,
-    $approach: String,
+    $id: ID!
+    $moment: String
+    $objective: String
+    $durationMinutes: Int
+    $focus: String
+    $musicalResources: String
+    $musicalEmphasis: String
+    $approach: String
     $mltMethod: String
   ) {
     updateStepPlan(
-      id: $id, 
-      moment: $moment, 
-      objective: $objective, 
-      durationMinutes: $durationMinutes,
-      focus: $focus,
-      musicalResources: $musicalResources,
-      musicalEmphasis: $musicalEmphasis,
-      approach: $approach,
+      id: $id
+      moment: $moment
+      objective: $objective
+      durationMinutes: $durationMinutes
+      focus: $focus
+      musicalResources: $musicalResources
+      musicalEmphasis: $musicalEmphasis
+      approach: $approach
       mltMethod: $mltMethod
     ) {
       step {

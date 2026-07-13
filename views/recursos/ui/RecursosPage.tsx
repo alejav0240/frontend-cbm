@@ -64,7 +64,8 @@ export const RecursosPage = () => {
       setRecursoAEditar(null);
       await refetch();
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Error al guardar el recurso";
+      const msg =
+        error instanceof Error ? error.message : "Error al guardar el recurso";
       toast.error(msg);
     }
   };
@@ -78,7 +79,8 @@ export const RecursosPage = () => {
       setRecursoAEliminar(null);
       await refetch();
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Error al eliminar el recurso";
+      const msg =
+        error instanceof Error ? error.message : "Error al eliminar el recurso";
       toast.error(msg);
     }
   };

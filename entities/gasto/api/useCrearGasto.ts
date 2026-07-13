@@ -32,7 +32,8 @@ export function useCrearGasto() {
       toast.success("Gasto registrado correctamente");
       return result.data?.createExpense?.expense;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Error al registrar el gasto";
+      const message =
+        err instanceof Error ? err.message : "Error al registrar el gasto";
       toast.error(message);
       throw err;
     }

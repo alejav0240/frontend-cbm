@@ -1,8 +1,18 @@
-import {gql} from "@apollo/client";
+import { gql } from "@apollo/client";
 
 export const CREATE_CAMPAIGN = gql`
-  mutation CreateCampaign($name: String!, $platform: String!, $budget: Float!, $status: String) {
-    createCampaign(name: $name, platform: $platform, budget: $budget, status: $status) {
+  mutation CreateCampaign(
+    $name: String!
+    $platform: String!
+    $budget: Float!
+    $status: String
+  ) {
+    createCampaign(
+      name: $name
+      platform: $platform
+      budget: $budget
+      status: $status
+    ) {
       campaign {
         id
       }
@@ -11,8 +21,20 @@ export const CREATE_CAMPAIGN = gql`
 `;
 
 export const UPDATE_CAMPAIGN = gql`
-  mutation UpdateCampaign($id: ID!, $name: String, $platform: String, $budget: Float, $status: String) {
-    updateCampaign(id: $id, name: $name, platform: $platform, budget: $budget, status: $status) {
+  mutation UpdateCampaign(
+    $id: ID!
+    $name: String
+    $platform: String
+    $budget: Float
+    $status: String
+  ) {
+    updateCampaign(
+      id: $id
+      name: $name
+      platform: $platform
+      budget: $budget
+      status: $status
+    ) {
       campaign {
         id
       }
@@ -29,8 +51,18 @@ export const DELETE_CAMPAIGN = gql`
 `;
 
 export const CREATE_LEAD = gql`
-  mutation CreateLead($name: String!, $phone: String, $email: String, $campaignId: ID) {
-    createLead(name: $name, phone: $phone, email: $email, campaignId: $campaignId) {
+  mutation CreateLead(
+    $name: String!
+    $phone: String
+    $email: String
+    $campaignId: ID
+  ) {
+    createLead(
+      name: $name
+      phone: $phone
+      email: $email
+      campaignId: $campaignId
+    ) {
       lead {
         id
       }

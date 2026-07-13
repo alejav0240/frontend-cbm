@@ -7,11 +7,13 @@ import type { ObtenerInformesQuery } from "@/shared/api/generated/graphql";
 import type { TherapyReport } from "../model/tipos";
 
 export function useInformes(patientId?: string) {
-  const { data, loading, error, refetch } =
-    useQuery<ObtenerInformesQuery>(GET_THERAPY_REPORTS, {
+  const { data, loading, error, refetch } = useQuery<ObtenerInformesQuery>(
+    GET_THERAPY_REPORTS,
+    {
       variables: { patientId: patientId || undefined },
       notifyOnNetworkStatusChange: true,
-    });
+    },
+  );
 
   const informes: TherapyReport[] = useMemo(
     () =>

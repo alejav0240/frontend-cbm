@@ -7,8 +7,7 @@ export function useEliminarCampana() {
     refetchQueries: [{ query: OBTENER_CAMPANAS_MARKETING }],
   });
 
-  const eliminar = (id: string) =>
-    eliminarCampana({ variables: { id } });
+  const eliminar = (id: string) => eliminarCampana({ variables: { id } });
 
   return {
     eliminar,

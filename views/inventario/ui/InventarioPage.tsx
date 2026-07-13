@@ -14,7 +14,10 @@ import {
 import { InventoryHeader } from "./components/InventoryHeader";
 import { InventoryStats } from "./components/InventoryStats";
 import { InventoryTable } from "./components/InventoryTable";
-import { InventoryFormModal, type FormData } from "./components/InventoryFormModal";
+import {
+  InventoryFormModal,
+  type FormData,
+} from "./components/InventoryFormModal";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";

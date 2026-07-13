@@ -16,7 +16,9 @@ export const generarInstitucionesPDF = async (
   doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 14, 30);
 
   autoTable(doc, {
-    head: [["#", "Nombre", "Dirección", "Contacto", "Email", "Teléfono", "Grupos"]],
+    head: [
+      ["#", "Nombre", "Dirección", "Contacto", "Email", "Teléfono", "Grupos"],
+    ],
     body: filas.map((f, i) => [
       i + 1,
       f.nombre,

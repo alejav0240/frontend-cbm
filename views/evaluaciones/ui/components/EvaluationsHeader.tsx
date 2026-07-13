@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
-import { Plus } from 'lucide-react';
+import React from "react";
+import { motion } from "motion/react";
+import { Plus } from "lucide-react";
 
 interface EvaluationsHeaderProps {
   onCreateClick: () => void;
@@ -15,10 +15,14 @@ export function EvaluationsHeader({ onCreateClick }: EvaluationsHeaderProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold dark:text-white serif">Evaluaciones <span className="text-[#008080] italic">Clínicas</span></h1>
-        <p className="text-gray-500 dark:text-gray-400">Registro de evaluaciones iniciales, de seguimiento y finales.</p>
+        <h1 className="text-3xl font-bold dark:text-white serif">
+          Evaluaciones <span className="text-[#008080] italic">Clínicas</span>
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          Registro de evaluaciones iniciales, de seguimiento y finales.
+        </p>
       </motion.div>
-      <button 
+      <button
         onClick={onCreateClick}
         className="bg-[#008080] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#006666] transition-all flex items-center justify-center gap-2 shadow-lg"
       >

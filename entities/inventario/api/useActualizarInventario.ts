@@ -37,9 +37,7 @@ export function useActualizarInventario() {
       return result.data?.updateInventoryItem?.item;
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : "Error al actualizar el artículo";
+        err instanceof Error ? err.message : "Error al actualizar el artículo";
       toast.error(message);
       throw err;
     }

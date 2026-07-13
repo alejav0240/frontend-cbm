@@ -94,7 +94,7 @@ export const PlanesPage = () => {
             ? "Activo"
             : plan.estado === "COMPLETED"
               ? "Finalizado"
-              : plan.estado ?? "Activo",
+              : (plan.estado ?? "Activo"),
         steps: mapPasos(plan.pasos ?? []),
       })),
     [planes],
@@ -150,28 +150,28 @@ export const PlanesPage = () => {
     setEditingStep(null);
   }, []);
 
-  const handleAddStep = useCallback((planId: string) => {
-    setSelectedPlanId(planId);
-    resetStepForm();
-    setShowStepModal(true);
-  }, [resetStepForm]);
-
-  const handleEditStep = useCallback(
-    (planId: string, step: any) => {
+  const handleAddStep = useCallback(
+    (planId: string) => {
       setSelectedPlanId(planId);
-      setEditingStep(step);
-      setMomento(step.momento ?? "");
-      setDuracion(String(step.duracion ?? 45));
-      setObjetivoPaso(step.objetivo ?? "");
-      setFocoPaso(step.foco ?? "");
-      setRecursosMusicales(step.recursosMusicales ?? "");
-      setEnfasisMusical(step.enfasisMusical ?? "");
-      setEnfoque(step.enfoque ?? "");
-      setMltEnfoque(step.mltEnfoque ?? "");
+      resetStepForm();
       setShowStepModal(true);
     },
-    [],
+    [resetStepForm],
   );
+
+  const handleEditStep = useCallback((planId: string, step: any) => {
+    setSelectedPlanId(planId);
+    setEditingStep(step);
+    setMomento(step.momento ?? "");
+    setDuracion(String(step.duracion ?? 45));
+    setObjetivoPaso(step.objetivo ?? "");
+    setFocoPaso(step.foco ?? "");
+    setRecursosMusicales(step.recursosMusicales ?? "");
+    setEnfasisMusical(step.enfasisMusical ?? "");
+    setEnfoque(step.enfoque ?? "");
+    setMltEnfoque(step.mltEnfoque ?? "");
+    setShowStepModal(true);
+  }, []);
 
   const handleCreateStep = useCallback(
     async (e: React.FormEvent) => {
@@ -256,9 +256,7 @@ export const PlanesPage = () => {
 
   return (
     <div className="space-y-8">
-      <InterventionPlanHeader
-        onNewPlan={() => setShowCreateModal(true)}
-      />
+      <InterventionPlanHeader onNewPlan={() => setShowCreateModal(true)} />
 
       <div className="relative">
         <Search
@@ -302,14 +300,10 @@ export const PlanesPage = () => {
                 idx={idx}
                 isExpanded={expandedPlanId === plan.id}
                 onToggleExpand={() =>
-                  setExpandedPlanId(
-                    expandedPlanId === plan.id ? null : plan.id,
-                  )
+                  setExpandedPlanId(expandedPlanId === plan.id ? null : plan.id)
                 }
                 onExport={() => toast.success("Exportación iniciada")}
-                onDelete={() =>
-                  setDeleteConfirm({ type: "plan", id: plan.id })
-                }
+                onDelete={() => setDeleteConfirm({ type: "plan", id: plan.id })}
                 onAddStep={() => handleAddStep(plan.id)}
                 onEditStep={(step) => handleEditStep(plan.id, step)}
                 onDeleteStep={(stepId) =>
@@ -382,9 +376,7 @@ export const PlanesPage = () => {
         onClose={() => setDeleteConfirm(null)}
         onConfirm={handleDeleteConfirm}
         title={
-          deleteConfirm?.type === "plan"
-            ? "Eliminar Plan"
-            : "Eliminar Paso"
+          deleteConfirm?.type === "plan" ? "Eliminar Plan" : "Eliminar Paso"
         }
         message={
           deleteConfirm?.type === "plan"

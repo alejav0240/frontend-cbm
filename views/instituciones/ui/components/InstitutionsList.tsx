@@ -1,9 +1,16 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
-import { Building2, Users, MapPin, User, ChevronRight, Search } from 'lucide-react';
-import { Institucion } from '@/entities/institucion';
+import React from "react";
+import { motion } from "motion/react";
+import {
+  Building2,
+  Users,
+  MapPin,
+  User,
+  ChevronRight,
+  Search,
+} from "lucide-react";
+import { Institucion } from "@/entities/institucion";
 
 interface InstitutionsListProps {
   institutions: Institucion[];
@@ -21,7 +28,10 @@ export function InstitutionsList({
   return (
     <div className="space-y-8">
       <div className="relative flex-1 group">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#008080] transition-colors" size={18} />
+        <Search
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#008080] transition-colors"
+          size={18}
+        />
         <input
           type="text"
           placeholder="Buscar instituciones o contactos..."
@@ -53,7 +63,9 @@ export function InstitutionsList({
                 </span>
               </div>
             </div>
-            <h3 className="text-xl font-bold dark:text-white mb-4 group-hover:text-[#008080] transition-colors">{inst.nombre}</h3>
+            <h3 className="text-xl font-bold dark:text-white mb-4 group-hover:text-[#008080] transition-colors">
+              {inst.nombre}
+            </h3>
             <div className="space-y-3 mb-8">
               <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
                 <MapPin size={16} className="text-[#008080] shrink-0" />
@@ -65,7 +77,9 @@ export function InstitutionsList({
               </div>
             </div>
             <div className="flex items-center justify-between pt-6 border-t border-gray-50 dark:border-white/5">
-              <span className="text-[10px] font-bold text-[#008080] uppercase tracking-[0.2em]">Ver detalles</span>
+              <span className="text-[10px] font-bold text-[#008080] uppercase tracking-[0.2em]">
+                Ver detalles
+              </span>
               <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-[#008080] group-hover:text-white transition-all">
                 <ChevronRight size={20} />
               </div>

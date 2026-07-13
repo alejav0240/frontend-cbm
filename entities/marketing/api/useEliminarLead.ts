@@ -7,8 +7,7 @@ export function useEliminarLead() {
     refetchQueries: [{ query: OBTENER_LEADS }],
   });
 
-  const eliminar = (id: string) =>
-    eliminarLead({ variables: { id } });
+  const eliminar = (id: string) => eliminarLead({ variables: { id } });
 
   return {
     eliminar,

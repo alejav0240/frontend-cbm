@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Modal } from '@/shared/ui/components/Modal';
-import { ArticuloInventario } from '@/entities/inventario';
+import React, { useState } from "react";
+import { Modal } from "@/shared/ui/components/Modal";
+import { ArticuloInventario } from "@/entities/inventario";
 
 const TIPOS = [
-  { value: 'INSTRUMENT', label: 'Instrumento' },
-  { value: 'EQUIPMENT', label: 'Equipo' },
-  { value: 'MATERIAL', label: 'Material' },
+  { value: "INSTRUMENT", label: "Instrumento" },
+  { value: "EQUIPMENT", label: "Equipo" },
+  { value: "MATERIAL", label: "Material" },
 ] as const;
 
 const CONDICIONES = [
-  { value: 'GOOD', label: 'Bueno' },
-  { value: 'FAIR', label: 'Regular' },
-  { value: 'DAMAGED', label: 'Dañado' },
+  { value: "GOOD", label: "Bueno" },
+  { value: "FAIR", label: "Regular" },
+  { value: "DAMAGED", label: "Dañado" },
 ] as const;
 
 const ESTADOS = [
-  { value: 'AVAILABLE', label: 'Disponible' },
-  { value: 'IN_USE', label: 'En uso' },
-  { value: 'MAINTENANCE', label: 'Mantenimiento' },
+  { value: "AVAILABLE", label: "Disponible" },
+  { value: "IN_USE", label: "En uso" },
+  { value: "MAINTENANCE", label: "Mantenimiento" },
 ] as const;
 
 export interface FormData {
@@ -44,18 +44,18 @@ export function InventoryFormModal({
   initialData,
 }: InventoryFormModalProps) {
   const [formData, setFormData] = useState<FormData>(() => ({
-    name: initialData?.nombre ?? '',
-    type: initialData?.tipo ?? 'INSTRUMENT',
-    condition: initialData?.condicion ?? 'GOOD',
-    room: initialData?.aula ?? '',
-    status: initialData?.estado ?? 'AVAILABLE',
+    name: initialData?.nombre ?? "",
+    type: initialData?.tipo ?? "INSTRUMENT",
+    condition: initialData?.condicion ?? "GOOD",
+    room: initialData?.aula ?? "",
+    status: initialData?.estado ?? "AVAILABLE",
   }));
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={initialData ? 'Editar Artículo' : 'Añadir Artículo al Inventario'}
+      title={initialData ? "Editar Artículo" : "Añadir Artículo al Inventario"}
     >
       <div className="space-y-6">
         <div className="space-y-2">
@@ -78,7 +78,9 @@ export function InventoryFormModal({
             </label>
             <select
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, type: e.target.value })
+              }
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all appearance-none"
             >
               {TIPOS.map((t) => (

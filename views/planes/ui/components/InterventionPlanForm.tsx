@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Modal from '@/shared/ui/components/Modal';
-import { SearchableSelect } from '@/shared/ui/components/SearchableSelect';
+import React from "react";
+import Modal from "@/shared/ui/components/Modal";
+import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 
 interface InterventionPlanFormProps {
   isOpen: boolean;
@@ -29,12 +29,12 @@ export function InterventionPlanForm({
   startDate,
   setStartDate,
   patientOptions,
-  onSearchPatient
+  onSearchPatient,
 }: InterventionPlanFormProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Nuevo Plan de Intervención">
       <form onSubmit={onSubmit} className="space-y-6">
-        <SearchableSelect 
+        <SearchableSelect
           label="Paciente"
           options={patientOptions}
           value={patientId}
@@ -42,10 +42,12 @@ export function InterventionPlanForm({
           onSearch={onSearchPatient}
           placeholder="Buscar paciente..."
         />
-        
+
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Objetivo Principal</label>
-          <textarea 
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Objetivo Principal
+          </label>
+          <textarea
             rows={3}
             value={objective}
             onChange={(e) => setObjective(e.target.value)}
@@ -55,8 +57,10 @@ export function InterventionPlanForm({
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Fecha de Inicio</label>
-          <input 
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Fecha de Inicio
+          </label>
+          <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -65,8 +69,19 @@ export function InterventionPlanForm({
         </div>
 
         <div className="flex justify-end gap-4 pt-4">
-          <button type="button" onClick={onClose} className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all">Cancelar</button>
-          <button type="submit" className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg">Crear Plan</button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg"
+          >
+            Crear Plan
+          </button>
         </div>
       </form>
     </Modal>

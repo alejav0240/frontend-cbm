@@ -34,18 +34,16 @@ export const useDetalleGrupo = (id: string) => {
       id: g.id,
       nombre: g.name,
       descripcion: g.description,
-      sesiones: (g.therapeuticSessions || [])
-        .filter(Boolean)
-        .map((s) => ({
-          id: s!.id,
-          numeroSesion: s!.sessionNumber,
-          fechaSesion: s!.sessionDate,
-          estadoSesion: s!.sessionStatus,
-          estadoPago: s!.paymentStatus,
-          duracionMinutos: s!.durationMinutes,
-          terapeuta: s!.therapist,
-          notas: s!.notes,
-        })),
+      sesiones: (g.therapeuticSessions || []).filter(Boolean).map((s) => ({
+        id: s!.id,
+        numeroSesion: s!.sessionNumber,
+        fechaSesion: s!.sessionDate,
+        estadoSesion: s!.sessionStatus,
+        estadoPago: s!.paymentStatus,
+        duracionMinutos: s!.durationMinutes,
+        terapeuta: s!.therapist,
+        notas: s!.notes,
+      })),
     };
   }, [data]);
 

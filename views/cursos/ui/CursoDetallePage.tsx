@@ -8,7 +8,10 @@ import {
   useEliminarCurso,
   useInscribirCurso,
 } from "@/entities/curso";
-import { CourseFormModal, type CursoFormData } from "./components/CourseFormModal";
+import {
+  CourseFormModal,
+  type CursoFormData,
+} from "./components/CourseFormModal";
 import { EnrollStudentModal } from "./components/EnrollStudentModal";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import {
@@ -221,7 +224,8 @@ export const CursoDetallePage = ({ id }: CursoDetallePageProps) => {
                 No hay estudiantes inscritos
               </p>
               <p className="text-gray-400 text-sm mt-1">
-                Inscribe al primer estudiante usando el botón &quot;Inscribir&quot;
+                Inscribe al primer estudiante usando el botón
+                &quot;Inscribir&quot;
               </p>
             </div>
           ) : (
@@ -268,11 +272,14 @@ export const CursoDetallePage = ({ id }: CursoDetallePageProps) => {
                       {inscripcion.carnet || "—"}
                     </td>
                     <td className="px-8 py-5 text-sm text-gray-500">
-                      {inscripcion.fechaInscripcion.toLocaleDateString("es-ES", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {inscripcion.fechaInscripcion.toLocaleDateString(
+                        "es-ES",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        },
+                      )}
                     </td>
                   </tr>
                 ))}

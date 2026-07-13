@@ -31,10 +31,14 @@ export const FormulariosPage = () => {
     "templates" | "assignments" | "responses"
   >("templates");
   const { formularios, refetch: refetchForms } = useFormularios();
-  const { asignaciones, respuestaForm, refetch: refetchAssignments } =
-    useAsignacionesFormulario();
-  const [selectedResponse, setSelectedResponse] =
-    useState<FormResponse | null>(null);
+  const {
+    asignaciones,
+    respuestaForm,
+    refetch: refetchAssignments,
+  } = useAsignacionesFormulario();
+  const [selectedResponse, setSelectedResponse] = useState<FormResponse | null>(
+    null,
+  );
 
   const [showForm, setShowForm] = useState<boolean>(false);
   const [showAssign, setShowAssign] = useState<boolean>(false);

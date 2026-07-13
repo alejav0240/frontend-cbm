@@ -33,7 +33,9 @@ export const generarPagosPDF = async (filas: PagoExportarFila[]) => {
   doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 14, 30);
 
   autoTable(doc, {
-    head: [["Paciente", "Fecha", "Total", "Pagado", "Deuda", "Estado", "Método"]],
+    head: [
+      ["Paciente", "Fecha", "Total", "Pagado", "Deuda", "Estado", "Método"],
+    ],
     body: filas.map((f) => [
       f.pacienteNombre,
       f.fecha,

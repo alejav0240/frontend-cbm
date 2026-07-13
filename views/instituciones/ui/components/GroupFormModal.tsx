@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Modal } from '@/shared/ui/components/Modal';
+import React from "react";
+import { Modal } from "@/shared/ui/components/Modal";
 
 interface GroupFormData {
   nombre: string;
@@ -24,14 +24,12 @@ export function GroupFormModal({
   onChange,
 }: GroupFormModalProps) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Crear Nuevo Grupo"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Crear Nuevo Grupo">
       <div className="space-y-6">
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Nombre del Grupo</label>
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Nombre del Grupo
+          </label>
           <input
             type="text"
             value={data.nombre}
@@ -41,7 +39,9 @@ export function GroupFormModal({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Descripción</label>
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Descripción
+          </label>
           <textarea
             value={data.descripcion}
             onChange={(e) => onChange({ ...data, descripcion: e.target.value })}
@@ -51,8 +51,18 @@ export function GroupFormModal({
           />
         </div>
         <div className="flex justify-end gap-4 pt-4">
-          <button onClick={onClose} className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all">Cancelar</button>
-          <button onClick={onSave} className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg">Crear Grupo</button>
+          <button
+            onClick={onClose}
+            className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onSave}
+            className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg"
+          >
+            Crear Grupo
+          </button>
         </div>
       </div>
     </Modal>

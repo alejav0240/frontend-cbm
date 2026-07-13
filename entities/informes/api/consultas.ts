@@ -1,4 +1,4 @@
-import {gql} from "@apollo/client";
+import { gql } from "@apollo/client";
 
 export const GET_THERAPY_REPORTS = gql`
   query GetTherapyReports($patientId: ID) {

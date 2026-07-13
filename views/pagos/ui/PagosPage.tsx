@@ -131,7 +131,9 @@ export const PagosPage = () => {
         setMostrarModalPago(false);
         toast.success("Pago registrado correctamente");
       } catch (e: unknown) {
-        toast.error(e instanceof Error ? e.message : "Error al registrar el pago");
+        toast.error(
+          e instanceof Error ? e.message : "Error al registrar el pago",
+        );
       }
     },
     [addPayment],
@@ -143,7 +145,9 @@ export const PagosPage = () => {
         await deletePayment(id);
         toast.success("Pago eliminado correctamente");
       } catch (e: unknown) {
-        toast.error(e instanceof Error ? e.message : "Error al eliminar el pago");
+        toast.error(
+          e instanceof Error ? e.message : "Error al eliminar el pago",
+        );
       }
     },
     [deletePayment],
@@ -161,7 +165,9 @@ export const PagosPage = () => {
         setMostrarModalDescuento(false);
         toast.success("Descuento creado correctamente");
       } catch (e: unknown) {
-        toast.error(e instanceof Error ? e.message : "Error al crear el descuento");
+        toast.error(
+          e instanceof Error ? e.message : "Error al crear el descuento",
+        );
       }
     },
     [addDiscount],
@@ -173,7 +179,9 @@ export const PagosPage = () => {
         await deleteDiscount(id);
         toast.success("Descuento eliminado correctamente");
       } catch (e: unknown) {
-        toast.error(e instanceof Error ? e.message : "Error al eliminar el descuento");
+        toast.error(
+          e instanceof Error ? e.message : "Error al eliminar el descuento",
+        );
       }
     },
     [deleteDiscount],
@@ -230,10 +238,7 @@ export const PagosPage = () => {
           />
         </>
       ) : (
-        <DiscountsGrid
-          discounts={descuentos}
-          onDelete={handleDeleteDiscount}
-        />
+        <DiscountsGrid discounts={descuentos} onDelete={handleDeleteDiscount} />
       )}
 
       <PaymentFormModal

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
+import React from "react";
+import { motion } from "motion/react";
 import {
   Users,
   Plus,
@@ -10,8 +10,8 @@ import {
   Clock,
   User,
   ArrowLeft,
-} from 'lucide-react';
-import { DetalleGrupo, SesionGrupo } from '@/entities/institucion';
+} from "lucide-react";
+import { DetalleGrupo, SesionGrupo } from "@/entities/institucion";
 
 interface GroupDetailProps {
   group: DetalleGrupo;
@@ -23,7 +23,7 @@ interface GroupDetailProps {
 
 function formatDate(dateStr: string): string {
   try {
-    return new Date(dateStr).toLocaleDateString('es-ES');
+    return new Date(dateStr).toLocaleDateString("es-ES");
   } catch {
     return dateStr;
   }
@@ -31,10 +31,10 @@ function formatDate(dateStr: string): string {
 
 function formatEstadoSesion(estado: string): string {
   const map: Record<string, string> = {
-    COMPLETED: 'Completada',
-    PENDING: 'Pendiente',
-    CANCELLED: 'Cancelada',
-    IN_PROGRESS: 'En Progreso',
+    COMPLETED: "Completada",
+    PENDING: "Pendiente",
+    CANCELLED: "Cancelada",
+    IN_PROGRESS: "En Progreso",
   };
   return map[estado] || estado;
 }
@@ -63,9 +63,13 @@ export function GroupDetail({
               <Users size={32} />
             </div>
             <div>
-              <h2 className="text-3xl font-bold dark:text-white serif">{group.nombre}</h2>
+              <h2 className="text-3xl font-bold dark:text-white serif">
+                {group.nombre}
+              </h2>
               {group.descripcion && (
-                <p className="text-gray-500 dark:text-gray-400 mt-1">{group.descripcion}</p>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">
+                  {group.descripcion}
+                </p>
               )}
             </div>
           </div>
@@ -97,7 +101,9 @@ export function GroupDetail({
         </div>
         <div className="divide-y divide-gray-50 dark:divide-white/5">
           {group.sesiones.length === 0 ? (
-            <div className="p-12 text-center text-gray-400 italic">No hay sesiones registradas para este grupo.</div>
+            <div className="p-12 text-center text-gray-400 italic">
+              No hay sesiones registradas para este grupo.
+            </div>
           ) : (
             group.sesiones.map((session, idx) => (
               <motion.div
@@ -118,7 +124,8 @@ export function GroupDetail({
                       </div>
                       <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-3 mt-1">
                         <span className="flex items-center gap-1">
-                          <User size={12} /> {session.terapeuta?.fullName || 'Sin terapeuta'}
+                          <User size={12} />{" "}
+                          {session.terapeuta?.fullName || "Sin terapeuta"}
                         </span>
                         {session.duracionMinutos && (
                           <span className="flex items-center gap-1">
@@ -129,11 +136,13 @@ export function GroupDetail({
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                      session.estadoSesion === 'COMPLETED'
-                        ? 'bg-green-100 text-green-600 dark:bg-green-500/10'
-                        : 'bg-[#008080]/10 text-[#008080]'
-                    }`}>
+                    <span
+                      className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                        session.estadoSesion === "COMPLETED"
+                          ? "bg-green-100 text-green-600 dark:bg-green-500/10"
+                          : "bg-[#008080]/10 text-[#008080]"
+                      }`}
+                    >
                       {formatEstadoSesion(session.estadoSesion)}
                     </span>
                     <button

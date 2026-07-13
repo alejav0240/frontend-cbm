@@ -1,19 +1,26 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Plus, Download } from 'lucide-react';
+import React from "react";
+import { Plus, Download } from "lucide-react";
 
 interface ExpensesHeaderProps {
   onAddClick: () => void;
   onExportClick?: () => void;
 }
 
-export function ExpensesHeader({ onAddClick, onExportClick }: ExpensesHeaderProps) {
+export function ExpensesHeader({
+  onAddClick,
+  onExportClick,
+}: ExpensesHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-bold dark:text-white tracking-tight serif">Gestión de <span className="text-[#008080]">Gastos</span></h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Control de egresos y facturación del centro</p>
+        <h1 className="text-3xl font-bold dark:text-white tracking-tight serif">
+          Gestión de <span className="text-[#008080]">Gastos</span>
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
+          Control de egresos y facturación del centro
+        </p>
       </div>
       <div className="flex items-center gap-3">
         {onExportClick && (

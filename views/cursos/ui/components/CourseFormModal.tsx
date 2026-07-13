@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Modal } from '@/shared/ui/components/Modal';
-import { Curso } from '@/entities/curso';
+import React, { useState } from "react";
+import { Modal } from "@/shared/ui/components/Modal";
+import { Curso } from "@/entities/curso";
 
 export interface CursoFormData {
   name: string;
@@ -25,17 +25,23 @@ export function CourseFormModal({
   initialData,
 }: CourseFormModalProps) {
   const [formData, setFormData] = useState<CursoFormData>(() => ({
-    name: initialData?.nombre ?? '',
-    description: initialData?.descripcion ?? '',
+    name: initialData?.nombre ?? "",
+    description: initialData?.descripcion ?? "",
     price: initialData?.precio ?? 0,
-    state: initialData?.estado ?? 'ACTIVE',
+    state: initialData?.estado ?? "ACTIVE",
   }));
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={initialData ? 'Editar Curso' : 'Nuevo Curso'}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={initialData ? "Editar Curso" : "Nuevo Curso"}
+    >
       <div className="space-y-6">
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Nombre del Curso</label>
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Nombre del Curso
+          </label>
           <input
             type="text"
             value={formData.name}
@@ -45,10 +51,14 @@ export function CourseFormModal({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Descripción</label>
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Descripción
+          </label>
           <textarea
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
             rows={3}
             placeholder="Breve descripción del curso..."
@@ -56,19 +66,27 @@ export function CourseFormModal({
         </div>
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Precio (Bs.)</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+              Precio (Bs.)
+            </label>
             <input
               type="number"
               value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+              onChange={(e) =>
+                setFormData({ ...formData, price: Number(e.target.value) })
+              }
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Estado</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+              Estado
+            </label>
             <select
               value={formData.state}
-              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, state: e.target.value })
+              }
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white appearance-none"
             >
               <option value="ACTIVE">Activo</option>
@@ -79,9 +97,17 @@ export function CourseFormModal({
         </div>
 
         <div className="flex justify-end gap-4 pt-4">
-          <button onClick={onClose} className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all">Cancelar</button>
-          <button onClick={() => onSave(formData)} className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg">
-            {initialData ? 'Guardar Cambios' : 'Crear Curso'}
+          <button
+            onClick={onClose}
+            className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={() => onSave(formData)}
+            className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg"
+          >
+            {initialData ? "Guardar Cambios" : "Crear Curso"}
           </button>
         </div>
       </div>

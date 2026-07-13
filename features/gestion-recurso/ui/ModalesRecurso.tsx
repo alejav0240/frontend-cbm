@@ -2,9 +2,7 @@
 
 import React, { useMemo } from "react";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
-import GenericExportModal, {
-  Exporter,
-} from "@/shared/ui/GenericExportModal";
+import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
 import {
   RecursoDigital,
   RecursoExportarFila,

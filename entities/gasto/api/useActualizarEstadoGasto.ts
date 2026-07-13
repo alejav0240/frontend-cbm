@@ -19,7 +19,8 @@ export function useActualizarEstadoGasto() {
       });
       toast.success("Estado del gasto actualizado");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Error al actualizar el estado";
+      const message =
+        err instanceof Error ? err.message : "Error al actualizar el estado";
       toast.error(message);
       throw err;
     }

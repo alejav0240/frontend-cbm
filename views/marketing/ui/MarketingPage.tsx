@@ -67,13 +67,11 @@ export const MarketingPage = () => {
     id: string;
   } | null>(null);
 
-  const { campanas, cargando: cargandoCampanas } =
-    useCampanasMarketing();
+  const { campanas, cargando: cargandoCampanas } = useCampanasMarketing();
   const { leads, cargando: cargandoLeads } = useLeads();
 
   const { crear: crearCampana } = useCrearCampana();
-  const { actualizar: actualizarCampana } =
-    useActualizarCampana();
+  const { actualizar: actualizarCampana } = useActualizarCampana();
   const { eliminar: eliminarCampana } = useEliminarCampana();
   const { crear: crearLead } = useCrearLead();
   const { actualizar: actualizarEstadoLead } = useActualizarEstadoLead();
@@ -289,7 +287,14 @@ export const MarketingPage = () => {
   );
 
   const handleExportarCSV = useCallback(() => {
-    const headers = ["Nombre", "Teléfono", "Email", "Origen", "Estado", "Fecha"];
+    const headers = [
+      "Nombre",
+      "Teléfono",
+      "Email",
+      "Origen",
+      "Estado",
+      "Fecha",
+    ];
     const rows = leadsMapeados.map((l) => [
       l.name,
       l.phone,
@@ -478,8 +483,8 @@ export const MarketingPage = () => {
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
               ¿Estás seguro de que deseas eliminar este{" "}
-              {idAEliminar.tipo === "campana" ? "campaña" : "lead"}? Esta
-              acción no se puede deshacer.
+              {idAEliminar.tipo === "campana" ? "campaña" : "lead"}? Esta acción
+              no se puede deshacer.
             </p>
             <div className="flex justify-end gap-4">
               <button

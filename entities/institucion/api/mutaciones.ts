@@ -1,4 +1,4 @@
-import {gql} from "@apollo/client";
+import { gql } from "@apollo/client";
 
 export const CREAR_INSTITUCION = gql`
   mutation CrearInstitucion(
@@ -69,4 +69,4 @@ export const ACTUALIZAR_GRUPO = gql`
       }
     }
   }
-`
+`;

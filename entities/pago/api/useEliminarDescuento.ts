@@ -15,8 +15,7 @@ export function useEliminarDescuento() {
     onCompleted: () => refetch(),
   });
 
-  const deleteDiscount = (id: string) =>
-    deleteMutation({ variables: { id } });
+  const deleteDiscount = (id: string) => deleteMutation({ variables: { id } });
 
   return {
     deleteDiscount,

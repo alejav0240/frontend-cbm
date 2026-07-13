@@ -1,8 +1,18 @@
-import {gql} from "@apollo/client";
+import { gql } from "@apollo/client";
 
 export const CREATE_COURSE = gql`
-  mutation CreateCourse($name: String!, $price: Float!, $description: String, $state: String) {
-    createCourse(name: $name, price: $price, description: $description, state: $state) {
+  mutation CreateCourse(
+    $name: String!
+    $price: Float!
+    $description: String
+    $state: String
+  ) {
+    createCourse(
+      name: $name
+      price: $price
+      description: $description
+      state: $state
+    ) {
       course {
         id
       }
@@ -11,8 +21,20 @@ export const CREATE_COURSE = gql`
 `;
 
 export const UPDATE_COURSE = gql`
-  mutation UpdateCourse($id: ID!, $name: String, $price: Float, $description: String, $state: String) {
-    updateCourse(id: $id, name: $name, price: $price, description: $description, state: $state) {
+  mutation UpdateCourse(
+    $id: ID!
+    $name: String
+    $price: Float
+    $description: String
+    $state: String
+  ) {
+    updateCourse(
+      id: $id
+      name: $name
+      price: $price
+      description: $description
+      state: $state
+    ) {
       course {
         id
       }
@@ -29,8 +51,20 @@ export const DELETE_COURSE = gql`
 `;
 
 export const ENROLL_IN_COURSE = gql`
-  mutation EnrollInCourse($courseId: ID!, $fullName: String!, $paymentMethod: String!, $amount: Float!, $carnet: String) {
-    enrollInCourse(courseId: $courseId, fullName: $fullName, paymentMethod: $paymentMethod, amount: $amount, carnet: $carnet) {
+  mutation EnrollInCourse(
+    $courseId: ID!
+    $fullName: String!
+    $paymentMethod: String!
+    $amount: Float!
+    $carnet: String
+  ) {
+    enrollInCourse(
+      courseId: $courseId
+      fullName: $fullName
+      paymentMethod: $paymentMethod
+      amount: $amount
+      carnet: $carnet
+    ) {
       enrollment {
         id
       }

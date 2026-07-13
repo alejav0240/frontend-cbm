@@ -1,23 +1,30 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
-import { Plus, Download } from 'lucide-react';
+import React from "react";
+import { motion } from "motion/react";
+import { Plus, Download } from "lucide-react";
 
 interface CoursesHeaderProps {
   onAddClick: () => void;
   onExportClick: () => void;
 }
 
-export function CoursesHeader({ onAddClick, onExportClick }: CoursesHeaderProps) {
+export function CoursesHeader({
+  onAddClick,
+  onExportClick,
+}: CoursesHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold dark:text-white serif">Gestión de <span className="text-[#008080] italic">Cursos</span></h1>
-        <p className="text-gray-500 dark:text-gray-400">Administra los cursos y los ingresos generados.</p>
+        <h1 className="text-3xl font-bold dark:text-white serif">
+          Gestión de <span className="text-[#008080] italic">Cursos</span>
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          Administra los cursos y los ingresos generados.
+        </p>
       </motion.div>
       <div className="flex items-center gap-3">
         <button

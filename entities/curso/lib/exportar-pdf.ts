@@ -14,7 +14,9 @@ export const generarCursosPDF = async (filas: CursoExportarFila[]) => {
   doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 14, 30);
 
   autoTable(doc, {
-    head: [["Nombre", "Descripción", "Precio", "Estudiantes", "Ingresos", "Estado"]],
+    head: [
+      ["Nombre", "Descripción", "Precio", "Estudiantes", "Ingresos", "Estado"],
+    ],
     body: filas.map((f) => [
       f.nombre,
       f.descripcion,

@@ -26,7 +26,10 @@ import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { CREAR_SESION } from "@/entities/sesion/api/mutaciones";
-import { CrearSesionMutation, CrearSesionMutationVariables } from "@/shared/api/generated/graphql";
+import {
+  CrearSesionMutation,
+  CrearSesionMutationVariables,
+} from "@/shared/api/generated/graphql";
 import { toast } from "sonner";
 
 const INITIAL_FORM_INSTITUCION = {
@@ -43,33 +46,52 @@ const INITIAL_FORM_GRUPO = {
 };
 
 export const InstitucionesPage = () => {
-  const [vista, setVista] = useState<"lista" | "detalle" | "detalle-grupo">("lista");
-  const [institucionSeleccionadaId, setInstitucionSeleccionadaId] = useState<string | null>(null);
-  const [grupoSeleccionadoId, setGrupoSeleccionadoId] = useState<string | null>(null);
+  const [vista, setVista] = useState<"lista" | "detalle" | "detalle-grupo">(
+    "lista",
+  );
+  const [institucionSeleccionadaId, setInstitucionSeleccionadaId] = useState<
+    string | null
+  >(null);
+  const [grupoSeleccionadoId, setGrupoSeleccionadoId] = useState<string | null>(
+    null,
+  );
 
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const busquedaDebounced = useDebounce(terminoBusqueda, 500);
 
-  const [mostrarFormularioInstitucion, setMostrarFormularioInstitucion] = useState(false);
+  const [mostrarFormularioInstitucion, setMostrarFormularioInstitucion] =
+    useState(false);
   const [mostrarFormularioGrupo, setMostrarFormularioGrupo] = useState(false);
   const [mostrarFormularioSesion, setMostrarFormularioSesion] = useState(false);
-  const [mostrarConfirmarEliminar, setMostrarConfirmarEliminar] = useState(false);
+  const [mostrarConfirmarEliminar, setMostrarConfirmarEliminar] =
+    useState(false);
   const [mostrarExportar, setMostrarExportar] = useState(false);
-  const [eliminarTarget, setEliminarTarget] = useState<{ tipo: "institucion" | "grupo" | "sesion"; id: string } | null>(null);
+  const [eliminarTarget, setEliminarTarget] = useState<{
+    tipo: "institucion" | "grupo" | "sesion";
+    id: string;
+  } | null>(null);
 
-  const [formInstitucion, setFormInstitucion] = useState(INITIAL_FORM_INSTITUCION);
+  const [formInstitucion, setFormInstitucion] = useState(
+    INITIAL_FORM_INSTITUCION,
+  );
   const [formGrupo, setFormGrupo] = useState(INITIAL_FORM_GRUPO);
 
   const { instituciones, refetch } = useInstituciones();
-  const { institucion: detalleInstitucion, cargando: cargandoDetalle } = useDetalleInstitucion(institucionSeleccionadaId ?? "");
-  const { grupo: detalleGrupo, cargando: cargandoGrupo } = useDetalleGrupo(grupoSeleccionadoId ?? "");
+  const { institucion: detalleInstitucion, cargando: cargandoDetalle } =
+    useDetalleInstitucion(institucionSeleccionadaId ?? "");
+  const { grupo: detalleGrupo, cargando: cargandoGrupo } = useDetalleGrupo(
+    grupoSeleccionadoId ?? "",
+  );
 
   const { crearInstitucion, creando } = useCrearInstitucion();
   const { eliminarInstitucion } = useEliminarInstitucion();
   const { crearGrupo } = useCrearGrupo();
   const { eliminarGrupo } = useEliminarGrupo();
 
-  const [crearSesionMut] = useMutation<CrearSesionMutation, CrearSesionMutationVariables>(CREAR_SESION);
+  const [crearSesionMut] = useMutation<
+    CrearSesionMutation,
+    CrearSesionMutationVariables
+  >(CREAR_SESION);
 
   const institucionesFiltradas = useMemo(() => {
     if (!busquedaDebounced) return instituciones;
@@ -83,7 +105,10 @@ export const InstitucionesPage = () => {
   }, [instituciones, busquedaDebounced]);
 
   const totalInstituciones = instituciones.length;
-  const totalGrupos = instituciones.reduce((sum, i) => sum + i.grupos.length, 0);
+  const totalGrupos = instituciones.reduce(
+    (sum, i) => sum + i.grupos.length,
+    0,
+  );
 
   const datosExportacion = useMemo((): InstitucionExportarFila[] => {
     return instituciones.map((inst) => ({
@@ -173,7 +198,12 @@ export const InstitucionesPage = () => {
   }, [crearGrupo, formGrupo, institucionSeleccionadaId, refetch]);
 
   const handleCrearSesion = useCallback(
-    async (data: { therapistId: string; date: string; time: string; notes?: string }) => {
+    async (data: {
+      therapistId: string;
+      date: string;
+      time: string;
+      notes?: string;
+    }) => {
       if (!grupoSeleccionadoId) return;
       try {
         const sessionDate = `${data.date}T${data.time}:00`;
@@ -188,7 +218,8 @@ export const InstitucionesPage = () => {
         });
         toast.success("Sesión creada correctamente");
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Error al crear la sesión";
+        const message =
+          err instanceof Error ? err.message : "Error al crear la sesión";
         toast.error(message);
         throw err;
       }
@@ -227,17 +258,19 @@ export const InstitucionesPage = () => {
     [],
   );
 
-  const tituloEliminar = eliminarTarget?.tipo === "institucion"
-    ? "Eliminar Institución"
-    : eliminarTarget?.tipo === "grupo"
-      ? "Eliminar Grupo"
-      : "Eliminar Sesión";
+  const tituloEliminar =
+    eliminarTarget?.tipo === "institucion"
+      ? "Eliminar Institución"
+      : eliminarTarget?.tipo === "grupo"
+        ? "Eliminar Grupo"
+        : "Eliminar Sesión";
 
-  const mensajeEliminar = eliminarTarget?.tipo === "institucion"
-    ? "¿Estás seguro de que deseas eliminar esta institución? También se eliminarán todos sus grupos y sesiones. Esta acción no se puede deshacer."
-    : eliminarTarget?.tipo === "grupo"
-      ? "¿Estás seguro de que deseas eliminar este grupo? Esta acción no se puede deshacer."
-      : "¿Estás seguro de que deseas eliminar esta sesión? Esta acción no se puede deshacer.";
+  const mensajeEliminar =
+    eliminarTarget?.tipo === "institucion"
+      ? "¿Estás seguro de que deseas eliminar esta institución? También se eliminarán todos sus grupos y sesiones. Esta acción no se puede deshacer."
+      : eliminarTarget?.tipo === "grupo"
+        ? "¿Estás seguro de que deseas eliminar este grupo? Esta acción no se puede deshacer."
+        : "¿Estás seguro de que deseas eliminar esta sesión? Esta acción no se puede deshacer.";
 
   if (vista === "detalle" && detalleInstitucion) {
     return (

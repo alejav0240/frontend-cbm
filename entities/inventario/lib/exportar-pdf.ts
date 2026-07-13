@@ -16,9 +16,7 @@ export const generarInventarioPDF = async (
   doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 14, 30);
 
   autoTable(doc, {
-    head: [
-      ["Nombre", "Tipo", "Condición", "Aula", "Estado"],
-    ],
+    head: [["Nombre", "Tipo", "Condición", "Aula", "Estado"]],
     body: filas.map((f) => [
       f.nombre,
       f.tipo,

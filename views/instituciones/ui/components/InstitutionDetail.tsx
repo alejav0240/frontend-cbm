@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
+import React from "react";
+import { motion } from "motion/react";
 import {
   Building2,
   Plus,
@@ -12,8 +12,8 @@ import {
   Mail,
   ArrowLeft,
   Trash2,
-} from 'lucide-react';
-import { Institucion } from '@/entities/institucion';
+} from "lucide-react";
+import { Institucion } from "@/entities/institucion";
 
 interface InstitutionDetailProps {
   institution: Institucion;
@@ -47,12 +47,26 @@ export function InstitutionDetail({
               <Building2 size={32} />
             </div>
             <div>
-              <h2 className="text-3xl font-bold dark:text-white serif">{institution.nombre}</h2>
+              <h2 className="text-3xl font-bold dark:text-white serif">
+                {institution.nombre}
+              </h2>
               <div className="flex flex-wrap gap-6 mt-4 text-sm text-gray-500 dark:text-gray-400">
-                <span className="flex items-center gap-2"><MapPin size={16} className="text-[#008080]" /> {institution.direccion}</span>
-                <span className="flex items-center gap-2"><Users size={16} className="text-[#008080]" /> {institution.nombreContacto}</span>
-                <span className="flex items-center gap-2"><Phone size={16} className="text-[#008080]" /> {institution.telefonoContacto}</span>
-                <span className="flex items-center gap-2"><Mail size={16} className="text-[#008080]" /> {institution.emailContacto}</span>
+                <span className="flex items-center gap-2">
+                  <MapPin size={16} className="text-[#008080]" />{" "}
+                  {institution.direccion}
+                </span>
+                <span className="flex items-center gap-2">
+                  <Users size={16} className="text-[#008080]" />{" "}
+                  {institution.nombreContacto}
+                </span>
+                <span className="flex items-center gap-2">
+                  <Phone size={16} className="text-[#008080]" />{" "}
+                  {institution.telefonoContacto}
+                </span>
+                <span className="flex items-center gap-2">
+                  <Mail size={16} className="text-[#008080]" />{" "}
+                  {institution.emailContacto}
+                </span>
               </div>
             </div>
           </div>
@@ -91,9 +105,13 @@ export function InstitutionDetail({
                 <Users size={24} />
               </div>
             </div>
-            <h3 className="text-xl font-bold dark:text-white mb-2 group-hover:text-[#008080] transition-colors">{group.nombre}</h3>
+            <h3 className="text-xl font-bold dark:text-white mb-2 group-hover:text-[#008080] transition-colors">
+              {group.nombre}
+            </h3>
             {group.descripcion && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-6">{group.descripcion}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-6">
+                {group.descripcion}
+              </p>
             )}
             <div className="flex items-center justify-between pt-6 border-t border-gray-50 dark:border-white/5">
               <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-[#008080] group-hover:text-white transition-all">
@@ -105,8 +123,15 @@ export function InstitutionDetail({
         {institution.grupos.length === 0 && (
           <div className="col-span-full py-20 text-center bg-gray-50/50 dark:bg-white/1 rounded-[40px] border-2 border-dashed border-gray-200 dark:border-white/5">
             <Users size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400 font-medium">No hay grupos registrados en esta institución.</p>
-            <button onClick={onNewGroup} className="mt-4 text-[#008080] font-bold text-sm hover:underline">Crear el primer grupo</button>
+            <p className="text-gray-500 dark:text-gray-400 font-medium">
+              No hay grupos registrados en esta institución.
+            </p>
+            <button
+              onClick={onNewGroup}
+              className="mt-4 text-[#008080] font-bold text-sm hover:underline"
+            >
+              Crear el primer grupo
+            </button>
           </div>
         )}
       </div>

@@ -27,9 +27,7 @@ export function useInscribirCurso() {
       toast.success("Estudiante inscrito correctamente");
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : "Error al inscribir al estudiante";
+        err instanceof Error ? err.message : "Error al inscribir al estudiante";
       toast.error(message);
       throw err;
     }

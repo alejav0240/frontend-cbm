@@ -9,7 +9,11 @@ import { EvaluationDetailsModal } from "./components/EvaluationDetailsModal";
 import { EvaluationForm } from "./components/EvaluationForm";
 import { EvaluationsFilters } from "./components/EvaluationsFilters";
 import { EvaluationsStats } from "./components/EvaluationsStats";
-import { useEvaluaciones, useEscalas, useAgregarEscalaSesion } from "@/entities/escalas";
+import {
+  useEvaluaciones,
+  useEscalas,
+  useAgregarEscalaSesion,
+} from "@/entities/escalas";
 import { useBuscarPacientes } from "@/entities/paciente";
 import { useAuthStore } from "@/shared/model/useAuthStore";
 import { Pagination } from "@/shared/ui/Pagination";
@@ -29,8 +33,11 @@ export const EvaluacionesPage = () => {
 
   const { escalas } = useEscalas();
   const { usuario } = useAuthStore();
-  const { options: patientOptions, onSearch: onSearchPatient, buscando } =
-    useBuscarPacientes();
+  const {
+    options: patientOptions,
+    onSearch: onSearchPatient,
+    buscando,
+  } = useBuscarPacientes();
   const { agregarEscalaSesion, agregando } = useAgregarEscalaSesion();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -40,31 +47,25 @@ export const EvaluacionesPage = () => {
     () =>
       !search.trim()
         ? evaluaciones
-        : evaluaciones.filter(
-            (ev) =>
-              ev.patientName
-                .toLowerCase()
-                .includes(search.toLowerCase().trim()),
+        : evaluaciones.filter((ev) =>
+            ev.patientName.toLowerCase().includes(search.toLowerCase().trim()),
           ),
     [evaluaciones, search],
   );
 
-  const handleViewDetails = useCallback(
-    (ev: any) => {
-      setSelectedEval({
-        ...ev,
-        patient: ev.patientName,
-        originalData: {
-          scale: { id: ev.scaleId },
-          subscaleResponses: ev.subscaleResponses.map((r: any) => ({
-            subscale: { id: r.subscaleId },
-            score: r.score,
-          })),
-        },
-      });
-    },
-    [],
-  );
+  const handleViewDetails = useCallback((ev: any) => {
+    setSelectedEval({
+      ...ev,
+      patient: ev.patientName,
+      originalData: {
+        scale: { id: ev.scaleId },
+        subscaleResponses: ev.subscaleResponses.map((r: any) => ({
+          subscale: { id: r.subscaleId },
+          score: r.score,
+        })),
+      },
+    });
+  }, []);
 
   const [newEval, setNewEval] = useState<any>({
     patientId: "",
@@ -105,8 +106,7 @@ export const EvaluacionesPage = () => {
       const currentScale = (escalas as any[]).find(
         (s: any) => s.id == selectedScaleId,
       );
-      const isSubscale =
-        currentScale?.tipoEscala?.toLowerCase() === "subscale";
+      const isSubscale = currentScale?.tipoEscala?.toLowerCase() === "subscale";
       const subscales = isSubscale
         ? Object.entries(subscaleScores)
             .filter(([_, score]) => score > 0)
@@ -117,9 +117,7 @@ export const EvaluacionesPage = () => {
         : undefined;
 
       const valueId = !isSubscale
-        ? currentScale?.valores?.find(
-            (v: any) => v.valor === newEval.score,
-          )?.id
+        ? currentScale?.valores?.find((v: any) => v.valor === newEval.score)?.id
         : undefined;
 
       try {
@@ -139,7 +137,15 @@ export const EvaluacionesPage = () => {
         toast.error(err?.message || "Error al registrar la evaluación");
       }
     },
-    [newEval, selectedScaleId, usuario, escalas, subscaleScores, agregarEscalaSesion, refetch],
+    [
+      newEval,
+      selectedScaleId,
+      usuario,
+      escalas,
+      subscaleScores,
+      agregarEscalaSesion,
+      refetch,
+    ],
   );
 
   const resetForm = useCallback(() => {
@@ -169,27 +175,18 @@ export const EvaluacionesPage = () => {
     [selectedScaleId, escalas],
   );
 
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearch(value);
-    },
-    [],
-  );
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+  }, []);
 
-  const handleScaleFilterChange = useCallback(
-    (value: string) => {
-      setScaleFilter(value);
-      setPage(1);
-    },
-    [],
-  );
+  const handleScaleFilterChange = useCallback((value: string) => {
+    setScaleFilter(value);
+    setPage(1);
+  }, []);
 
-  const handlePageChange = useCallback(
-    (p: number) => {
-      setPage(p);
-    },
-    [],
-  );
+  const handlePageChange = useCallback((p: number) => {
+    setPage(p);
+  }, []);
 
   if (cargando && evaluaciones.length === 0) {
     return (

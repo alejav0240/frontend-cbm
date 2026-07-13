@@ -44,7 +44,10 @@ export function EvaluationsFilters({
 
       <div className="w-full sm:w-64">
         <SearchableSelect
-          options={scales.map((s) => ({ label: s.nombre ?? "", value: String(s.id) }))}
+          options={scales.map((s) => ({
+            label: s.nombre ?? "",
+            value: String(s.id),
+          }))}
           value={scaleId}
           onChange={onScaleChange}
           placeholder="Todas las escalas"

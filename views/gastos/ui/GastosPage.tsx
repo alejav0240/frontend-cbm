@@ -43,7 +43,8 @@ export const GastosPage = () => {
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
   const [mostrarExportar, setMostrarExportar] = useState(false);
   const [gastoAEliminar, setGastoAEliminar] = useState<string | null>(null);
-  const [gastoFormData, setGastoFormData] = useState<GastoFormData>(INITIAL_FORM_DATA);
+  const [gastoFormData, setGastoFormData] =
+    useState<GastoFormData>(INITIAL_FORM_DATA);
 
   const { gastos, refetch } = useGastos();
 

@@ -15,12 +15,24 @@ import {
 } from "@/entities/curso";
 import { CoursesHeader } from "./components/CoursesHeader";
 import { CoursesStats } from "./components/CoursesStats";
-import { CourseFormModal, type CursoFormData } from "./components/CourseFormModal";
+import {
+  CourseFormModal,
+  type CursoFormData,
+} from "./components/CourseFormModal";
 import { EnrollStudentModal } from "./components/EnrollStudentModal";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
-import { Search, GraduationCap, Users, DollarSign, ChevronRight, Edit2, Trash2, UserPlus } from "lucide-react";
+import {
+  Search,
+  GraduationCap,
+  Users,
+  DollarSign,
+  ChevronRight,
+  Edit2,
+  Trash2,
+  UserPlus,
+} from "lucide-react";
 
 export const CursosPage = () => {
   const router = useRouter();

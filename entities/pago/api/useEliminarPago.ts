@@ -14,8 +14,7 @@ export function useEliminarPago() {
     onCompleted: () => refetch(),
   });
 
-  const deletePayment = (id: string) =>
-    deleteMutation({ variables: { id } });
+  const deletePayment = (id: string) => deleteMutation({ variables: { id } });
 
   return {
     deletePayment,

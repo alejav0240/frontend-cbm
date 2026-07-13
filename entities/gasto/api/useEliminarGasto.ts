@@ -23,7 +23,8 @@ export function useEliminarGasto() {
         toast.error("Error al eliminar el gasto");
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Error al eliminar el gasto";
+      const message =
+        err instanceof Error ? err.message : "Error al eliminar el gasto";
       toast.error(message);
       throw err;
     }

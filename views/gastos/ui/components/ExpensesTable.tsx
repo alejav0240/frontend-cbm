@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
-import { Search, Filter, Download, Trash2, DollarSign } from 'lucide-react';
-import { Gasto } from '@/entities/gasto';
+import React from "react";
+import { motion } from "motion/react";
+import { Search, Filter, Download, Trash2, DollarSign } from "lucide-react";
+import { Gasto } from "@/entities/gasto";
 
 interface ExpensesTableProps {
   expenses: Gasto[];
@@ -24,7 +24,10 @@ export function ExpensesTable({
     <div className="bg-white dark:bg-[#111] rounded-[32px] border border-gray-200 dark:border-white/5 overflow-hidden shadow-sm">
       <div className="p-6 border-b border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+            size={18}
+          />
           <input
             type="text"
             placeholder="Buscar por descripción o categoría..."
@@ -47,12 +50,24 @@ export function ExpensesTable({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50/50 dark:bg-white/2">
-              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Descripción</th>
-              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Categoría</th>
-              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Monto</th>
-              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Fecha</th>
-              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Estado</th>
-              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Acciones</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Descripción
+              </th>
+              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Categoría
+              </th>
+              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Monto
+              </th>
+              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Fecha
+              </th>
+              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Estado
+              </th>
+              <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">
+                Acciones
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -64,7 +79,9 @@ export function ExpensesTable({
                 className="hover:bg-gray-50/50 dark:hover:bg-white/2 transition-colors group"
               >
                 <td className="px-6 py-4">
-                  <p className="text-sm font-bold dark:text-white">{expense.descripcion}</p>
+                  <p className="text-sm font-bold dark:text-white">
+                    {expense.descripcion}
+                  </p>
                 </td>
                 <td className="px-6 py-4">
                   <span className="text-xs font-medium px-3 py-1 bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 rounded-full">
@@ -73,24 +90,30 @@ export function ExpensesTable({
                 </td>
                 <td className="px-6 py-4">
                   <p className="text-sm font-bold text-red-500">
-                    -{Number(expense.monto).toLocaleString('es-BO', { style: 'currency', currency: 'BOB' })}
+                    -
+                    {Number(expense.monto).toLocaleString("es-BO", {
+                      style: "currency",
+                      currency: "BOB",
+                    })}
                   </p>
                 </td>
                 <td className="px-6 py-4">
                   <p className="text-sm text-gray-500">
-                    {new Intl.DateTimeFormat('es-ES').format(new Date(expense.fechaGasto))}
+                    {new Intl.DateTimeFormat("es-ES").format(
+                      new Date(expense.fechaGasto),
+                    )}
                   </p>
                 </td>
                 <td className="px-6 py-4">
                   <button
                     onClick={() => onToggleStatus(expense.id)}
                     className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest transition-all ${
-                      expense.estado === 'PAID'
-                        ? 'bg-green-500/10 text-green-500'
-                        : 'bg-amber-500/10 text-amber-500'
+                      expense.estado === "PAID"
+                        ? "bg-green-500/10 text-green-500"
+                        : "bg-amber-500/10 text-amber-500"
                     }`}
                   >
-                    {expense.estado === 'PAID' ? 'Pagado' : 'Pendiente'}
+                    {expense.estado === "PAID" ? "Pagado" : "Pendiente"}
                   </button>
                 </td>
                 <td className="px-6 py-4 text-right">
@@ -112,7 +135,9 @@ export function ExpensesTable({
                     <div className="w-16 h-16 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center text-gray-400">
                       <DollarSign size={32} />
                     </div>
-                    <p className="text-gray-500 italic">No se encontraron gastos registrados</p>
+                    <p className="text-gray-500 italic">
+                      No se encontraron gastos registrados
+                    </p>
                   </div>
                 </td>
               </tr>

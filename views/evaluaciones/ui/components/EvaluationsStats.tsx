@@ -10,13 +10,18 @@ interface EvaluationsStatsProps {
   total: number;
 }
 
-export function EvaluationsStats({ evaluaciones, total }: EvaluationsStatsProps) {
+export function EvaluationsStats({
+  evaluaciones,
+  total,
+}: EvaluationsStatsProps) {
   const promedio = useMemo(() => {
     const scores = evaluaciones
       .map((e) => e.score)
       .filter((s): s is number => s != null);
     if (scores.length === 0) return 0;
-    return Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10;
+    return (
+      Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10
+    );
   }, [evaluaciones]);
 
   const esteMes = useMemo(() => {
@@ -72,9 +77,7 @@ export function EvaluationsStats({ evaluaciones, total }: EvaluationsStatsProps)
               <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
                 {stat.label}
               </p>
-              <p className="text-2xl font-bold dark:text-white">
-                {stat.value}
-              </p>
+              <p className="text-2xl font-bold dark:text-white">{stat.value}</p>
             </div>
           </div>
         </motion.div>
