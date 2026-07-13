@@ -28,20 +28,18 @@ export function useExpedientes() {
           sessionStatus: s?.sessionStatus ?? "",
         })),
         startDate: c.startDate,
-        lastSessionDate: c.sessionsList.length > 0
-          ? String(c.sessionsList[0]?.sessionDate ?? "")
-          : "",
+        lastSessionDate:
+          c.sessionsList.length > 0
+            ? String(c.sessionsList[0]?.sessionDate ?? "")
+            : "",
       })),
     [ciclos],
   );
 
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearch(value);
-      setPage(1);
-    },
-    [],
-  );
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
 
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
