@@ -84,6 +84,9 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
 
   return {
     sesiones: sesionesNormalizadas,
+    total: data?.sessions?.totalCount ?? 0,
+    totalPages: data?.sessions?.totalPages ?? 0,
+    currentPage: data?.sessions?.currentPage ?? 1,
     cargando: loading,
     error,
     refetch,

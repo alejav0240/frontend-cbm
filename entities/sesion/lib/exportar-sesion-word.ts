@@ -1,6 +1,9 @@
 import { SesionDetalladaDTO } from "../model/dto";
 
-export async function generarSesionDetalladaWord(dto: SesionDetalladaDTO, nombreArchivo: string) {
+export async function generarSesionDetalladaWord(
+  dto: SesionDetalladaDTO,
+  nombreArchivo: string,
+) {
   const {
     Document,
     Packer,
@@ -109,13 +112,13 @@ export async function generarSesionDetalladaWord(dto: SesionDetalladaDTO, nombre
   children.push(labelValue("Paciente", dto.pacienteNombre));
   children.push(labelValue("Terapeuta", dto.therapistName));
 
-  const formattedDate = dto.sessionDate 
+  const formattedDate = dto.sessionDate
     ? new Date(dto.sessionDate).toLocaleDateString("es-ES", {
         day: "2-digit",
         month: "long",
         year: "numeric",
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
       })
     : "—";
 
@@ -134,7 +137,14 @@ export async function generarSesionDetalladaWord(dto: SesionDetalladaDTO, nombre
       children.push(labelValue("Recursos Digitales", dto.resources.join(", ")));
     }
     if (dto.inventory.length > 0) {
-      children.push(labelValue("Materiales de Aula", dto.inventory.map(i => `${i.name}${i.room ? ` (${i.room})` : ""}`).join(", ")));
+      children.push(
+        labelValue(
+          "Materiales de Aula",
+          dto.inventory
+            .map((i) => `${i.name}${i.room ? ` (${i.room})` : ""}`)
+            .join(", "),
+        ),
+      );
     }
   }
 
@@ -185,18 +195,22 @@ export async function generarSesionDetalladaWord(dto: SesionDetalladaDTO, nombre
       ],
     });
 
-    const dataRows = dto.planSteps.map((step, idx) =>
-      new TableRow({
-        children: [
-          tableCell(String(idx + 1), 5),
-          tableCell(step.moment || "—", 15),
-          tableCell(step.objective || "—", 25),
-          tableCell(step.focus || "—", 15),
-          tableCell(step.mltMethod || "—", 15),
-          tableCell(`${step.actualDuration || 0}/${step.durationMinutes || 0} min`, 15),
-          tableCell(step.isCompleted ? "Sí" : "No", 10),
-        ],
-      })
+    const dataRows = dto.planSteps.map(
+      (step, idx) =>
+        new TableRow({
+          children: [
+            tableCell(String(idx + 1), 5),
+            tableCell(step.moment || "—", 15),
+            tableCell(step.objective || "—", 25),
+            tableCell(step.focus || "—", 15),
+            tableCell(step.mltMethod || "—", 15),
+            tableCell(
+              `${step.actualDuration || 0}/${step.durationMinutes || 0} min`,
+              15,
+            ),
+            tableCell(step.isCompleted ? "Sí" : "No", 10),
+          ],
+        }),
     );
 
     children.push(
@@ -204,7 +218,7 @@ export async function generarSesionDetalladaWord(dto: SesionDetalladaDTO, nombre
         rows: [headerRow, ...dataRows],
         width: { size: 100, type: WidthType.PERCENTAGE },
       }),
-      emptyLine()
+      emptyLine(),
     );
   }
 
@@ -213,13 +227,20 @@ export async function generarSesionDetalladaWord(dto: SesionDetalladaDTO, nombre
     children.push(title("Evaluaciones Clínicas"));
 
     for (const evalData of dto.scaleEvaluations) {
-      children.push(subTitle(`${evalData.scaleName} (Puntuación: ${evalData.totalScore}/10)`));
+      children.push(
+        subTitle(
+          `${evalData.scaleName} (Puntuación: ${evalData.totalScore}/10)`,
+        ),
+      );
 
       const rows: string[][] = [];
-      evalData.subscaleResponses.forEach(r => {
-        rows.push([r.name || "Subescala", `${r.score} (máx: ${r.maxValue || 10})`]);
+      evalData.subscaleResponses.forEach((r) => {
+        rows.push([
+          r.name || "Subescala",
+          `${r.score} (máx: ${r.maxValue || 10})`,
+        ]);
       });
-      evalData.valueResponses.forEach(v => {
+      evalData.valueResponses.forEach((v) => {
         rows.push([v.label || "Indicador", String(v.value)]);
       });
 
@@ -256,7 +277,10 @@ export async function generarSesionDetalladaWord(dto: SesionDetalladaDTO, nombre
           new Table({
             rows: [
               new TableRow({
-                children: [cellH("Indicador / Subescala"), cellH("Valor obtenido")],
+                children: [
+                  cellH("Indicador / Subescala"),
+                  cellH("Valor obtenido"),
+                ],
               }),
               ...rows.map(
                 (p) =>
@@ -267,7 +291,7 @@ export async function generarSesionDetalladaWord(dto: SesionDetalladaDTO, nombre
             ],
             width: { size: 90, type: WidthType.PERCENTAGE },
           }),
-          emptyLine()
+          emptyLine(),
         );
       }
     }
@@ -325,7 +349,7 @@ export async function generarSesionDetalladaWord(dto: SesionDetalladaDTO, nombre
             ],
             width: { size: 100, type: WidthType.PERCENTAGE },
           }),
-          emptyLine()
+          emptyLine(),
         );
       }
     }

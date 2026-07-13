@@ -20,7 +20,9 @@ export function useEliminarSesion() {
       if (data?.deleteSession?.success) {
         toast.success("Sesión eliminada correctamente");
       } else {
-        toast.error(data?.deleteSession?.message || "Error al eliminar la sesión");
+        toast.error(
+          data?.deleteSession?.message || "Error al eliminar la sesión",
+        );
       }
     } catch (err: any) {
       toast.error(err?.message || "Error al eliminar la sesión");

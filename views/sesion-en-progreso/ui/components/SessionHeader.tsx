@@ -351,7 +351,9 @@ export function SessionHeader({
                 ? "bg-red-500"
                 : "bg-gradient-to-r from-[#008080] to-teal-400"
             }`}
-            style={{ width: `${Math.min((timer / (duracionSesion * 60)) * 100, 100)}%` }}
+            style={{
+              width: `${Math.min((timer / (duracionSesion * 60)) * 100, 100)}%`,
+            }}
           />
         </div>
       )}

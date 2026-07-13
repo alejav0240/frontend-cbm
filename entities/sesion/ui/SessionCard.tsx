@@ -275,7 +275,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
           {onViewDetails && (
             <button
               onClick={() => onViewDetails(session)}
-               className="p-3 bg-teal-50 dark:bg-[#008080]/10 rounded-2xl text-[#008080] hover:bg-teal-100 dark:hover:bg-[#008080]/20 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest flex-1 sm:flex-none font-sans"
+              className="p-3 bg-teal-50 dark:bg-[#008080]/10 rounded-2xl text-[#008080] hover:bg-teal-100 dark:hover:bg-[#008080]/20 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest flex-1 sm:flex-none font-sans"
               title="Ver más información"
             >
               <FolderOpen size={18} />
@@ -285,11 +285,11 @@ const SessionCard: React.FC<SessionCardProps> = ({
           {onExport && (
             <button
               onClick={() => onExport(session)}
-               className="p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest flex-1 sm:flex-none font-sans"
+              className="p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest flex-1 sm:flex-none font-sans"
               title="Exportar informe"
             >
               <FileText size={18} />
-               <span>Exportar</span>
+              <span>Exportar</span>
             </button>
           )}
           <button

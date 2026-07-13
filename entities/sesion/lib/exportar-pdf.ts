@@ -33,3 +33,10 @@ export const generarSesionesPDF = async (filas: SesionExportarFila[]) => {
 
   return doc;
 };
+
+export const generarSesionesPDFPreview = async (
+  filas: SesionExportarFila[],
+): Promise<Blob> => {
+  const doc = await generarSesionesPDF(filas);
+  return doc.output("blob");
+};

@@ -8,7 +8,10 @@ import SessionCard from "@/entities/sesion/ui/SessionCard";
 
 interface SessionHistoryProps {
   patientSessions: any[];
-  onViewAIAnalysis: (sessionId: string | number, mode: "list" | "charts") => void;
+  onViewAIAnalysis: (
+    sessionId: string | number,
+    mode: "list" | "charts",
+  ) => void;
   onEditSession: (session: any) => void;
   onDeleteSession: (sessionId: string | number) => void;
   currentPage: number;

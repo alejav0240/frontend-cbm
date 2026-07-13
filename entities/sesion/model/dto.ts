@@ -33,7 +33,11 @@ export interface SesionDetalladaDTO {
     evaluatedAt: string;
     totalScore: number;
     scaleName: string;
-    subscaleResponses: Array<{ name: string; score: number; maxValue?: number }>;
+    subscaleResponses: Array<{
+      name: string;
+      score: number;
+      maxValue?: number;
+    }>;
     valueResponses: Array<{ label: string; value: number }>;
   }>;
   formAssignments: Array<{
@@ -55,4 +59,3 @@ export interface SesionDetalladaDTO {
     approach?: string;
   }>;
 }
-

@@ -46,21 +46,31 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
 
   // General info table
   header("Información General de la Sesión");
-  const formattedDate = dto.sessionDate 
+  const formattedDate = dto.sessionDate
     ? new Date(dto.sessionDate).toLocaleDateString("es-ES", {
         day: "2-digit",
         month: "long",
         year: "numeric",
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
       })
     : "—";
 
   autoTable(doc, {
     body: [
       ["Paciente:", dto.pacienteNombre, "Fecha Sesión:", formattedDate],
-      ["Terapeuta:", dto.therapistName, "Duración:", `${dto.durationMinutes} minutos`],
-      ["Ciclo Número:", `Ciclo #${dto.cycleNumber}`, "Fecha Registro:", new Date(dto.createdAt).toLocaleDateString("es-ES")]
+      [
+        "Terapeuta:",
+        dto.therapistName,
+        "Duración:",
+        `${dto.durationMinutes} minutos`,
+      ],
+      [
+        "Ciclo Número:",
+        `Ciclo #${dto.cycleNumber}`,
+        "Fecha Registro:",
+        new Date(dto.createdAt).toLocaleDateString("es-ES"),
+      ],
     ],
     startY: y,
     theme: "plain",
@@ -69,8 +79,8 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
       0: { fontStyle: "bold", textColor: [100, 100, 100], cellWidth: 30 },
       1: { textColor: [50, 50, 50], cellWidth: 60 },
       2: { fontStyle: "bold", textColor: [100, 100, 100], cellWidth: 30 },
-      3: { textColor: [50, 50, 50], cellWidth: 60 }
-    }
+      3: { textColor: [50, 50, 50], cellWidth: 60 },
+    },
   });
   y = (doc as any).lastAutoTable.finalY + 12;
 
@@ -86,7 +96,9 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
       bodyText(`Recursos Digitales: ${dto.resources.join(", ")}`);
     }
     if (dto.inventory.length > 0) {
-      bodyText(`Materiales de Aula: ${dto.inventory.map(i => `${i.name}${i.room ? ` (${i.room})` : ""}`).join(", ")}`);
+      bodyText(
+        `Materiales de Aula: ${dto.inventory.map((i) => `${i.name}${i.room ? ` (${i.room})` : ""}`).join(", ")}`,
+      );
     }
     y += 4;
   }
@@ -101,17 +113,27 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
       step.focus || "—",
       step.mltMethod || "—",
       `${step.actualDuration || 0}/${step.durationMinutes || 0} min`,
-      step.isCompleted ? "Sí" : "No"
+      step.isCompleted ? "Sí" : "No",
     ]);
 
     autoTable(doc, {
-      head: [["#", "Momento", "Objetivo", "Enfoque", "Método MLT", "Duración", "Completado"]],
+      head: [
+        [
+          "#",
+          "Momento",
+          "Objetivo",
+          "Enfoque",
+          "Método MLT",
+          "Duración",
+          "Completado",
+        ],
+      ],
       body: rows,
       startY: y,
       theme: "striped",
       headStyles: { fillColor: [0, 128, 128] },
       styles: { fontSize: 8, cellPadding: 2.5 },
-      margin: { left: pagX, right: 14 }
+      margin: { left: pagX, right: 14 },
     });
     y = (doc as any).lastAutoTable.finalY + 12;
   }
@@ -127,15 +149,22 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(50);
-      doc.text(`${evalData.scaleName} — Puntuación Total: ${evalData.totalScore}/10`, pagX, y);
+      doc.text(
+        `${evalData.scaleName} — Puntuación Total: ${evalData.totalScore}/10`,
+        pagX,
+        y,
+      );
       y += 6;
       doc.setFont("helvetica", "normal");
 
       const rows: string[][] = [];
-      evalData.subscaleResponses.forEach(r => {
-        rows.push([r.name || "Subescala", `${r.score} (máx: ${r.maxValue || 10})`]);
+      evalData.subscaleResponses.forEach((r) => {
+        rows.push([
+          r.name || "Subescala",
+          `${r.score} (máx: ${r.maxValue || 10})`,
+        ]);
       });
-      evalData.valueResponses.forEach(v => {
+      evalData.valueResponses.forEach((v) => {
         rows.push([v.label || "Respuesta", String(v.value)]);
       });
 
@@ -147,7 +176,7 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
           theme: "striped",
           headStyles: { fillColor: [100, 100, 100] },
           styles: { fontSize: 8.5, cellPadding: 2 },
-          margin: { left: pagX + 6, right: 20 }
+          margin: { left: pagX + 6, right: 20 },
         });
         y = (doc as any).lastAutoTable.finalY + 8;
       } else {
@@ -174,7 +203,7 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
       doc.setFont("helvetica", "normal");
 
       if (formAssign.responses.length > 0) {
-        const rows = formAssign.responses.map(r => [r.question, r.response]);
+        const rows = formAssign.responses.map((r) => [r.question, r.response]);
         autoTable(doc, {
           head: [["Pregunta", "Respuesta"]],
           body: rows,
@@ -182,7 +211,7 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
           theme: "striped",
           headStyles: { fillColor: [0, 128, 128] },
           styles: { fontSize: 8.5, cellPadding: 3 },
-          margin: { left: pagX + 6, right: 20 }
+          margin: { left: pagX + 6, right: 20 },
         });
         y = (doc as any).lastAutoTable.finalY + 10;
       } else {

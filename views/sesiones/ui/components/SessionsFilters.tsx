@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import React from "react";
+import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 
 const STATUS_OPTIONS = [
-  { label: 'Todos', value: 'Todos' },
-  { label: 'Agendada', value: 'agendada' },
-  { label: 'Confirmada', value: 'confirma' },
-  { label: 'Completada', value: 'completa' },
-  { label: 'Reprogramada', value: 'reprograma' },
-  { label: 'Cancelada', value: 'cancelada' },
+  { label: "Todos", value: "Todos" },
+  { label: "Agendada", value: "agendada" },
+  { label: "Confirmada", value: "confirma" },
+  { label: "Completada", value: "completa" },
+  { label: "Reprogramada", value: "reprograma" },
+  { label: "Cancelada", value: "cancelada" },
 ];
 
 interface SessionsFiltersProps {
@@ -25,18 +25,18 @@ export function SessionsFilters({
   setFilterStatus,
   filterTherapist,
   setFilterTherapist,
-  therapistsList = []
+  therapistsList = [],
 }: SessionsFiltersProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-4">
-      <SearchableSelect 
+      <SearchableSelect
         options={STATUS_OPTIONS}
         value={filterStatus}
         onChange={setFilterStatus}
         placeholder="Estado"
       />
-      <SearchableSelect 
-        options={['Todos', ...therapistsList]}
+      <SearchableSelect
+        options={["Todos", ...therapistsList]}
         value={filterTherapist}
         onChange={setFilterTherapist}
         placeholder="Terapeuta"

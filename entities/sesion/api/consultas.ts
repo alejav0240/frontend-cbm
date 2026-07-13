@@ -232,75 +232,74 @@ export const OBTENER_CICLOS_PACIENTES = gql`
 `;
 
 export const VER_SESION = gql`
-query VerSesion($id: ID!) {
-  session(id: $id) {
-    createdAt
-    cycleNumber
-    databaseId
-    durationMinutes
-    sessionResources {
-      resource {
-        title
-      }
-    }
-    sessionDate
-    notes
-    formAssignments {
-      completionRatio
+  query VerSesion($id: ID!) {
+    session(id: $id) {
       createdAt
-      responses {
-        response
-        question {
-          question
+      cycleNumber
+      databaseId
+      durationMinutes
+      sessionResources {
+        resource {
+          title
         }
       }
-    }
-    scaleEvaluations {
-      totalScore
-      evaluatedAt
-      id
-      inSession
-      subscaleResponses {
-        subscale {
+      sessionDate
+      notes
+      formAssignments {
+        completionRatio
+        createdAt
+        responses {
+          response
+          question {
+            question
+          }
+        }
+      }
+      scaleEvaluations {
+        totalScore
+        evaluatedAt
+        id
+        inSession
+        subscaleResponses {
+          subscale {
+            id
+            maxValue
+          }
+          score
+        }
+        valueResponses {
           id
-          maxValue
-        }
-        score
-      }
-      valueResponses {
-        id
-        scaleValue {
-          label
-          value
+          scaleValue {
+            label
+            value
+          }
         }
       }
-    }
-    sessionInventory {
-      item {
-        name
-        room
+      sessionInventory {
+        item {
+          name
+          room
+        }
       }
-    }
-    sessionNumber
-    sessionPlanSteps {
-      actualDuration
-      createdAt
-      id
-      isCompleted
-      planStep {
-        approach
-        durationMinutes
-        focus
+      sessionNumber
+      sessionPlanSteps {
+        actualDuration
+        createdAt
         id
-        mltMethod
-        moment
-        musicalEmphasis
-        musicalResources
-        objective
-        orderIndex
+        isCompleted
+        planStep {
+          approach
+          durationMinutes
+          focus
+          id
+          mltMethod
+          moment
+          musicalEmphasis
+          musicalResources
+          objective
+          orderIndex
+        }
       }
     }
   }
-}
 `;
-

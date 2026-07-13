@@ -63,7 +63,9 @@ export const useCiclosPacientes = (filtros: CicloPacienteFiltros = {}) => {
         status: r.status || "",
         paymentStatus: r.paymentSummary?.pending === 0 ? "Pagado" : "Pendiente",
         paymentSummary: r.paymentSummary,
-        sessionsList: r.sessions?.filter(Boolean) || [],
+        sessionsList: (r.sessions ?? []).filter(
+          (s): s is NonNullable<typeof s> => s !== null,
+        ),
         patientPhone: "",
         therapists: "N/A",
       }));
