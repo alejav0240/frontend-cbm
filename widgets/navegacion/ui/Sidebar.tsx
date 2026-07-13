@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -31,7 +31,6 @@ import {
   Settings,
   X,
   ChevronRight,
-  Menu,
   Play,
 } from "lucide-react";
 import { SidebarItem } from "@/shared/ui/components/SidebarItem";
@@ -40,248 +39,252 @@ import { useAuthStore } from "@/shared/model/useAuthStore";
 import { useSidebar } from "@/shared/model/useInterfazStore";
 import { useSesionActivaStore } from "@/entities/sesion";
 
+const menuGroups = [
+  {
+    title: "Sesión Activa",
+    items: [
+      {
+        id: "sesion-activa",
+        href: "/dashboard/sesion-en-progreso",
+        label: "En Progreso",
+        icon: <Play size={18} className="text-red-500 animate-pulse" />,
+        requiresSession: true,
+      },
+    ],
+  },
+  {
+    title: "Atención",
+    items: [
+      {
+        id: "overview",
+        href: "/dashboard",
+        label: "Dashboard",
+        icon: <LayoutDashboard size={18} />,
+      },
+      {
+        id: "pacientes",
+        href: "/dashboard/pacientes",
+        label: "Pacientes",
+        icon: <Users size={18} />,
+        permission: "pacientes",
+      },
+      {
+        id: "agenda",
+        href: "/dashboard/agenda",
+        label: "Agenda",
+        icon: <Calendar size={18} />,
+        permission: "agenda",
+      },
+      {
+        id: "sesiones",
+        href: "/dashboard/sesiones",
+        label: "Sesiones",
+        icon: <History size={18} />,
+        permission: "sesiones",
+      },
+      {
+        id: "ciclos",
+        href: "/dashboard/ciclos",
+        label: "Ciclos",
+        icon: <ListChecks size={18} />,
+        permission: "pacientes",
+      },
+      {
+        id: "portal-familiar",
+        href: "/dashboard/portal-familiar",
+        label: "Portal Familiar",
+        icon: <Heart size={18} />,
+      },
+    ],
+  },
+  {
+    title: "Clínica",
+    items: [
+      {
+        id: "expedientes",
+        href: "/dashboard/expedientes",
+        label: "Expedientes",
+        icon: <Stethoscope size={18} />,
+        permission: "pacientes",
+      },
+      {
+        id: "evaluaciones",
+        href: "/dashboard/evaluaciones",
+        label: "Evaluaciones",
+        icon: <ClipboardList size={18} />,
+        permission: "evaluaciones",
+      },
+      {
+        id: "planes",
+        href: "/dashboard/planes",
+        label: "Planes",
+        icon: <Target size={18} />,
+        permission: "planes",
+      },
+      {
+        id: "escalas",
+        href: "/dashboard/escalas",
+        label: "Escalas",
+        icon: <ListChecks size={18} />,
+        permission: "escalas",
+      },
+      {
+        id: "informes",
+        href: "/dashboard/informes",
+        label: "Informes",
+        icon: <FileText size={18} />,
+        permission: "informes",
+      },
+    ],
+  },
+  {
+    title: "Operaciones",
+    items: [
+      {
+        id: "pagos",
+        href: "/dashboard/pagos",
+        label: "Pagos",
+        icon: <DollarSign size={18} />,
+        permission: "pagos",
+      },
+      {
+        id: "gastos",
+        href: "/dashboard/gastos",
+        label: "Gastos",
+        icon: <TrendingDown size={18} />,
+        permission: "gastos",
+      },
+      {
+        id: "inventario",
+        href: "/dashboard/inventario",
+        label: "Inventario",
+        icon: <Package size={18} />,
+        permission: "inventario",
+      },
+      {
+        id: "analisis",
+        href: "/dashboard/analisis",
+        label: "Análisis",
+        icon: <BarChart3 size={18} />,
+        permission: "analisis",
+      },
+      {
+        id: "instituciones",
+        href: "/dashboard/instituciones",
+        label: "Instituciones",
+        icon: <Building2 size={18} />,
+        permission: "instituciones",
+      },
+    ],
+  },
+  {
+    title: "Comunidad",
+    items: [
+      {
+        id: "blog",
+        href: "/dashboard/blog",
+        label: "Blog",
+        icon: <Layout size={18} />,
+        permission: "blog",
+      },
+      {
+        id: "cursos",
+        href: "/dashboard/cursos",
+        label: "Cursos",
+        icon: <BookOpen size={18} />,
+        permission: "cursos",
+      },
+      {
+        id: "recursos",
+        href: "/dashboard/recursos",
+        label: "Recursos",
+        icon: <BookOpen size={18} />,
+        permission: "recursos",
+      },
+      {
+        id: "marketing",
+        href: "/dashboard/marketing",
+        label: "Marketing",
+        icon: <Megaphone size={18} />,
+        permission: "marketing",
+      },
+    ],
+  },
+  {
+    title: "Sistema",
+    items: [
+      {
+        id: "users",
+        href: "/dashboard/usuarios",
+        label: "Usuarios",
+        icon: <UserCog size={18} />,
+        permission: "usuarios",
+      },
+      {
+        id: "roles",
+        href: "/dashboard/roles",
+        label: "Roles",
+        icon: <Shield size={18} />,
+        permission: "roles",
+      },
+      {
+        id: "formularios",
+        href: "/dashboard/formularios",
+        label: "Formularios",
+        icon: <FileSearch size={18} />,
+        permission: "formularios",
+      },
+      {
+        id: "ajustes",
+        href: "/dashboard/ajustes",
+        label: "Ajustes",
+        icon: <Settings size={18} />,
+        permission: "ajustes",
+      },
+    ],
+  },
+];
+
+const formatearTiempo = (totalSegundos: number) => {
+  const mins = Math.floor(totalSegundos / 60);
+  const secs = totalSegundos % 60;
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+};
+
 export const Sidebar = () => {
   const { abierta, alternarSidebar, menuMovilAbierto, setMenuMovilAbierto } =
     useSidebar();
   const { sesion } = useSesionActivaStore();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { usuario, cerrarSesion } = useAuthStore();
 
   const [tiempoSesion, setTiempoSesion] = useState(0);
 
   useEffect(() => {
     if (!sesion?.inicio) return;
     const inicio = new Date(sesion.inicio).getTime();
-    const tick = () => setTiempoSesion(Math.max(0, Math.floor((Date.now() - inicio) / 1000)));
+    const tick = () =>
+      setTiempoSesion(Math.max(0, Math.floor((Date.now() - inicio) / 1000)));
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [sesion]);
 
-  const formatearTiempo = (totalSegundos: number) => {
-    const mins = Math.floor(totalSegundos / 60);
-    const secs = totalSegundos % 60;
-    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  };
-
-  const pathname = usePathname();
-  const router = useRouter();
-  const { usuario, cerrarSesion } = useAuthStore();
-
-  const menuGroups = [
-    {
-      title: "Sesión Activa",
-      items: sesion
-        ? [
-            {
-              id: "sesion-activa",
-              href: "/dashboard/sesion-en-progreso",
-              label: "En Progreso",
-              icon: <Play size={18} className="text-red-500 animate-pulse" />,
-            },
-          ]
-        : [],
-    },
-    {
-      title: "Atención",
-      items: [
-        {
-          id: "overview",
-          href: "/dashboard",
-          label: "Dashboard",
-          icon: <LayoutDashboard size={18} />,
-        },
-        {
-          id: "pacientes",
-          href: "/dashboard/pacientes",
-          label: "Pacientes",
-          icon: <Users size={18} />,
-          permission: "pacientes",
-        },
-        {
-          id: "agenda",
-          href: "/dashboard/agenda",
-          label: "Agenda",
-          icon: <Calendar size={18} />,
-          permission: "agenda",
-        },
-        {
-          id: "sesiones",
-          href: "/dashboard/sesiones",
-          label: "Sesiones",
-          icon: <History size={18} />,
-          permission: "sesiones",
-        },
-        {
-          id: "ciclos",
-          href: "/dashboard/ciclos",
-          label: "Ciclos",
-          icon: <ListChecks size={18} />,
-          permission: "pacientes",
-        },
-        {
-          id: "portal-familiar",
-          href: "/dashboard/portal-familiar",
-          label: "Portal Familiar",
-          icon: <Heart size={18} />,
-        },
-      ],
-    },
-    {
-      title: "Clínica",
-      items: [
-        {
-          id: "expedientes",
-          href: "/dashboard/expedientes",
-          label: "Expedientes",
-          icon: <Stethoscope size={18} />,
-          permission: "pacientes",
-        },
-        {
-          id: "evaluaciones",
-          href: "/dashboard/evaluaciones",
-          label: "Evaluaciones",
-          icon: <ClipboardList size={18} />,
-          permission: "evaluaciones",
-        },
-        {
-          id: "planes",
-          href: "/dashboard/planes",
-          label: "Planes",
-          icon: <Target size={18} />,
-          permission: "planes",
-        },
-        {
-          id: "escalas",
-          href: "/dashboard/escalas",
-          label: "Escalas",
-          icon: <ListChecks size={18} />,
-          permission: "escalas",
-        },
-        {
-          id: "informes",
-          href: "/dashboard/informes",
-          label: "Informes",
-          icon: <FileText size={18} />,
-          permission: "informes",
-        },
-      ],
-    },
-    {
-      title: "Operaciones",
-      items: [
-        {
-          id: "pagos",
-          href: "/dashboard/pagos",
-          label: "Pagos",
-          icon: <DollarSign size={18} />,
-          permission: "pagos",
-        },
-        {
-          id: "gastos",
-          href: "/dashboard/gastos",
-          label: "Gastos",
-          icon: <TrendingDown size={18} />,
-          permission: "gastos",
-        },
-        {
-          id: "inventario",
-          href: "/dashboard/inventario",
-          label: "Inventario",
-          icon: <Package size={18} />,
-          permission: "inventario",
-        },
-        {
-          id: "analisis",
-          href: "/dashboard/analisis",
-          label: "Análisis",
-          icon: <BarChart3 size={18} />,
-          permission: "analisis",
-        },
-        {
-          id: "instituciones",
-          href: "/dashboard/instituciones",
-          label: "Instituciones",
-          icon: <Building2 size={18} />,
-          permission: "instituciones",
-        },
-      ],
-    },
-    {
-      title: "Comunidad",
-      items: [
-        {
-          id: "blog",
-          href: "/dashboard/blog",
-          label: "Blog",
-          icon: <Layout size={18} />,
-          permission: "blog",
-        },
-        {
-          id: "cursos",
-          href: "/dashboard/cursos",
-          label: "Cursos",
-          icon: <BookOpen size={18} />,
-          permission: "cursos",
-        },
-        {
-          id: "recursos",
-          href: "/dashboard/recursos",
-          label: "Recursos",
-          icon: <BookOpen size={18} />,
-          permission: "recursos",
-        },
-        {
-          id: "marketing",
-          href: "/dashboard/marketing",
-          label: "Marketing",
-          icon: <Megaphone size={18} />,
-          permission: "marketing",
-        },
-      ],
-    },
-    {
-      title: "Sistema",
-      items: [
-        {
-          id: "users",
-          href: "/dashboard/usuarios",
-          label: "Usuarios",
-          icon: <UserCog size={18} />,
-          permission: "usuarios",
-        },
-        {
-          id: "roles",
-          href: "/dashboard/roles",
-          label: "Roles",
-          icon: <Shield size={18} />,
-          permission: "roles",
-        },
-        {
-          id: "formularios",
-          href: "/dashboard/formularios",
-          label: "Formularios",
-          icon: <FileSearch size={18} />,
-          permission: "formularios",
-        },
-        {
-          id: "ajustes",
-          href: "/dashboard/ajustes",
-          label: "Ajustes",
-          icon: <Settings size={18} />,
-          permission: "ajustes",
-        },
-      ],
-    },
-  ];
-
-  const filteredGroups = menuGroups
-    .map((group) => ({
-      ...group,
-      items: group.items.filter((item) => {
-        if (!item.permission) return true;
-        return canAccess(usuario?.modules, item.permission);
-      }),
-    }))
-    .filter((group) => group.items.length > 0);
+  const filteredGroups = useMemo(
+    () =>
+      menuGroups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => {
+            if (item.requiresSession) return !!sesion;
+            if (!item.permission) return true;
+            return canAccess(usuario?.modules, item.permission);
+          }),
+        }))
+        .filter((group) => group.items.length > 0),
+    [sesion, usuario?.modules],
+  );
 
   const handleLogout = async () => {
     await cerrarSesion();
@@ -292,6 +295,70 @@ export const Sidebar = () => {
     router.push(href);
     setMenuMovilAbierto(false);
   };
+
+  const renderNavItems = (collapsed: boolean) => (
+    <>
+      {filteredGroups.map((group, idx) => (
+        <div key={group.title}>
+          {!collapsed && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: idx * 0.1 }}
+              className="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4"
+            >
+              {group.title}
+            </motion.p>
+          )}
+          <div className="space-y-1">
+            {group.items.map((item) =>
+              item.id === "sesion-activa" ? (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavigation(item.href)}
+                  className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all font-medium text-sm group ${
+                    pathname === item.href
+                      ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
+                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
+                  } ${collapsed ? "justify-center px-0" : ""}`}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <span
+                    className={`transition-transform duration-300 ${
+                      pathname === item.href
+                        ? "scale-110"
+                        : "group-hover:scale-110"
+                    }`}
+                  >
+                    {item.icon}
+                  </span>
+                  {!collapsed && (
+                    <div className="flex items-center justify-between flex-1 min-w-0">
+                      <span className="truncate">{item.label}</span>
+                      {sesion && (
+                        <span className="text-[10px] font-mono font-bold text-red-400 tabular-nums ml-2 shrink-0">
+                          {formatearTiempo(tiempoSesion)}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </button>
+              ) : (
+                <SidebarItem
+                  key={item.id}
+                  icon={item.icon}
+                  label={item.label}
+                  active={pathname === item.href}
+                  onClick={() => handleNavigation(item.href)}
+                  collapsed={collapsed}
+                />
+              ),
+            )}
+          </div>
+        </div>
+      ))}
+    </>
+  );
 
   const sidebarWidth = abierta ? 280 : 80;
 
@@ -309,14 +376,6 @@ export const Sidebar = () => {
           />
         )}
       </AnimatePresence>
-
-      {/* Botón de apertura móvil */}
-      <button
-        onClick={() => setMenuMovilAbierto(true)}
-        className="fixed top-4 left-4 z-50 md:hidden bg-white dark:bg-accent p-2 rounded-lg shadow-lg"
-      >
-        <Menu size={20} />
-      </button>
 
       {/* Sidebar - Escritorio */}
       <motion.aside
@@ -365,65 +424,7 @@ export const Sidebar = () => {
 
         {/* Navegación */}
         <nav className="flex-1 px-4 space-y-8 overflow-y-auto scrollbar-hide pb-8">
-          {filteredGroups.map((group, idx) => (
-            <div key={group.title}>
-              {abierta && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4"
-                >
-                  {group.title}
-                </motion.p>
-              )}
-              <div className="space-y-1">
-                {group.items.map((item) =>
-                  item.id === "sesion-activa" ? (
-                    <button
-                      key={item.id}
-                      onClick={() => handleNavigation(item.href)}
-                      className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all font-medium text-sm group ${
-                        pathname === item.href
-                          ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
-                          : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
-                      } ${!abierta ? "justify-center px-0" : ""}`}
-                      title={!abierta ? item.label : undefined}
-                    >
-                      <span
-                        className={`transition-transform duration-300 ${
-                          pathname === item.href
-                            ? "scale-110"
-                            : "group-hover:scale-110"
-                        }`}
-                      >
-                        {item.icon}
-                      </span>
-                      {abierta && (
-                        <div className="flex items-center justify-between flex-1 min-w-0">
-                          <span className="truncate">{item.label}</span>
-                          {sesion && (
-                            <span className="text-[10px] font-mono font-bold text-red-400 tabular-nums ml-2 shrink-0">
-                              {formatearTiempo(tiempoSesion)}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </button>
-                  ) : (
-                    <SidebarItem
-                      key={item.id}
-                      icon={item.icon}
-                      label={item.label}
-                      active={pathname === item.href}
-                      onClick={() => handleNavigation(item.href)}
-                      collapsed={!abierta}
-                    />
-                  ),
-                )}
-              </div>
-            </div>
-          ))}
+          {renderNavItems(!abierta)}
         </nav>
 
         {/* Cerrar Sesión */}
@@ -486,55 +487,7 @@ export const Sidebar = () => {
 
             {/* Navegación */}
             <nav className="flex-1 px-4 space-y-8 overflow-y-auto pb-8">
-              {filteredGroups.map((group) => (
-                <div key={group.title}>
-                  <p className="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">
-                    {group.title}
-                  </p>
-                  <div className="space-y-1">
-                    {group.items.map((item) =>
-                      item.id === "sesion-activa" ? (
-                        <button
-                          key={item.id}
-                          onClick={() => handleNavigation(item.href)}
-                          className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all font-medium text-sm group ${
-                            pathname === item.href
-                              ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
-                              : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
-                          }`}
-                        >
-                          <span
-                            className={`transition-transform duration-300 ${
-                              pathname === item.href
-                                ? "scale-110"
-                                : "group-hover:scale-110"
-                            }`}
-                          >
-                            {item.icon}
-                          </span>
-                          <div className="flex items-center justify-between flex-1 min-w-0">
-                            <span className="truncate">{item.label}</span>
-                            {sesion && (
-                              <span className="text-[10px] font-mono font-bold text-red-400 tabular-nums ml-2 shrink-0">
-                                {formatearTiempo(tiempoSesion)}
-                              </span>
-                            )}
-                          </div>
-                        </button>
-                      ) : (
-                        <SidebarItem
-                          key={item.id}
-                          icon={item.icon}
-                          label={item.label}
-                          active={pathname === item.href}
-                          onClick={() => handleNavigation(item.href)}
-                          collapsed={false}
-                        />
-                      ),
-                    )}
-                  </div>
-                </div>
-              ))}
+              {renderNavItems(false)}
             </nav>
 
             {/* Cerrar Sesión */}
