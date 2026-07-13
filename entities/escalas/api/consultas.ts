@@ -22,7 +22,12 @@ export const OBTENER_ESCALAS = gql`
 `;
 
 export const OBTENER_EVALUACIONES = gql`
-  query ObtenerEvaluaciones($patientId: ID, $scaleId: ID, $page: Int, $pageSize: Int) {
+  query ObtenerEvaluaciones(
+    $patientId: ID
+    $scaleId: ID
+    $page: Int
+    $pageSize: Int
+  ) {
     scaleEvaluations(
       patientId: $patientId
       inSession: false

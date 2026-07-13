@@ -14,15 +14,11 @@ interface UseEvaluacionesParams {
 }
 
 export function useEvaluaciones(params?: UseEvaluacionesParams) {
-  const {
-    patientId,
-    scaleId,
-    page = 1,
-    pageSize = 10,
-  } = params ?? {};
+  const { patientId, scaleId, page = 1, pageSize = 10 } = params ?? {};
 
-  const { data, loading, error, refetch } =
-    useQuery<ObtenerEvaluacionesQuery>(OBTENER_EVALUACIONES, {
+  const { data, loading, error, refetch } = useQuery<ObtenerEvaluacionesQuery>(
+    OBTENER_EVALUACIONES,
+    {
       variables: {
         patientId: patientId || undefined,
         scaleId: scaleId || undefined,
@@ -30,7 +26,8 @@ export function useEvaluaciones(params?: UseEvaluacionesParams) {
         pageSize,
       },
       notifyOnNetworkStatusChange: true,
-    });
+    },
+  );
 
   const paginated = data?.scaleEvaluations;
 

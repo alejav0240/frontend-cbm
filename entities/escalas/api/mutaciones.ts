@@ -1,4 +1,4 @@
-import {gql} from "@apollo/client";
+import { gql } from "@apollo/client";
 
 export const ADD_SCALE_RESPONSE = gql`
   mutation AddScaleResponse(
@@ -32,8 +32,20 @@ export const ELIMINAR_ESCALA = gql`
 `;
 
 export const CREAR_ESCALA = gql`
-  mutation CreateScale($name: String!, $scaleType: String!, $description: String, $subscales: [SubscaleInput], $values: [ScaleValueInput]) {
-    createScale(name: $name, scaleType: $scaleType, description: $description, subscales: $subscales, values: $values) {
+  mutation CreateScale(
+    $name: String!
+    $scaleType: String!
+    $description: String
+    $subscales: [SubscaleInput]
+    $values: [ScaleValueInput]
+  ) {
+    createScale(
+      name: $name
+      scaleType: $scaleType
+      description: $description
+      subscales: $subscales
+      values: $values
+    ) {
       scale {
         id
         name
