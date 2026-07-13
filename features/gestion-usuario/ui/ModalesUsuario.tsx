@@ -3,7 +3,12 @@
 import React, { useMemo } from "react";
 import { Modal } from "@/shared/ui/components/Modal";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
-import { Usuario, UsuarioExportarFila, generarUsuariosPDF, generarUsuariosExcel } from "@/entities/usuario";
+import {
+  Usuario,
+  UsuarioExportarFila,
+  generarUsuariosPDF,
+  generarUsuariosExcel,
+} from "@/entities/usuario";
 import { UserForm } from "./UserForm";
 import { UserCredentialsModal } from "./UserCredentialsModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
@@ -12,8 +17,10 @@ interface ModalesUsuarioProps {
   mostrarFormulario: boolean;
   alCerrarFormulario: () => void;
   formProps: {
-    name: string;
-    setName: (val: string) => void;
+    firstName: string;
+    setFirstName: (val: string) => void;
+    lastName: string;
+    setLastName: (val: string) => void;
     carnet: string;
     setCarnet: (val: string) => void;
     phone: string;
@@ -22,14 +29,13 @@ interface ModalesUsuarioProps {
     setUsername: (val: string) => void;
     password: string;
     setPassword: (val: string) => void;
-    type: string;
-    setType: (val: string) => void;
+    roleId: string;
+    setRoleId: (val: string) => void;
     status: string;
     setStatus: (val: string) => void;
     visibility: string;
     setVisibility: (val: string) => void;
     isEditing: boolean;
-    errors: Record<string, string>;
     onSubmit: (e: React.FormEvent) => void;
     onCancel: () => void;
   };
@@ -116,8 +122,10 @@ export const ModalesUsuario = ({
         title={formProps.isEditing ? "Editar Usuario" : "Nuevo Usuario"}
       >
         <UserForm
-          name={formProps.name}
-          setName={formProps.setName}
+          firstName={formProps.firstName}
+          setFirstName={formProps.setFirstName}
+          lastName={formProps.lastName}
+          setLastName={formProps.setLastName}
           carnet={formProps.carnet}
           setCarnet={formProps.setCarnet}
           phone={formProps.phone}
@@ -126,8 +134,8 @@ export const ModalesUsuario = ({
           setUsername={formProps.setUsername}
           password={formProps.password}
           setPassword={formProps.setPassword}
-          type={formProps.type}
-          setType={formProps.setType}
+          roleId={formProps.roleId}
+          setRoleId={formProps.setRoleId}
           status={formProps.status}
           setStatus={formProps.setStatus}
           visibility={formProps.visibility}
@@ -135,7 +143,6 @@ export const ModalesUsuario = ({
           onSubmit={formProps.onSubmit}
           onCancel={formProps.onCancel}
           isEditing={formProps.isEditing}
-          errors={formProps.errors}
         />
       </Modal>
 

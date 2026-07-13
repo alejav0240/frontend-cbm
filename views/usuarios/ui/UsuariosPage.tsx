@@ -41,34 +41,41 @@ export const UsuariosPage = () => {
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [mostrarCredenciales, setMostrarCredenciales] = useState(false);
-  const [usuarioCredenciales, setUsuarioCredenciales] = useState<Usuario | null>(null);
+  const [usuarioCredenciales, setUsuarioCredenciales] =
+    useState<Usuario | null>(null);
+  const [credencialesPassword, setCredencialesPassword] = useState<
+    string | undefined
+  >(undefined);
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
-  const [usuarioAccion, setUsuarioAccion] = useState<{ id: string; accion: "eliminar" | "desactivar" } | null>(null);
+  const [usuarioAccion, setUsuarioAccion] = useState<{
+    id: string;
+    accion: "eliminar" | "desactivar";
+  } | null>(null);
   const [mostrarExportar, setMostrarExportar] = useState(false);
 
-  const [formName, setFormName] = useState("");
+  const [formFirstName, setFormFirstName] = useState("");
+  const [formLastName, setFormLastName] = useState("");
   const [formCarnet, setFormCarnet] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formUsername, setFormUsername] = useState("");
   const [formPassword, setFormPassword] = useState("");
-  const [formType, setFormType] = useState("TERAPEUTA");
+  const [formRoleId, setFormRoleId] = useState("");
   const [formStatus, setFormStatus] = useState("ACTIVO");
   const [formVisibility, setFormVisibility] = useState("VISIBLE");
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [editandoUsuario, setEditandoUsuario] = useState<Usuario | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const limpiarFormulario = useCallback(() => {
-    setFormName("");
+    setFormFirstName("");
+    setFormLastName("");
     setFormCarnet("");
     setFormPhone("");
     setFormUsername("");
     setFormPassword("");
-    setFormType("TERAPEUTA");
+    setFormRoleId("");
     setFormStatus("ACTIVO");
     setFormVisibility("VISIBLE");
-    setFormErrors({});
     setEditandoUsuario(null);
   }, []);
 
@@ -78,15 +85,16 @@ export const UsuariosPage = () => {
   }, [limpiarFormulario]);
 
   const handleEditar = useCallback((usuario: Usuario) => {
-    setFormName(usuario.fullName || "");
+    const partes = (usuario.fullName || "").split(" ");
+    setFormFirstName(partes[0] || "");
+    setFormLastName(partes.slice(1).join(" ") || "");
     setFormCarnet(String(usuario.ci || ""));
     setFormPhone(String(usuario.celular || ""));
     setFormUsername(usuario.username || "");
     setFormPassword("");
-    setFormType(usuario.rol?.nombre || "TERAPEUTA");
+    setFormRoleId(usuario.rol?.id || "");
     setFormStatus(usuario.isActive ? "ACTIVO" : "INACTIVO");
     setFormVisibility(usuario.status || "VISIBLE");
-    setFormErrors({});
     setEditandoUsuario(usuario);
     setMostrarFormulario(true);
   }, []);
@@ -120,7 +128,10 @@ export const UsuariosPage = () => {
       }
       await refetch();
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : "Error al realizar la operación";
+      const mensaje =
+        error instanceof Error
+          ? error.message
+          : "Error al realizar la operación";
       toast.error(mensaje);
     } finally {
       setMostrarConfirmar(false);
@@ -133,18 +144,13 @@ export const UsuariosPage = () => {
       e.preventDefault();
       if (isSubmitting) return;
 
-      if (!formName.trim()) {
-        setFormErrors({ name: "El nombre es requerido" });
-        return;
-      }
-
       setIsSubmitting(true);
       try {
         if (editandoUsuario) {
           await actualizarUsuario({
             id: editandoUsuario.id,
-            firstName: formName.split(" ")[0] || formName,
-            lastName: formName.split(" ").slice(1).join(" ") || "",
+            firstName: formFirstName,
+            lastName: formLastName,
             ci: formCarnet,
             celular: formPhone,
             visibility: formVisibility,
@@ -152,20 +158,40 @@ export const UsuariosPage = () => {
           });
           toast.success("Usuario actualizado correctamente");
         } else {
-          await crearUsuario({
-            username: formUsername || formName.toLowerCase().replace(/\s/g, "."),
-            email: `${formUsername || formName.toLowerCase().replace(/\s/g, ".")}@sistema.com`,
-            password: formPassword || "temp123",
+          const usernameFinal =
+            formUsername || `${formFirstName}.${formLastName}`.toLowerCase().replace(/\s/g, "");
+          const passwordFinal = formPassword || "temp123";
+          const resultado = await crearUsuario({
+            username: usernameFinal,
+            email: `${usernameFinal}@sistema.com`,
+            password: passwordFinal,
             ci: formCarnet,
+            firstName: formFirstName,
+            lastName: formLastName,
             celular: formPhone,
+            roleId: formRoleId,
           });
+          const userCreado = resultado.data?.createUser?.user;
           toast.success("Usuario creado correctamente");
+          setMostrarFormulario(false);
+          limpiarFormulario();
+          setUsuarioCredenciales({
+            id: userCreado?.id || "",
+            username: userCreado?.username || usernameFinal,
+            fullName: `${formFirstName} ${formLastName}`,
+          } as Usuario);
+          setCredencialesPassword(passwordFinal);
+          setMostrarPassword(false);
+          setMostrarCredenciales(true);
+          return;
         }
         setMostrarFormulario(false);
         limpiarFormulario();
-        await refetch();
       } catch (error) {
-        const mensaje = error instanceof Error ? error.message : "Error al guardar el usuario";
+        const mensaje =
+          error instanceof Error
+            ? error.message
+            : "Error al guardar el usuario";
         toast.error(mensaje);
       } finally {
         setIsSubmitting(false);
@@ -174,17 +200,18 @@ export const UsuariosPage = () => {
     [
       isSubmitting,
       editandoUsuario,
-      formName,
+      formFirstName,
+      formLastName,
       formCarnet,
       formPhone,
       formUsername,
       formPassword,
       formVisibility,
       formStatus,
+      formRoleId,
       actualizarUsuario,
       crearUsuario,
       limpiarFormulario,
-      refetch,
     ],
   );
 
@@ -231,8 +258,10 @@ export const UsuariosPage = () => {
           limpiarFormulario();
         }}
         formProps={{
-          name: formName,
-          setName: setFormName,
+          firstName: formFirstName,
+          setFirstName: setFormFirstName,
+          lastName: formLastName,
+          setLastName: setFormLastName,
           carnet: formCarnet,
           setCarnet: setFormCarnet,
           phone: formPhone,
@@ -241,14 +270,13 @@ export const UsuariosPage = () => {
           setUsername: setFormUsername,
           password: formPassword,
           setPassword: setFormPassword,
-          type: formType,
-          setType: setFormType,
+          roleId: formRoleId,
+          setRoleId: setFormRoleId,
           status: formStatus,
           setStatus: setFormStatus,
           visibility: formVisibility,
           setVisibility: setFormVisibility,
           isEditing: !!editandoUsuario,
-          errors: formErrors,
           onSubmit: handleFormSubmit,
           onCancel: () => {
             setMostrarFormulario(false);
@@ -259,11 +287,12 @@ export const UsuariosPage = () => {
         alCerrarCredenciales={() => {
           setMostrarCredenciales(false);
           setUsuarioCredenciales(null);
+          setCredencialesPassword(undefined);
         }}
         usuarioCredenciales={usuarioCredenciales}
         mostrarPassword={mostrarPassword}
         alternarPassword={() => setMostrarPassword(!mostrarPassword)}
-        credencialesPassword={undefined}
+        credencialesPassword={credencialesPassword}
         mostrarConfirmarEliminar={mostrarConfirmar}
         alCerrarConfirmarEliminar={() => {
           setMostrarConfirmar(false);

@@ -7,7 +7,10 @@ interface CreateUserVariables {
   email: string;
   password: string;
   ci: string;
+  firstName: string;
+  lastName: string;
   celular?: string;
+  roleId: string;
 }
 
 export function useCreateUser() {
