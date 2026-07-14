@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@apollo/client/react";
 import { CONSULTA_YO } from "@/shared/api/auth";
+import type { MeQuery } from "@/shared/api/generated/graphql";
 import { useAuthStore } from "@/shared/model/useAuthStore";
+import { esTutor } from "@/shared/lib/permissions/permissions.config";
 import LoadingScreen from "@/shared/ui/LoadingScreen";
 import { Sidebar, Topbar } from "@/widgets/navegacion";
 
@@ -15,8 +17,9 @@ export default function DashboardLayout({
 }) {
   const { setUsuario, setEstaCargando, estaCargando } = useAuthStore();
   const router = useRouter();
+  const pathname = usePathname();
 
-  const { data, loading, error } = useQuery<any>(CONSULTA_YO, {
+  const { data, loading, error } = useQuery<MeQuery>(CONSULTA_YO, {
     fetchPolicy: "network-only",
   });
 
@@ -33,6 +36,12 @@ export default function DashboardLayout({
       router.replace("/login");
     }
   }, [loading, error, data, router]);
+
+  useEffect(() => {
+    if (data?.me && esTutor(data.me.role?.name) && pathname !== "/dashboard/portal-familiar") {
+      router.replace("/dashboard/portal-familiar");
+    }
+  }, [data, pathname, router]);
 
   if (loading || estaCargando) return <LoadingScreen />;
   if (error || !data?.me) return null;

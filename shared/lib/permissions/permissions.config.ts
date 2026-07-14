@@ -208,7 +208,7 @@ export const MENU_GROUPS: MenuGroup[] = [
       {
         id: "blog",
         label: "Blog",
-        href: "/comunidad/blog",
+        href: "/dashboard/blog",
         permission: PERMISSIONS.BLOG,
       },
       {
@@ -261,6 +261,13 @@ export const MENU_GROUPS: MenuGroup[] = [
     ],
   },
 ];
+
+/**
+ * Determina si el usuario tiene rol de tutor (case-insensitive)
+ */
+export function esTutor(roleName?: string | null): boolean {
+  return roleName?.toLowerCase() === "tutor";
+}
 
 /**
  * Helper para obtener el menú filtrado por permisos

@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { SidebarItem } from "@/shared/ui/components/SidebarItem";
 import { canAccess } from "@/shared/data/permissions";
+import { esTutor } from "@/shared/lib/permissions/permissions.config";
 import { useAuthStore } from "@/shared/model/useAuthStore";
 import { useSidebar } from "@/shared/model/useInterfazStore";
 import { useSesionActivaStore } from "@/entities/sesion";
@@ -94,6 +95,7 @@ const menuGroups = [
         href: "/dashboard/portal-familiar",
         label: "Portal Familiar",
         icon: <Heart size={18} />,
+        permission: "portal_familiar",
       },
     ],
   },
@@ -271,20 +273,32 @@ export const Sidebar = () => {
     return () => clearInterval(id);
   }, [sesion]);
 
-  const filteredGroups = useMemo(
-    () =>
-      menuGroups
+  const isTutor = esTutor(usuario?.role?.name);
+
+  const filteredGroups = useMemo(() => {
+    if (isTutor) {
+      return menuGroups
+        .filter((group) => group.title === "Atención")
         .map((group) => ({
           ...group,
-          items: group.items.filter((item) => {
-            if (item.requiresSession) return !!sesion;
-            if (!item.permission) return true;
-            return canAccess(usuario?.modules, item.permission);
-          }),
+          items: group.items.filter(
+            (item) => item.id === "portal-familiar",
+          ),
         }))
-        .filter((group) => group.items.length > 0),
-    [sesion, usuario?.modules],
-  );
+        .filter((group) => group.items.length > 0);
+    }
+
+    return menuGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => {
+          if (item.requiresSession) return !!sesion;
+          if (!item.permission) return true;
+          return canAccess(usuario?.modules, item.permission);
+        }),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [sesion, usuario?.modules, isTutor]);
 
   const handleLogout = async () => {
     await cerrarSesion();
