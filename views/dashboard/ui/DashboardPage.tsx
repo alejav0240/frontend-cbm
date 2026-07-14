@@ -15,6 +15,7 @@ import { usePacientes } from "@/entities/paciente";
 import { usePagos } from "@/entities/pago";
 import { useGastos } from "@/entities/gasto";
 import { useSesionActivaStore } from "@/entities/sesion";
+import { useCan } from "@/shared/ui/components/PermissionGuard";
 import { OverviewStats } from "./components/OverviewStats";
 import { OverviewSessionTrends } from "./components/OverviewSessionTrends";
 import { OverviewDailySessions } from "./components/OverviewDailySessions";
@@ -69,10 +70,19 @@ export const DashboardPage = () => {
   });
   const { cargando: cargandoStats } = useSesionesStats();
   const { pagos } = usePagos({ pagina: 1, pageSize: 100 });
-  const { gastos } = useGastos();
+  const { gastos } = useGastos({ pagina: 1, pageSize: 100 });
 
   const hoy = useMemo(() => new Date(), []);
   const { sesiones: agendaHoy } = useAgendaSessions({ month: hoy });
+
+  const verPacientes = useCan("pacientes:view");
+  const crearPacientes = useCan("pacientes:add");
+  const verSesiones = useCan("sesiones:view");
+  const crearSesiones = useCan("sesiones:add");
+  const verAgenda = useCan("agenda:view");
+  const verPagos = useCan("pagos:view");
+  const crearPagos = useCan("pagos:add");
+  const crearEvaluaciones = useCan("evaluaciones:add");
 
   const cargando =
     cargandoSesiones || cargandoPacientes || cargandoCiclos || cargandoStats;
@@ -311,11 +321,9 @@ export const DashboardPage = () => {
             </span>
           </h1>
           <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 max-w-2xl">
-            Aquí tienes un resumen de tu actividad hoy. Tienes{" "}
-            <span className="font-bold text-[#008080]">
-              {sesionesPendientes.length} sesiones
-            </span>{" "}
-            pendientes.
+            {verSesiones || verAgenda
+              ? `Aquí tienes un resumen de tu actividad hoy. Tienes ${sesionesPendientes.length} sesiones pendientes.`
+              : "Aquí tienes un resumen de tu actividad."}
           </p>
         </div>
 
@@ -353,56 +361,76 @@ export const DashboardPage = () => {
       </motion.div>
 
       <OverviewStats
-        activePatients={totalPacientes}
-        todaySessionsCount={sesionesHoy.length}
-        activeCyclesCount={ciclos.length}
-        monthlyIncome={ingresosMes}
-        monthlyExpenses={egresosMes}
+        activePatients={verPacientes ? totalPacientes : 0}
+        todaySessionsCount={verSesiones ? sesionesHoy.length : 0}
+        activeCyclesCount={verSesiones ? ciclos.length : 0}
+        monthlyIncome={verPagos ? ingresosMes : 0}
+        monthlyExpenses={verPagos ? egresosMes : 0}
       />
 
-      <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-        <OverviewSessionTrends data={sessionTrendsData} />
-        <OverviewQuickActions onAction={handleQuickAction} />
-      </div>
+      {(verSesiones || verAgenda) && (
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+          {verSesiones && <OverviewSessionTrends data={sessionTrendsData} />}
+          <OverviewQuickActions
+            onAction={handleQuickAction}
+            showPatients={crearPacientes}
+            showSessions={crearSesiones}
+            showPayments={crearPagos}
+            showEvaluations={crearEvaluaciones}
+          />
+        </div>
+      )}
 
-      <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-        <OverviewDailySessions
-          sessions={sesionesHoy.map((s) => ({
-            id: s.id,
-            patientName: s.patientName,
-            time: s.time,
-            duration: s.duration,
-            status: s.status,
-          }))}
-          onStartSession={(s) =>
-            handleStartSession({ id: s.id, patientName: s.patientName })
-          }
-          onViewAll={() => router.push("/dashboard/agenda")}
-        />
-        <OverviewClinicalAlerts />
-        <OverviewActivityFeed activities={recentActivities} />
-      </div>
+      {(verAgenda || verPacientes || verSesiones) && (
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+          {verAgenda && (
+            <OverviewDailySessions
+              sessions={sesionesHoy.map((s) => ({
+                id: s.id,
+                patientName: s.patientName,
+                time: s.time,
+                duration: s.duration,
+                status: s.status,
+              }))}
+              onStartSession={(s) =>
+                handleStartSession({ id: s.id, patientName: s.patientName })
+              }
+              onViewAll={() => router.push("/dashboard/agenda")}
+            />
+          )}
+          {verPacientes && <OverviewClinicalAlerts />}
+          {verSesiones && <OverviewActivityFeed activities={recentActivities} />}
+        </div>
+      )}
 
-      <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-        <OverviewFinancialBalance data={financialData} />
-        <OverviewGrowth data={growthData} />
-      </div>
+      {(verPagos || verPacientes) && (
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+          {verPagos && <OverviewFinancialBalance data={financialData} />}
+          {verPacientes && <OverviewGrowth data={growthData} />}
+        </div>
+      )}
 
-      <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-        <OverviewDistributions
-          conditionData={conditionData}
-          cycleStatusData={cycleStatusData}
-        />
-        <OverviewCycleProgress
-          activeCycles={ciclos.slice(0, 5).map((c) => ({
-            id: c.id,
-            patientName: c.patientName,
-            completedSessions: c.completedSessions,
-            totalSessions: c.totalSessions,
-          }))}
-          onViewAll={() => router.push("/dashboard/ciclos")}
-        />
-      </div>
+      {(verPacientes || verSesiones) && (
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+          {verPacientes && (
+            <OverviewDistributions
+              conditionData={conditionData}
+              cycleStatusData={cycleStatusData}
+            />
+          )}
+          {verSesiones && (
+            <OverviewCycleProgress
+              activeCycles={ciclos.slice(0, 5).map((c) => ({
+                id: c.id,
+                patientName: c.patientName,
+                completedSessions: c.completedSessions,
+                totalSessions: c.totalSessions,
+              }))}
+              onViewAll={() => router.push("/dashboard/ciclos")}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 };
