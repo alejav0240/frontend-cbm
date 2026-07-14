@@ -445,38 +445,52 @@ export type TherapeuticSessionsSessionSessionTypeChoices =
 
 export type ObtenerPostsBlogQueryVariables = Exact<{
   status?: string | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
 }>;
 
 export type ObtenerPostsBlogQuery = {
-  blogPosts: Array<{
-    id: string;
-    updatedAt: unknown;
-    titulo: string;
-    resumen: string | null;
-    contenido: string;
-    categoria: string;
-    autor: string;
-    urlImagen: string | null;
-    tiempoLectura: string | null;
-    estado: MarketingBlogPostStatusChoices;
-    fechaCreacion: unknown;
-  } | null> | null;
+  blogPosts: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
+      id: string;
+      updatedAt: unknown;
+      titulo: string;
+      resumen: string | null;
+      contenido: string;
+      categoria: string;
+      autor: string;
+      urlImagen: string | null;
+      tiempoLectura: string | null;
+      estado: MarketingBlogPostStatusChoices;
+      fechaCreacion: unknown;
+    } | null> | null;
+  } | null;
 };
 
 export type ObtenerCursosQueryVariables = Exact<{
   state?: string | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
 }>;
 
 export type ObtenerCursosQuery = {
-  courses: Array<{
-    id: string;
-    nombre: string;
-    descripcion: string | null;
-    precio: unknown;
-    estado: FinanceCourseStateChoices;
-    conteoEstudiantes: number | null;
-    ingresosTotales: number | null;
-  } | null> | null;
+  courses: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
+      id: string;
+      nombre: string;
+      descripcion: string | null;
+      precio: unknown;
+      estado: FinanceCourseStateChoices;
+      conteoEstudiantes: number | null;
+      ingresosTotales: number | null;
+    } | null> | null;
+  } | null;
 };
 
 export type ObtenerInscripcionesCursoQueryVariables = Exact<{
@@ -590,28 +604,76 @@ export type CreateScaleMutation = {
 };
 
 export type ObtenerInformesQueryVariables = Exact<{
-  patientId: string | number;
+  patientId?: string | number | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
 }>;
 
 export type ObtenerInformesQuery = {
-  therapyReports: Array<{
-    id: string;
-    createdAt: unknown;
-    reportUrl: string;
-    patient: { fullName: string | null };
-    generatedBy: { fullName: string | null };
-  } | null> | null;
+  therapyReports: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
+      id: string;
+      createdAt: unknown;
+      reportUrl: string;
+      patient: { id: string; fullName: string | null };
+      generatedBy: { id: string; fullName: string | null };
+    } | null> | null;
+  } | null;
 };
 
 export type ObtenerAsignacionesFormularioQueryVariables = Exact<{
   patientId?: string | number | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
 }>;
 
 export type ObtenerAsignacionesFormularioQuery = {
-  formAssignments: Array<{
-    id: string;
-    createdAt: unknown;
-    form: {
+  formAssignments: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
+      id: string;
+      createdAt: unknown;
+      form: {
+        id: string;
+        name: string;
+        description: string | null;
+        questions: Array<{
+          id: string;
+          question: string;
+          questionType: EvaluationsFormQuestionQuestionTypeChoices;
+          isRequired: boolean;
+          orderIndex: number;
+        }>;
+      };
+      assignedTo: { id: string; fullName: string | null } | null;
+      assignedBy: { id: string; fullName: string | null };
+      patient: { id: string; fullName: string | null } | null;
+      responses: Array<{
+        id: string;
+        response: string;
+        respondedAt: unknown;
+        question: { id: string; question: string };
+      }>;
+    } | null> | null;
+  } | null;
+};
+
+export type ObtenerFormulariosQueryVariables = Exact<{
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
+}>;
+
+export type ObtenerFormulariosQuery = {
+  forms: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
       id: string;
       name: string;
       description: string | null;
@@ -622,34 +684,8 @@ export type ObtenerAsignacionesFormularioQuery = {
         isRequired: boolean;
         orderIndex: number;
       }>;
-    };
-    assignedTo: { id: string; fullName: string | null } | null;
-    assignedBy: { id: string; fullName: string | null };
-    patient: { id: string; fullName: string | null } | null;
-    responses: Array<{
-      id: string;
-      response: string;
-      respondedAt: unknown;
-      question: { id: string; question: string };
-    }>;
-  } | null> | null;
-};
-
-export type ObtenerFormulariosQueryVariables = Exact<{ [key: string]: never }>;
-
-export type ObtenerFormulariosQuery = {
-  forms: Array<{
-    id: string;
-    name: string;
-    description: string | null;
-    questions: Array<{
-      id: string;
-      question: string;
-      questionType: EvaluationsFormQuestionQuestionTypeChoices;
-      isRequired: boolean;
-      orderIndex: number;
-    }>;
-  } | null> | null;
+    } | null> | null;
+  } | null;
 };
 
 export type ObtenerFormularioQueryVariables = Exact<{
@@ -729,17 +765,24 @@ export type MyMutationMutation = {
 export type ObtenerGastosQueryVariables = Exact<{
   status?: string | null | undefined;
   category?: string | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
 }>;
 
 export type ObtenerGastosQuery = {
-  expenses: Array<{
-    id: string;
-    descripcion: string;
-    categoria: string;
-    monto: unknown;
-    fechaGasto: unknown;
-    estado: FinanceExpenseStatusChoices;
-  } | null> | null;
+  expenses: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
+      id: string;
+      descripcion: string;
+      categoria: string;
+      monto: unknown;
+      fechaGasto: unknown;
+      estado: FinanceExpenseStatusChoices;
+    } | null> | null;
+  } | null;
 };
 
 export type CrearGastoMutationVariables = Exact<{
@@ -774,16 +817,23 @@ export type EliminarGastoMutation = {
 
 export type GetTherapyReportsQueryVariables = Exact<{
   patientId?: string | number | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
 }>;
 
 export type GetTherapyReportsQuery = {
-  therapyReports: Array<{
-    id: string;
-    reportUrl: string;
-    createdAt: unknown;
-    patient: { id: string; fullName: string | null };
-    generatedBy: { id: string; fullName: string | null };
-  } | null> | null;
+  therapyReports: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
+      id: string;
+      reportUrl: string;
+      createdAt: unknown;
+      patient: { id: string; fullName: string | null };
+      generatedBy: { id: string; fullName: string | null };
+    } | null> | null;
+  } | null;
 };
 
 export type CreateTherapyReportMutationVariables = Exact<{
@@ -805,19 +855,25 @@ export type DeleteTherapyReportMutation = {
 };
 
 export type ObtenerInstitucionesQueryVariables = Exact<{
-  [key: string]: never;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
 }>;
 
 export type ObtenerInstitucionesQuery = {
-  institutions: Array<{
-    id: string;
-    nombre: string;
-    direccion: string | null;
-    nombreContacto: string;
-    emailContacto: string | null;
-    telefonoContacto: string | null;
-    grupos: Array<{ id: string; nombre: string } | null> | null;
-  } | null> | null;
+  institutions: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
+      id: string;
+      nombre: string;
+      direccion: string | null;
+      nombreContacto: string;
+      emailContacto: string | null;
+      telefonoContacto: string | null;
+      grupos: Array<{ id: string; nombre: string } | null> | null;
+    } | null> | null;
+  } | null;
 };
 
 export type ObtenerDetalleInstitucionQueryVariables = Exact<{
@@ -863,18 +919,25 @@ export type EliminarInstitucionMutation = {
 export type ObtenerArticulosInventarioQueryVariables = Exact<{
   status?: string | null | undefined;
   type?: string | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
 }>;
 
 export type ObtenerArticulosInventarioQuery = {
-  inventoryItems: Array<{
-    id: string;
-    nombre: string;
-    tipo: TherapeuticSessionsInventoryItemTypeChoices;
-    condicion: TherapeuticSessionsInventoryItemConditionChoices;
-    estado: TherapeuticSessionsInventoryItemStatusChoices;
-    aula: string;
-    estadoMostrado: string | null;
-  } | null> | null;
+  inventoryItems: {
+    results: Array<{
+      id: string;
+      nombre: string;
+      tipo: TherapeuticSessionsInventoryItemTypeChoices;
+      condicion: TherapeuticSessionsInventoryItemConditionChoices;
+      estado: TherapeuticSessionsInventoryItemStatusChoices;
+      aula: string;
+      estadoMostrado: string | null;
+    } | null> | null;
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+  } | null;
 };
 
 export type BulkAddSessionInventoryItemsMutationVariables = Exact<{
@@ -925,36 +988,50 @@ export type DeleteInventoryItemMutation = {
 export type ObtenerCampanasMarketingQueryVariables = Exact<{
   status?: string | null | undefined;
   platform?: string | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
 }>;
 
 export type ObtenerCampanasMarketingQuery = {
-  marketingCampaigns: Array<{
-    id: string;
-    nombre: string;
-    plataforma: string;
-    estado: MarketingMarketingCampaignStatusChoices;
-    presupuesto: unknown;
-    gastado: unknown;
-    presupuestoRestante: number | null;
-    leads: Array<{ id: string }>;
-  } | null> | null;
+  marketingCampaigns: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
+      id: string;
+      nombre: string;
+      plataforma: string;
+      estado: MarketingMarketingCampaignStatusChoices;
+      presupuesto: unknown;
+      gastado: unknown;
+      presupuestoRestante: number | null;
+      leads: Array<{ id: string }>;
+    } | null> | null;
+  } | null;
 };
 
 export type ObtenerLeadsQueryVariables = Exact<{
   campaignId?: string | number | null | undefined;
   status?: string | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
 }>;
 
 export type ObtenerLeadsQuery = {
-  leads: Array<{
-    id: string;
-    email: string | null;
-    nombre: string;
-    telefono: string | null;
-    estado: MarketingLeadStatusChoices;
-    fechaCreacion: unknown;
-    campana: { id: string; nombre: string } | null;
-  } | null> | null;
+  leads: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
+      id: string;
+      email: string | null;
+      nombre: string;
+      telefono: string | null;
+      estado: MarketingLeadStatusChoices;
+      fechaCreacion: unknown;
+      campana: { id: string; nombre: string } | null;
+    } | null> | null;
+  } | null;
 };
 
 export type ObtenerPacientesQueryVariables = Exact<{
@@ -1173,7 +1250,7 @@ export type ObtenerPagosQuery = {
     totalCount: number | null;
     totalPages: number | null;
     currentPage: number | null;
-    objects: Array<{
+    results: Array<{
       id: string;
       cantidadSesiones: number;
       precioPorSesion: unknown;
@@ -1420,15 +1497,23 @@ export type BulkAddSessionResourcesMutation = {
   } | null;
 };
 
-export type ObtenerRolesQueryVariables = Exact<{ [key: string]: never }>;
+export type ObtenerRolesQueryVariables = Exact<{
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
+}>;
 
 export type ObtenerRolesQuery = {
-  roles: Array<{
-    id: string;
-    nombre: string;
-    permisos: Array<string | null> | null;
-    conteoUsuarios: number | null;
-  } | null> | null;
+  roles: {
+    totalCount: number | null;
+    totalPages: number | null;
+    currentPage: number | null;
+    results: Array<{
+      id: string;
+      nombre: string;
+      permisos: Array<string | null> | null;
+      conteoUsuarios: number | null;
+    } | null> | null;
+  } | null;
 };
 
 export type ObtenerSesionesQueryVariables = Exact<{
@@ -1916,6 +2001,19 @@ export const ObtenerCursosDocument = {
           },
           type: { kind: "NamedType", name: { kind: "Name", value: "String" } },
         },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "page" } },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "pageSize" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
       ],
       selectionSet: {
         kind: "SelectionSet",
@@ -1932,41 +2030,69 @@ export const ObtenerCursosDocument = {
                   name: { kind: "Name", value: "state" },
                 },
               },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "page" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "page" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "pageSize" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "pageSize" },
+                },
+              },
             ],
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
                 {
                   kind: "Field",
-                  alias: { kind: "Name", value: "nombre" },
-                  name: { kind: "Name", value: "name" },
+                  name: { kind: "Name", value: "results" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "nombre" },
+                        name: { kind: "Name", value: "name" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "descripcion" },
+                        name: { kind: "Name", value: "description" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "precio" },
+                        name: { kind: "Name", value: "price" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "estado" },
+                        name: { kind: "Name", value: "state" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "conteoEstudiantes" },
+                        name: { kind: "Name", value: "studentsCount" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "ingresosTotales" },
+                        name: { kind: "Name", value: "totalIncome" },
+                      },
+                    ],
+                  },
                 },
-                {
-                  kind: "Field",
-                  alias: { kind: "Name", value: "descripcion" },
-                  name: { kind: "Name", value: "description" },
-                },
-                {
-                  kind: "Field",
-                  alias: { kind: "Name", value: "precio" },
-                  name: { kind: "Name", value: "price" },
-                },
-                {
-                  kind: "Field",
-                  alias: { kind: "Name", value: "estado" },
-                  name: { kind: "Name", value: "state" },
-                },
-                {
-                  kind: "Field",
-                  alias: { kind: "Name", value: "conteoEstudiantes" },
-                  name: { kind: "Name", value: "studentsCount" },
-                },
-                {
-                  kind: "Field",
-                  alias: { kind: "Name", value: "ingresosTotales" },
-                  name: { kind: "Name", value: "totalIncome" },
-                },
+                { kind: "Field", name: { kind: "Name", value: "totalCount" } },
+                { kind: "Field", name: { kind: "Name", value: "totalPages" } },
+                { kind: "Field", name: { kind: "Name", value: "currentPage" } },
               ],
             },
           },
@@ -2684,10 +2810,23 @@ export const ObtenerInformesDocument = {
             kind: "Variable",
             name: { kind: "Name", value: "patientId" },
           },
-          type: {
-            kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "page" },
           },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "pageSize" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
         },
       ],
       selectionSet: {
@@ -2705,38 +2844,77 @@ export const ObtenerInformesDocument = {
                   name: { kind: "Name", value: "patientId" },
                 },
               },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "page" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "page" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "pageSize" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "pageSize" },
+                },
+              },
             ],
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "createdAt" } },
-                { kind: "Field", name: { kind: "Name", value: "reportUrl" } },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "patient" },
+                  name: { kind: "Name", value: "results" },
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "createdAt" } },
+                      { kind: "Field", name: { kind: "Name", value: "reportUrl" } },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "fullName" },
+                        name: { kind: "Name", value: "patient" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "fullName" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "generatedBy" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "fullName" },
+                            },
+                          ],
+                        },
                       },
                     ],
                   },
                 },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "generatedBy" },
-                  selectionSet: {
-                    kind: "SelectionSet",
-                    selections: [
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "fullName" },
-                      },
-                    ],
-                  },
+                  name: { kind: "Name", value: "totalCount" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "totalPages" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "currentPage" },
                 },
               ],
             },
@@ -2765,6 +2943,22 @@ export const ObtenerAsignacionesFormularioDocument = {
           },
           type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
         },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "page" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "pageSize" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
       ],
       selectionSet: {
         kind: "SelectionSet",
@@ -2781,126 +2975,163 @@ export const ObtenerAsignacionesFormularioDocument = {
                   name: { kind: "Name", value: "patientId" },
                 },
               },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "page" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "page" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "pageSize" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "pageSize" },
+                },
+              },
             ],
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "createdAt" } },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "form" },
+                  name: { kind: "Name", value: "totalCount" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "totalPages" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "currentPage" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "results" },
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "id" } },
-                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      { kind: "Field", name: { kind: "Name", value: "createdAt" } },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "description" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "questions" },
+                        name: { kind: "Name", value: "form" },
                         selectionSet: {
                           kind: "SelectionSet",
                           selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            { kind: "Field", name: { kind: "Name", value: "name" } },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "id" },
+                              name: { kind: "Name", value: "description" },
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "question" },
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "questionType" },
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "isRequired" },
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "orderIndex" },
+                              name: { kind: "Name", value: "questions" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "question" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "questionType" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "isRequired" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "orderIndex" },
+                                  },
+                                ],
+                              },
                             },
                           ],
                         },
                       },
-                    ],
-                  },
-                },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "assignedTo" },
-                  selectionSet: {
-                    kind: "SelectionSet",
-                    selections: [
-                      { kind: "Field", name: { kind: "Name", value: "id" } },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "fullName" },
-                      },
-                    ],
-                  },
-                },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "assignedBy" },
-                  selectionSet: {
-                    kind: "SelectionSet",
-                    selections: [
-                      { kind: "Field", name: { kind: "Name", value: "id" } },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "fullName" },
-                      },
-                    ],
-                  },
-                },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "patient" },
-                  selectionSet: {
-                    kind: "SelectionSet",
-                    selections: [
-                      { kind: "Field", name: { kind: "Name", value: "id" } },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "fullName" },
-                      },
-                    ],
-                  },
-                },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "responses" },
-                  selectionSet: {
-                    kind: "SelectionSet",
-                    selections: [
-                      { kind: "Field", name: { kind: "Name", value: "id" } },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "response" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "respondedAt" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "question" },
+                        name: { kind: "Name", value: "assignedTo" },
                         selectionSet: {
                           kind: "SelectionSet",
                           selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "id" },
+                              name: { kind: "Name", value: "fullName" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "assignedBy" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "fullName" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "patient" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "fullName" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "responses" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "response" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "respondedAt" },
                             },
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "question" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "question" },
+                                  },
+                                ],
+                              },
                             },
                           ],
                         },
@@ -2926,40 +3157,97 @@ export const ObtenerFormulariosDocument = {
       kind: "OperationDefinition",
       operation: "query",
       name: { kind: "Name", value: "ObtenerFormularios" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "page" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "pageSize" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
+      ],
       selectionSet: {
         kind: "SelectionSet",
         selections: [
           {
             kind: "Field",
             name: { kind: "Name", value: "forms" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "page" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "page" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "pageSize" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "pageSize" },
+                },
+              },
+            ],
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "name" } },
-                { kind: "Field", name: { kind: "Name", value: "description" } },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "questions" },
+                  name: { kind: "Name", value: "totalCount" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "totalPages" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "currentPage" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "results" },
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                      { kind: "Field", name: { kind: "Name", value: "description" } },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "question" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "questionType" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "isRequired" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "orderIndex" },
+                        name: { kind: "Name", value: "questions" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "question" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "questionType" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "isRequired" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "orderIndex" },
+                            },
+                          ],
+                        },
                       },
                     ],
                   },
@@ -3538,6 +3826,22 @@ export const ObtenerGastosDocument = {
           },
           type: { kind: "NamedType", name: { kind: "Name", value: "String" } },
         },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "page" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "pageSize" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
       ],
       selectionSet: {
         kind: "SelectionSet",
@@ -3562,35 +3866,72 @@ export const ObtenerGastosDocument = {
                   name: { kind: "Name", value: "category" },
                 },
               },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "page" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "page" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "pageSize" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "pageSize" },
+                },
+              },
             ],
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
                 {
                   kind: "Field",
-                  alias: { kind: "Name", value: "descripcion" },
-                  name: { kind: "Name", value: "description" },
+                  name: { kind: "Name", value: "results" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "descripcion" },
+                        name: { kind: "Name", value: "description" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "categoria" },
+                        name: { kind: "Name", value: "category" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "monto" },
+                        name: { kind: "Name", value: "amount" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "fechaGasto" },
+                        name: { kind: "Name", value: "expenseDate" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "estado" },
+                        name: { kind: "Name", value: "status" },
+                      },
+                    ],
+                  },
                 },
                 {
                   kind: "Field",
-                  alias: { kind: "Name", value: "categoria" },
-                  name: { kind: "Name", value: "category" },
+                  name: { kind: "Name", value: "totalCount" },
                 },
                 {
                   kind: "Field",
-                  alias: { kind: "Name", value: "monto" },
-                  name: { kind: "Name", value: "amount" },
+                  name: { kind: "Name", value: "totalPages" },
                 },
                 {
                   kind: "Field",
-                  alias: { kind: "Name", value: "fechaGasto" },
-                  name: { kind: "Name", value: "expenseDate" },
-                },
-                {
-                  kind: "Field",
-                  alias: { kind: "Name", value: "estado" },
-                  name: { kind: "Name", value: "status" },
+                  name: { kind: "Name", value: "currentPage" },
                 },
               ],
             },
@@ -3870,6 +4211,22 @@ export const GetTherapyReportsDocument = {
           },
           type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
         },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "page" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "pageSize" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
       ],
       selectionSet: {
         kind: "SelectionSet",
@@ -3886,40 +4243,77 @@ export const GetTherapyReportsDocument = {
                   name: { kind: "Name", value: "patientId" },
                 },
               },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "page" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "page" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "pageSize" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "pageSize" },
+                },
+              },
             ],
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "reportUrl" } },
-                { kind: "Field", name: { kind: "Name", value: "createdAt" } },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "patient" },
+                  name: { kind: "Name", value: "results" },
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "reportUrl" } },
+                      { kind: "Field", name: { kind: "Name", value: "createdAt" } },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "fullName" },
+                        name: { kind: "Name", value: "patient" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "fullName" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "generatedBy" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "fullName" },
+                            },
+                          ],
+                        },
                       },
                     ],
                   },
                 },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "generatedBy" },
-                  selectionSet: {
-                    kind: "SelectionSet",
-                    selections: [
-                      { kind: "Field", name: { kind: "Name", value: "id" } },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "fullName" },
-                      },
-                    ],
-                  },
+                  name: { kind: "Name", value: "totalCount" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "totalPages" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "currentPage" },
                 },
               ],
             },
@@ -4418,6 +4812,19 @@ export const ObtenerArticulosInventarioDocument = {
           variable: { kind: "Variable", name: { kind: "Name", value: "type" } },
           type: { kind: "NamedType", name: { kind: "Name", value: "String" } },
         },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "page" } },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "pageSize" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
       ],
       selectionSet: {
         kind: "SelectionSet",
@@ -4442,40 +4849,77 @@ export const ObtenerArticulosInventarioDocument = {
                   name: { kind: "Name", value: "type" },
                 },
               },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "page" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "page" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "pageSize" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "pageSize" },
+                },
+              },
             ],
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
                 {
                   kind: "Field",
-                  alias: { kind: "Name", value: "nombre" },
-                  name: { kind: "Name", value: "name" },
+                  name: { kind: "Name", value: "results" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "nombre" },
+                        name: { kind: "Name", value: "name" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "tipo" },
+                        name: { kind: "Name", value: "type" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "condicion" },
+                        name: { kind: "Name", value: "condition" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "estado" },
+                        name: { kind: "Name", value: "status" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "aula" },
+                        name: { kind: "Name", value: "room" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "estadoMostrado" },
+                        name: { kind: "Name", value: "statusDisplay" },
+                      },
+                    ],
+                  },
                 },
                 {
                   kind: "Field",
-                  alias: { kind: "Name", value: "tipo" },
-                  name: { kind: "Name", value: "type" },
+                  name: { kind: "Name", value: "totalCount" },
                 },
                 {
                   kind: "Field",
-                  alias: { kind: "Name", value: "condicion" },
-                  name: { kind: "Name", value: "condition" },
+                  name: { kind: "Name", value: "totalPages" },
                 },
                 {
                   kind: "Field",
-                  alias: { kind: "Name", value: "estado" },
-                  name: { kind: "Name", value: "status" },
-                },
-                {
-                  kind: "Field",
-                  alias: { kind: "Name", value: "aula" },
-                  name: { kind: "Name", value: "room" },
-                },
-                {
-                  kind: "Field",
-                  alias: { kind: "Name", value: "estadoMostrado" },
-                  name: { kind: "Name", value: "statusDisplay" },
+                  name: { kind: "Name", value: "currentPage" },
                 },
               ],
             },
@@ -8277,31 +8721,67 @@ export const ObtenerRolesDocument = {
       kind: "OperationDefinition",
       operation: "query",
       name: { kind: "Name", value: "ObtenerRoles" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "page" } },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "pageSize" } },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+        },
+      ],
       selectionSet: {
         kind: "SelectionSet",
         selections: [
           {
             kind: "Field",
             name: { kind: "Name", value: "roles" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "page" },
+                value: { kind: "Variable", name: { kind: "Name", value: "page" } },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "pageSize" },
+                value: { kind: "Variable", name: { kind: "Name", value: "pageSize" } },
+              },
+            ],
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
                 {
                   kind: "Field",
-                  alias: { kind: "Name", value: "nombre" },
-                  name: { kind: "Name", value: "name" },
+                  name: { kind: "Name", value: "results" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "nombre" },
+                        name: { kind: "Name", value: "name" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "permisos" },
+                        name: { kind: "Name", value: "permissions" },
+                      },
+                      {
+                        kind: "Field",
+                        alias: { kind: "Name", value: "conteoUsuarios" },
+                        name: { kind: "Name", value: "usersCount" },
+                      },
+                    ],
+                  },
                 },
-                {
-                  kind: "Field",
-                  alias: { kind: "Name", value: "permisos" },
-                  name: { kind: "Name", value: "permissions" },
-                },
-                {
-                  kind: "Field",
-                  alias: { kind: "Name", value: "conteoUsuarios" },
-                  name: { kind: "Name", value: "usersCount" },
-                },
+                { kind: "Field", name: { kind: "Name", value: "totalCount" } },
+                { kind: "Field", name: { kind: "Name", value: "totalPages" } },
+                { kind: "Field", name: { kind: "Name", value: "currentPage" } },
               ],
             },
           },
