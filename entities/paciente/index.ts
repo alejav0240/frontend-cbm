@@ -11,6 +11,7 @@ export * from "./api/useEliminarPaciente";
 export * from "./api/useActualizarPaciente";
 export * from "./api/useActualizarNotasClinicas";
 export * from "./api/useBuscarPacientes";
+export * from "./api/usePacientesTutor";
 export * from "./model/usePacienteSeleccionado";
 export * from "./lib/exportar-pdf";
 export * from "./lib/exportar-excel";
