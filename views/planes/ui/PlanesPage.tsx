@@ -17,6 +17,7 @@ import {
 } from "@/entities/plan-tratamiento";
 import { useBuscarPacientes } from "@/entities/paciente";
 import { useAuthStore } from "@/shared/model/useAuthStore";
+import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { Pagination } from "@/shared/ui/Pagination";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import type { PasoPlan, PlanTratamiento } from "@/entities/plan-tratamiento";
@@ -39,12 +40,13 @@ function mapPasos(pasos: PasoPlan[]) {
 export const PlanesPage = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const busquedaDebounced = useDebounce(search, 500);
 
   const { planes, total, paginas, paginaActual, cargando, refetch } =
     usePlanesTratamiento({
       pagina: page,
       pageSize: 10,
-      busqueda: search || undefined,
+      busqueda: busquedaDebounced || undefined,
     });
 
   const { usuario } = useAuthStore();

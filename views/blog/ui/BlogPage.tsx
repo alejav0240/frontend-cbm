@@ -49,6 +49,7 @@ export function BlogPage() {
     page: paginaActual,
     pageSize: PAGE_SIZE,
     estado: filtros.estado || undefined,
+    busqueda: busquedaDebounced || undefined,
   });
 
   const { crearPost, creando } = useCrearPostBlog();
@@ -57,15 +58,6 @@ export function BlogPage() {
 
   const postsFiltrados = useMemo(() => {
     let resultado = posts;
-
-    if (busquedaDebounced) {
-      const busqueda = busquedaDebounced.toLowerCase();
-      resultado = resultado.filter(
-        (p) =>
-          p.titulo.toLowerCase().includes(busqueda) ||
-          p.resumen.toLowerCase().includes(busqueda),
-      );
-    }
 
     if (filtros.categoria) {
       resultado = resultado.filter((p) => p.categoria === filtros.categoria);
@@ -95,7 +87,7 @@ export function BlogPage() {
     }
 
     return sorted;
-  }, [posts, busquedaDebounced, filtros.categoria, orden]);
+  }, [posts, filtros.categoria, orden]);
 
   const handleCrear = useCallback(
     async (datos: FormularioPostBlog) => {

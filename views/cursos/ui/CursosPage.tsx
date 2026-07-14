@@ -52,22 +52,13 @@ export const CursosPage = () => {
   const { cursos, paginas, refetch } = useCursos({
     page: paginaActual,
     pageSize: 9,
+    busqueda: busquedaDebounced || undefined,
   });
 
   const { crearCurso } = useCrearCurso();
   const { actualizarCurso } = useActualizarCurso();
   const { eliminarCurso } = useEliminarCurso();
   const { inscribirCurso } = useInscribirCurso();
-
-  const cursosFiltrados = useMemo(() => {
-    if (!busquedaDebounced) return cursos;
-    const term = busquedaDebounced.toLowerCase();
-    return cursos.filter(
-      (c) =>
-        c.nombre.toLowerCase().includes(term) ||
-        c.descripcion.toLowerCase().includes(term),
-    );
-  }, [cursos, busquedaDebounced]);
 
   const totalRevenue = useMemo(
     () => cursos.reduce((sum, c) => sum + Number(c.ingresosTotales), 0),
@@ -210,7 +201,7 @@ export const CursosPage = () => {
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {cursosFiltrados.map((curso) => (
+        {cursos.map((curso) => (
           <div
             key={curso.id}
             onClick={() => router.push(`/dashboard/cursos/${curso.id}`)}

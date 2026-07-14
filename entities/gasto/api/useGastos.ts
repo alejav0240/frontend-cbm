@@ -13,6 +13,7 @@ export const useGastos = (filtros: GastoFiltros) => {
         category: filtros.categoria,
         page: filtros.pagina,
         pageSize: filtros.pageSize,
+        search: filtros.busqueda || "",
       },
       notifyOnNetworkStatusChange: true,
     },

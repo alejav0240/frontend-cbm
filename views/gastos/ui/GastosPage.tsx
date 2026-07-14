@@ -53,21 +53,12 @@ export const GastosPage = () => {
   const { gastos, paginas, refetch } = useGastos({
     pagina: paginaActual,
     pageSize: PAGE_SIZE,
+    busqueda: busquedaDebounced || undefined,
   });
 
   const { crearGasto, creando } = useCrearGasto();
   const { actualizarEstado } = useActualizarEstadoGasto();
   const { eliminarGasto, eliminando } = useEliminarGasto();
-
-  const gastosFiltrados = useMemo(() => {
-    if (!busquedaDebounced) return gastos;
-    const term = busquedaDebounced.toLowerCase();
-    return gastos.filter(
-      (g) =>
-        g.descripcion.toLowerCase().includes(term) ||
-        g.categoria.toLowerCase().includes(term),
-    );
-  }, [gastos, busquedaDebounced]);
 
   const categorias = useMemo(() => {
     const cats = new Set(gastos.map((g) => g.categoria).filter(Boolean));
@@ -194,7 +185,7 @@ export const GastosPage = () => {
       />
 
       <ExpensesTable
-        expenses={gastosFiltrados}
+        expenses={gastos}
         searchTerm={terminoBusqueda}
         setSearchTerm={(value) => {
           setTerminoBusqueda(value);

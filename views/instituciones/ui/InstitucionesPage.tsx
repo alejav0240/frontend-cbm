@@ -81,6 +81,7 @@ export const InstitucionesPage = () => {
   const { instituciones, paginas, refetch } = useInstituciones({
     page: paginaActual,
     pageSize: 10,
+    busqueda: busquedaDebounced || undefined,
   });
   const { institucion: detalleInstitucion, cargando: cargandoDetalle } =
     useDetalleInstitucion(institucionSeleccionadaId ?? "");
@@ -97,17 +98,6 @@ export const InstitucionesPage = () => {
     CrearSesionMutation,
     CrearSesionMutationVariables
   >(CREAR_SESION);
-
-  const institucionesFiltradas = useMemo(() => {
-    if (!busquedaDebounced) return instituciones;
-    const term = busquedaDebounced.toLowerCase();
-    return instituciones.filter(
-      (i) =>
-        i.nombre.toLowerCase().includes(term) ||
-        i.nombreContacto.toLowerCase().includes(term) ||
-        i.direccion.toLowerCase().includes(term),
-    );
-  }, [instituciones, busquedaDebounced]);
 
   const totalInstituciones = instituciones.length;
   const totalGrupos = instituciones.reduce(
@@ -361,7 +351,7 @@ export const InstitucionesPage = () => {
       />
 
       <InstitutionsList
-        institutions={institucionesFiltradas}
+        institutions={instituciones}
         searchTerm={terminoBusqueda}
         onSearchChange={(value) => {
           setTerminoBusqueda(value);

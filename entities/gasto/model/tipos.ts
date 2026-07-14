@@ -12,4 +12,5 @@ export interface GastoFiltros {
   categoria?: string;
   pagina: number;
   pageSize: number;
+  busqueda?: string;
 }

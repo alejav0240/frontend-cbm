@@ -13,4 +13,5 @@ export interface InventarioFiltros {
   tipo?: string;
   pagina?: number;
   pageSize?: number;
+  busqueda?: string;
 }

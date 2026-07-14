@@ -8,6 +8,7 @@ interface PostsBlogFiltros {
   page?: number;
   pageSize?: number;
   estado?: string;
+  busqueda?: string;
 }
 
 export const usePostsBlog = (filtros: PostsBlogFiltros = {}) => {
@@ -18,6 +19,7 @@ export const usePostsBlog = (filtros: PostsBlogFiltros = {}) => {
         status: filtros.estado,
         page: filtros.page,
         pageSize: filtros.pageSize,
+        search: filtros.busqueda || "",
       },
       notifyOnNetworkStatusChange: true,
     },

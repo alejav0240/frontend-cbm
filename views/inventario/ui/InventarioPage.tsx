@@ -39,22 +39,12 @@ export const InventarioPage = () => {
   const { articulos, paginas, refetch } = useInventario({
     pagina: paginaActual,
     pageSize: 10,
+    busqueda: busquedaDebounced || undefined,
   });
 
   const { crearInventario } = useCrearInventario();
   const { actualizarInventario } = useActualizarInventario();
   const { eliminarInventario } = useEliminarInventario();
-
-  const articulosFiltrados = useMemo(() => {
-    if (!busquedaDebounced) return articulos;
-    const term = busquedaDebounced.toLowerCase();
-    return articulos.filter(
-      (a) =>
-        a.nombre.toLowerCase().includes(term) ||
-        a.tipo.toLowerCase().includes(term) ||
-        a.aula.toLowerCase().includes(term),
-    );
-  }, [articulos, busquedaDebounced]);
 
   const tipos = useMemo(() => {
     const set = new Set(articulos.map((a) => a.tipo).filter(Boolean));
@@ -151,7 +141,7 @@ export const InventarioPage = () => {
       <InventoryStats inventory={articulos} />
 
       <InventoryTable
-        inventory={articulosFiltrados}
+        inventory={articulos}
         searchTerm={terminoBusqueda}
         setSearchTerm={(term) => {
           setTerminoBusqueda(term);

@@ -2,14 +2,16 @@
 
 import { useMemo, useState, useCallback } from "react";
 import { useCiclosPacientes } from "@/entities/sesion";
+import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import type { ExpedienteResumen } from "../model/tipos";
 
 export function useExpedientes() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const busquedaDebounced = useDebounce(search, 500);
 
   const { ciclos, total, totalPages, currentPage, cargando, error, refetch } =
-    useCiclosPacientes({ search: search || undefined, page });
+    useCiclosPacientes({ search: busquedaDebounced || undefined, page });
 
   const expedientes: ExpedienteResumen[] = useMemo(
     () =>

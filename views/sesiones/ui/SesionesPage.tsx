@@ -8,11 +8,11 @@ import {
   useEliminarSesion,
   useActualizarEstadoSesion,
   useActualizarSesion,
+  useCrearSesionAgenda,
   type SesionNormalizada,
   type SesionExportarFila,
 } from "@/entities/sesion";
 import type { CicloPaciente } from "@/entities/sesion/api/useCiclosPacientes";
-import { useBuscarPacientes } from "@/entities/paciente";
 import { useBuscarTerapeutas } from "@/entities/usuario";
 import {
   generarSesionesPDF,
@@ -28,11 +28,13 @@ import { TablaSesiones } from "@/widgets/tabla-sesiones";
 import { Pagination } from "@/shared/ui/Pagination";
 import {
   FiltrosSesiones,
-  ModalCrearSesion,
   ModalDetalleSesion,
   ModalEliminarSesion,
   ModalReprogramarSesion,
 } from "@/features/gestion-sesiones";
+import Modal from "@/shared/ui/components/Modal";
+import { FormNuevaCita } from "@/views/agenda/ui/components/FormNuevaCita";
+import type { DatosCita } from "@/views/agenda/model/esquema-cita";
 import ConfirmModal from "@/shared/ui/ConfirmModal";
 import GenericExportModal, {
   type ExportColumn,
@@ -68,12 +70,13 @@ export const SesionesPage = () => {
       pageSize: 10,
       estadoSesion: filtroEstado === "all" ? "" : filtroEstado,
       tipoSesion: filtroTipo === "all" ? "" : filtroTipo,
+      busqueda: busquedaDebounced || "",
     }),
-    [paginaActual, filtroEstado, filtroTipo],
+    [paginaActual, filtroEstado, filtroTipo, busquedaDebounced],
   );
 
   const {
-    sesiones,
+    sesiones: sesionesFiltradas,
     total: totalSesiones,
     totalPages: totalPaginasSesiones,
     cargando,
@@ -88,22 +91,6 @@ export const SesionesPage = () => {
     cargando: cargandoCiclos,
     refetch: refetchCiclos,
   } = useCiclosPacientes({ page: paginaActual, pageSize: 10 });
-
-  const sesionesFiltradas = useMemo(() => {
-    let resultado = sesiones;
-    if (busquedaDebounced) {
-      const termino = busquedaDebounced.toLowerCase();
-      resultado = resultado.filter(
-        (s) =>
-          s.pacienteNombre.toLowerCase().includes(termino) ||
-          s.terapeuta.toLowerCase().includes(termino),
-      );
-    }
-    if (filtroTerapeuta) {
-      resultado = resultado.filter((s) => s.terapeuta === filtroTerapeuta);
-    }
-    return resultado;
-  }, [sesiones, busquedaDebounced, filtroTerapeuta]);
 
   const terapeutas = useBuscarTerapeutas();
   const terapeutasDisponibles = terapeutas.options.map((t) => t.label);
@@ -125,11 +112,7 @@ export const SesionesPage = () => {
   const { actualizarSesion } = useActualizarSesion();
   const { setSesion: setSesionActiva } = useSesionActivaStore();
 
-  const {
-    options: opcionesPacientes,
-    onSearch: onBuscarPaciente,
-    buscando: cargandoPacientes,
-  } = useBuscarPacientes();
+  const { crearSesion, creando: creandoSesion } = useCrearSesionAgenda();
 
   const refetch = useCallback(() => {
     refetchSesiones();
@@ -341,6 +324,21 @@ export const SesionesPage = () => {
     setPaginaActual(1);
   }, []);
 
+  const handleCrearSesion = useCallback(
+    async (data: DatosCita) => {
+      await crearSesion({
+        patientId: data.patientId,
+        therapistId: data.therapistId,
+        sessionDate: data.sessionDate,
+        sessionType: data.sessionType,
+        durationMinutes: data.durationMinutes,
+      });
+      setMostrarFormulario(false);
+      await refetch();
+    },
+    [crearSesion, refetch],
+  );
+
   return (
     <div className="space-y-8">
       <SessionsHeader
@@ -419,14 +417,16 @@ export const SesionesPage = () => {
         />
       )}
 
-      <ModalCrearSesion
+      <Modal
         isOpen={mostrarFormulario}
         onClose={() => setMostrarFormulario(false)}
-        onCreada={refetch}
-        opcionesPacientes={opcionesPacientes}
-        onBuscarPaciente={onBuscarPaciente}
-        cargandoPacientes={cargandoPacientes}
-      />
+        title="Nueva Sesión"
+      >
+        <FormNuevaCita
+          onClose={() => setMostrarFormulario(false)}
+          onSubmit={handleCrearSesion}
+        />
+      </Modal>
 
       <ModalDetalleSesion
         isOpen={mostrarDetalle}

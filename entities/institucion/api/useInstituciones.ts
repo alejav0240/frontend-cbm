@@ -4,13 +4,14 @@ import { Institucion } from "../model/tipos";
 import { useMemo } from "react";
 import { ObtenerInstitucionesQuery } from "@/shared/api/generated/graphql";
 
-export const useInstituciones = (params?: { page?: number; pageSize?: number }) => {
+export const useInstituciones = (params?: { page?: number; pageSize?: number; busqueda?: string }) => {
   const { data, loading, error, refetch } = useQuery<ObtenerInstitucionesQuery>(
     OBTENER_INSTITUCIONES,
     {
       variables: {
         page: params?.page,
         pageSize: params?.pageSize,
+        search: params?.busqueda || "",
       },
       notifyOnNetworkStatusChange: true,
     },

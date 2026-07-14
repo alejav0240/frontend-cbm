@@ -16,6 +16,7 @@ import { UsersTable } from "./components/UsersTable";
 import { Download } from "lucide-react";
 import { Pagination } from "@/shared/ui/Pagination";
 import { toast } from "sonner";
+import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 
 type TabType = "PERSONAL" | "TUTORES";
 
@@ -23,6 +24,7 @@ export const UsuariosPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>("PERSONAL");
   const [paginaActual, setPaginaActual] = useState(1);
   const [busqueda, setBusqueda] = useState("");
+  const busquedaDebounced = useDebounce(busqueda, 500);
 
   const nombreRol = activeTab === "TUTORES" ? "TUTOR" : undefined;
   const excluirRol = activeTab === "PERSONAL" ? "TUTOR" : undefined;
@@ -30,7 +32,7 @@ export const UsuariosPage = () => {
   const { usuarios, paginas, refetch } = useUsuarios({
     pagina: paginaActual,
     pageSize: 10,
-    busqueda,
+    busqueda: busquedaDebounced || undefined,
     nombreRol,
     excluirRol,
   });

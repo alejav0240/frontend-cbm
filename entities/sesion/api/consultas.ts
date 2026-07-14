@@ -10,6 +10,7 @@ export const OBTENER_SESIONES = gql`
     $page: Int
     $pageSize: Int
     $byCycles: Boolean
+    $search: String
   ) {
     sessions(
       patientId: $patientId
@@ -20,6 +21,7 @@ export const OBTENER_SESIONES = gql`
       byCycles: $byCycles
       page: $page
       pageSize: $pageSize
+      search: $search
     ) {
       byCycles
       currentPage

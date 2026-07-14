@@ -21,6 +21,7 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
         page: filtros.page || 1,
         pageSize: filtros.pageSize || 10,
         byCycles: filtros.verCiclo || false,
+        search: filtros.busqueda || "",
       },
       notifyOnNetworkStatusChange: true,
     },

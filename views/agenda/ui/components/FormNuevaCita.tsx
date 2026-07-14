@@ -250,18 +250,6 @@ export function FormNuevaCita({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-          Notas (opcional)
-        </label>
-        <textarea
-          {...register("notes")}
-          rows={3}
-          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
-          placeholder="Observaciones adicionales..."
-        />
-      </div>
-
       <div className="flex justify-end gap-4 pt-4 border-t border-gray-100 dark:border-white/5">
         <button
           type="button"

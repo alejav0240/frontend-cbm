@@ -50,4 +50,5 @@ export interface SesionFiltros {
   page?: number;
   pageSize?: number;
   verCiclo?: boolean;
+  busqueda?: string;
 }

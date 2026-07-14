@@ -16,6 +16,7 @@ import {
 } from "@/entities/escalas";
 import { useBuscarPacientes } from "@/entities/paciente";
 import { useAuthStore } from "@/shared/model/useAuthStore";
+import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { Pagination } from "@/shared/ui/Pagination";
 import Modal from "@/shared/ui/components/Modal";
 
@@ -24,11 +25,14 @@ export const EvaluacionesPage = () => {
   const [scaleFilter, setScaleFilter] = useState("");
   const [page, setPage] = useState(1);
 
+  const busquedaDebounced = useDebounce(search, 500);
+
   const { evaluaciones, total, currentPage, totalPages, cargando, refetch } =
     useEvaluaciones({
       scaleId: scaleFilter || undefined,
       page,
       pageSize: 10,
+      busqueda: busquedaDebounced || undefined,
     });
 
   const { escalas } = useEscalas();
@@ -42,16 +46,6 @@ export const EvaluacionesPage = () => {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedEval, setSelectedEval] = useState<any>(null);
-
-  const filteredEvaluaciones = useMemo(
-    () =>
-      !search.trim()
-        ? evaluaciones
-        : evaluaciones.filter((ev) =>
-            ev.patientName.toLowerCase().includes(search.toLowerCase().trim()),
-          ),
-    [evaluaciones, search],
-  );
 
   const handleViewDetails = useCallback((ev: any) => {
     setSelectedEval({
@@ -211,7 +205,7 @@ export const EvaluacionesPage = () => {
         scales={escalas as any[]}
       />
 
-      {filteredEvaluaciones.length === 0 ? (
+      {evaluaciones.length === 0 ? (
         <div className="bg-white dark:bg-[#111] rounded-[32px] border border-gray-200 dark:border-white/5 p-12 text-center">
           <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 mx-auto mb-6">
             <ClipboardList size={40} />
@@ -232,7 +226,7 @@ export const EvaluacionesPage = () => {
       ) : (
         <>
           <div className="space-y-4">
-            {filteredEvaluaciones.map((ev, idx) => (
+            {evaluaciones.map((ev, idx) => (
               <EvaluationCard
                 key={ev.id}
                 evaluation={{

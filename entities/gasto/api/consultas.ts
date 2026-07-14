@@ -6,12 +6,14 @@ export const OBTENER_GASTOS = gql`
     $category: String
     $page: Int
     $pageSize: Int
+    $search: String
   ) {
     expenses(
       status: $status
       category: $category
       page: $page
       pageSize: $pageSize
+      search: $search
     ) {
       results {
         id

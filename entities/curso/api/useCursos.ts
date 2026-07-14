@@ -8,6 +8,7 @@ interface UseCursosParams {
   page?: number;
   pageSize?: number;
   estado?: string;
+  busqueda?: string;
 }
 
 export const useCursos = (params: UseCursosParams = {}) => {
@@ -18,6 +19,7 @@ export const useCursos = (params: UseCursosParams = {}) => {
         state: params.estado,
         page: params.page,
         pageSize: params.pageSize,
+        search: params.busqueda || "",
       },
       notifyOnNetworkStatusChange: true,
     },

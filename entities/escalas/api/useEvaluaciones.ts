@@ -11,10 +11,11 @@ interface UseEvaluacionesParams {
   scaleId?: string;
   page?: number;
   pageSize?: number;
+  busqueda?: string;
 }
 
 export function useEvaluaciones(params?: UseEvaluacionesParams) {
-  const { patientId, scaleId, page = 1, pageSize = 10 } = params ?? {};
+  const { patientId, scaleId, page = 1, pageSize = 10, busqueda } = params ?? {};
 
   const { data, loading, error, refetch } = useQuery<ObtenerEvaluacionesQuery>(
     OBTENER_EVALUACIONES,
@@ -24,6 +25,7 @@ export function useEvaluaciones(params?: UseEvaluacionesParams) {
         scaleId: scaleId || undefined,
         page,
         pageSize,
+        search: busqueda || "",
       },
       notifyOnNetworkStatusChange: true,
     },

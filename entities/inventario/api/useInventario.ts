@@ -12,6 +12,7 @@ export const useInventario = (filtros: InventarioFiltros = {}) => {
         type: filtros.tipo,
         page: filtros.pagina,
         pageSize: filtros.pageSize,
+        search: filtros.busqueda || "",
       },
       notifyOnNetworkStatusChange: true,
     });

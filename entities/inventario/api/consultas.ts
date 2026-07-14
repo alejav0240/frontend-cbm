@@ -6,12 +6,14 @@ export const OBTENER_ARTICULOS_INVENTARIO = gql`
     $type: String
     $page: Int
     $pageSize: Int
+    $search: String
   ) {
     inventoryItems(
       status: $status
       type: $type
       page: $page
       pageSize: $pageSize
+      search: $search
     ) {
       results {
         id

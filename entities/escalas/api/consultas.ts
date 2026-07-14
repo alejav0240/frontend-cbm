@@ -27,6 +27,7 @@ export const OBTENER_EVALUACIONES = gql`
     $scaleId: ID
     $page: Int
     $pageSize: Int
+    $search: String
   ) {
     scaleEvaluations(
       patientId: $patientId
@@ -34,6 +35,7 @@ export const OBTENER_EVALUACIONES = gql`
       scaleId: $scaleId
       page: $page
       pageSize: $pageSize
+      search: $search
     ) {
       currentPage
       totalCount

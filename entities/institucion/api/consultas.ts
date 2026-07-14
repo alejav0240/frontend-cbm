@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_INSTITUCIONES = gql`
-  query ObtenerInstituciones($page: Int, $pageSize: Int) {
-    institutions(page: $page, pageSize: $pageSize) {
+  query ObtenerInstituciones($page: Int, $pageSize: Int, $search: String) {
+    institutions(page: $page, pageSize: $pageSize, search: $search) {
       results {
         id
         nombre: name

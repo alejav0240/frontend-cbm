@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_CURSOS = gql`
-  query ObtenerCursos($state: String, $page: Int, $pageSize: Int) {
-    courses(state: $state, page: $page, pageSize: $pageSize) {
+  query ObtenerCursos($state: String, $page: Int, $pageSize: Int, $search: String) {
+    courses(state: $state, page: $page, pageSize: $pageSize, search: $search) {
       results {
         id
         nombre: name
