@@ -63,7 +63,7 @@ export function MarketingTabs({
             placeholder="Buscar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent focus:border-[#008080]/30 focus:ring-4 focus:ring-[#008080]/5 outline-none transition-all text-xs dark:text-white"
+            className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent focus-visible:border-[#008080]/30 focus-visible:ring-4 focus-visible:ring-[#008080]/5 outline-none transition-all text-xs dark:text-white"
           />
         </div>
 

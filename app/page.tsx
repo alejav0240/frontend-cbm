@@ -758,10 +758,10 @@ const FormField = ({
       <textarea
         rows={4}
         {...register}
-        className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-white/5 focus:ring-0 transition-all outline-none resize-none ${
+        className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-white/5 focus-visible:ring-2 focus-visible:ring-[#008080]/20 focus-visible:border-[#008080] transition-all outline-none resize-none ${
           error
             ? "border-red-500"
-            : "border-gray-200 dark:border-white/10 focus:border-[#008080]"
+            : "border-gray-200 dark:border-white/10"
         }`}
         placeholder={placeholder}
         disabled={disabled}
@@ -770,10 +770,10 @@ const FormField = ({
       <input
         type={type}
         {...register}
-        className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-white/5 focus:ring-0 transition-all outline-none ${
+        className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-white/5 focus-visible:ring-2 focus-visible:ring-[#008080]/20 focus-visible:border-[#008080] transition-all outline-none ${
           error
             ? "border-red-500"
-            : "border-gray-200 dark:border-white/10 focus:border-[#008080]"
+            : "border-gray-200 dark:border-white/10"
         }`}
         placeholder={placeholder}
         disabled={disabled}

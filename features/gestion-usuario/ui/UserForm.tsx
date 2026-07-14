@@ -123,7 +123,7 @@ export function UserForm({
                 onChange: (e) => setFirstName(e.target.value),
               })}
               defaultValue={firstName}
-              className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white ${zodErrors.firstName ? "border-red-500" : "border-transparent focus:border-[#008080]"}`}
+              className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${zodErrors.firstName ? "border-red-500" : "border-transparent focus-visible:border-[#008080]"}`}
               placeholder="Ej. Juan"
             />
           </div>
@@ -148,7 +148,7 @@ export function UserForm({
                 onChange: (e) => setLastName(e.target.value),
               })}
               defaultValue={lastName}
-              className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white ${zodErrors.lastName ? "border-red-500" : "border-transparent focus:border-[#008080]"}`}
+              className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${zodErrors.lastName ? "border-red-500" : "border-transparent focus-visible:border-[#008080]"}`}
               placeholder="Ej. Pérez"
             />
           </div>
@@ -176,7 +176,7 @@ export function UserForm({
                 onChange: (e) => setCarnet(e.target.value),
               })}
               defaultValue={carnet}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white border-transparent focus:border-[#008080]"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white border-transparent focus-visible:border-[#008080]"
               placeholder="Ej. 1234567 LP"
             />
           </div>
@@ -196,7 +196,7 @@ export function UserForm({
                 onChange: (e) => setPhone(e.target.value),
               })}
               defaultValue={phone}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white border-transparent focus:border-[#008080]"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white border-transparent focus-visible:border-[#008080]"
               placeholder="Ej. 70000000"
             />
           </div>
@@ -219,7 +219,7 @@ export function UserForm({
                 onChange: (e) => setUsername(e.target.value),
               })}
               defaultValue={username}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white border-2"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white border-2"
               placeholder="Opcional: se generará automáticamente"
             />
           </div>
@@ -239,7 +239,7 @@ export function UserForm({
                 onChange: (e) => setPassword(e.target.value),
               })}
               defaultValue={password}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white border-2"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white border-2"
               placeholder="Opcional: se generará automáticamente"
             />
           </div>

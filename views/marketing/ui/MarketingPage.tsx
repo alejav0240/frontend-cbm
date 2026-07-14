@@ -23,6 +23,7 @@ import { CampaignFormModal } from "./components/CampaignFormModal";
 import { LeadsTable } from "./components/LeadsTable";
 import { LeadFormModal } from "./components/LeadFormModal";
 import { LeadDetailModal } from "./components/LeadDetailModal";
+import { Pagination } from "@/shared/ui/Pagination";
 import { toast } from "sonner";
 
 const STATUS_MAP: Record<string, MarketingCampaign["status"]> = {
@@ -52,6 +53,8 @@ export const MarketingPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [sourceFilter, setSourceFilter] = useState("Todos");
+  const [paginaActualCampanas, setPaginaActualCampanas] = useState(1);
+  const [paginaActualLeads, setPaginaActualLeads] = useState(1);
 
   const [mostrarFormularioCampana, setMostrarFormularioCampana] =
     useState(false);
@@ -67,8 +70,10 @@ export const MarketingPage = () => {
     id: string;
   } | null>(null);
 
-  const { campanas, cargando: cargandoCampanas } = useCampanasMarketing();
-  const { leads, cargando: cargandoLeads } = useLeads();
+  const { campanas, paginas: paginasCampanas, cargando: cargandoCampanas } =
+    useCampanasMarketing({ page: paginaActualCampanas, pageSize: 10 });
+  const { leads, paginas: paginasLeads, cargando: cargandoLeads } =
+    useLeads({ page: paginaActualLeads, pageSize: 10 });
 
   const { crear: crearCampana } = useCrearCampana();
   const { actualizar: actualizarCampana } = useActualizarCampana();
@@ -407,26 +412,38 @@ export const MarketingPage = () => {
                     setIdAEliminar({ tipo: "campana", id: String(id) })
                   }
                 />
+                <Pagination
+                  currentPage={paginaActualCampanas}
+                  totalPages={paginasCampanas}
+                  onPageChange={setPaginaActualCampanas}
+                />
               </div>
             )}
 
             {activeTab === "leads" && (
-              <LeadsTable
-                leads={leadsMapeados}
-                onSelectLead={setLeadDetalle}
-                onUpdateStatus={handleActualizarEstadoLead}
-                onWhatsApp={(lead) => {
-                  const phone = lead.phone.replace(/[^0-9]/g, "");
-                  window.open(`https://wa.me/${phone}`, "_blank");
-                }}
-                onEdit={(lead) => {
-                  setLeadAEditar(lead);
-                  setMostrarFormularioLead(true);
-                }}
-                onDelete={(id) =>
-                  setIdAEliminar({ tipo: "lead", id: String(id) })
-                }
-              />
+              <div className="space-y-6">
+                <LeadsTable
+                  leads={leadsMapeados}
+                  onSelectLead={setLeadDetalle}
+                  onUpdateStatus={handleActualizarEstadoLead}
+                  onWhatsApp={(lead) => {
+                    const phone = lead.phone.replace(/[^0-9]/g, "");
+                    window.open(`https://wa.me/${phone}`, "_blank");
+                  }}
+                  onEdit={(lead) => {
+                    setLeadAEditar(lead);
+                    setMostrarFormularioLead(true);
+                  }}
+                  onDelete={(id) =>
+                    setIdAEliminar({ tipo: "lead", id: String(id) })
+                  }
+                />
+                <Pagination
+                  currentPage={paginaActualLeads}
+                  totalPages={paginasLeads}
+                  onPageChange={setPaginaActualLeads}
+                />
+              </div>
             )}
           </motion.div>
         </AnimatePresence>

@@ -67,7 +67,7 @@ export function InventoryFormModal({
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="Ej: Piano Yamaha, Set de Maracas..."
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all"
           />
         </div>
 
@@ -81,7 +81,7 @@ export function InventoryFormModal({
               onChange={(e) =>
                 setFormData({ ...formData, type: e.target.value })
               }
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all appearance-none"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all appearance-none"
             >
               {TIPOS.map((t) => (
                 <option key={t.value} value={t.value}>
@@ -99,7 +99,7 @@ export function InventoryFormModal({
               onChange={(e) =>
                 setFormData({ ...formData, condition: e.target.value })
               }
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all appearance-none"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all appearance-none"
             >
               {CONDICIONES.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -120,7 +120,7 @@ export function InventoryFormModal({
               onChange={(e) =>
                 setFormData({ ...formData, status: e.target.value })
               }
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all appearance-none"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all appearance-none"
             >
               {ESTADOS.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -140,7 +140,7 @@ export function InventoryFormModal({
                 setFormData({ ...formData, room: e.target.value })
               }
               placeholder="Ej: Sala 1, Aula 3..."
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all"
             />
           </div>
         </div>

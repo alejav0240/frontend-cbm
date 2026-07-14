@@ -15,6 +15,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
 }
@@ -27,6 +28,7 @@
   --background: #fdfcfb;
   --foreground: #2c3e50;
   --primary: #008080;
+  --primary-hover: #006666;
   --secondary: #5a5a40;
   --accent: #e6e6e6;
 }
@@ -37,6 +39,7 @@
   --foreground: #e0f2f2;
   --accent: #162a2a;
   --primary: #00b2b2;
+  --primary-hover: #00cccc;
 }
 
 /* ===== ESTILOS GLOBALES ===== */
@@ -65,6 +68,17 @@ body {
 
 .text-balance {
   text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @utility scrollbar-hide {

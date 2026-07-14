@@ -80,16 +80,18 @@ export function FiltrosSesiones({
     <div className="flex flex-col gap-3">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
+          <label htmlFor="search-sesiones" className="sr-only">Buscar sesiones</label>
           <Search
             size={16}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
+            id="search-sesiones"
             type="text"
             value={busqueda}
             onChange={(e) => onBusquedaChange(e.target.value)}
             placeholder="Buscar por paciente o terapeuta..."
-            className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] focus:ring-2 focus:ring-[#008080]/10 outline-none transition-all text-sm dark:text-white placeholder:text-gray-400"
+            className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] focus-visible:ring-2 focus-visible:ring-[#008080]/10 outline-none transition-all text-sm dark:text-white placeholder:text-gray-400"
           />
           {busqueda && (
             <button

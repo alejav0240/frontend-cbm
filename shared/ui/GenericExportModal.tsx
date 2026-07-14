@@ -227,7 +227,7 @@ export default function GenericExportModal<T>({
                       [String(filter.key)]: e.target.value,
                     }))
                   }
-                  className="w-full px-4 py-2 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+                  className="w-full px-4 py-2 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
                 >
                   <option value="all">Todos</option>
 
@@ -249,7 +249,7 @@ export default function GenericExportModal<T>({
                       [String(filter.key)]: e.target.value,
                     }))
                   }
-                  className="w-full px-4 py-2 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+                  className="w-full px-4 py-2 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
                   placeholder={`Buscar ${filter.label}`}
                 />
               )}
@@ -272,7 +272,7 @@ export default function GenericExportModal<T>({
                         },
                       }))
                     }
-                    className="w-full px-2 py-2 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-xs dark:text-white"
+                    className="w-full px-2 py-2 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-xs dark:text-white"
                   />
 
                   <input
@@ -291,7 +291,7 @@ export default function GenericExportModal<T>({
                         },
                       }))
                     }
-                    className="w-full px-2 py-2 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-xs dark:text-white"
+                    className="w-full px-2 py-2 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-xs dark:text-white"
                   />
                 </div>
               )}

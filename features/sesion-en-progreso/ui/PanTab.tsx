@@ -5,7 +5,20 @@ import { motion } from "motion/react";
 import { Target, CheckCircle2, Music, Layers } from "lucide-react";
 
 interface PlanTabProps {
-  patientPlan: any;
+  patientPlan: {
+    mainObjective: string;
+    progressPercent: number;
+    steps: Array<{
+      id: string;
+      moment: number;
+      durationMinutes: number;
+      objective: string;
+      focus: string;
+      musicalResources: string;
+      musicalEmphasis: string;
+      mltMethod: string;
+    }> | null;
+  } | null;
   completedSteps: string[];
   toggleStep: (id: string) => void;
 }
@@ -66,15 +79,18 @@ export function PlanTab({
         {/* Vertical Line */}
         <div className="absolute left-6 md:left-8 top-0 bottom-0 w-px bg-gray-200 dark:bg-white/10" />
 
-        {patientPlan.steps?.map((step: any, idx: number) => (
+        {patientPlan.steps?.map((step, idx) => (
           <motion.div
             key={step.id}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: idx * 0.1 }}
-            onClick={() => toggleStep(step.id)}
-            className={`relative pl-16 md:pl-24 group cursor-pointer`}
           >
+            <button
+              type="button"
+              onClick={() => toggleStep(step.id)}
+              className={`relative pl-16 md:pl-24 group cursor-pointer text-left w-full`}
+            >
             {/* Node */}
             <div
               className={`absolute left-4 md:left-6 top-0 w-4 h-4 md:w-5 md:h-5 rounded-full border-4 border-white dark:border-[#0a0a0a] z-10 transition-all duration-300 ${
@@ -160,6 +176,7 @@ export function PlanTab({
                 </div>
               </div>
             </div>
+            </button>
           </motion.div>
         ))}
       </div>

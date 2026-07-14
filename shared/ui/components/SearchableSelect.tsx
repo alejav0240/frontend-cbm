@@ -91,9 +91,15 @@ export function SearchableSelect<T extends SelectOption>({
         </label>
       )}
       <div className="relative">
-        <div
-          onClick={() => !disabled && setIsOpen(!isOpen)}
-          className={`w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent cursor-pointer flex justify-between items-center transition-all hover:bg-gray-100 dark:hover:bg-white/10 ${isOpen ? "border-[#008080] ring-2 ring-[#008080]/10 shadow-lg shadow-[#008080]/5" : ""} ${disabled ? "cursor-not-allowed" : ""}`}
+        <button
+          type="button"
+          role="combobox"
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-label={label || placeholder}
+          disabled={disabled}
+          onClick={() => setIsOpen(!isOpen)}
+          className={`w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent cursor-pointer flex justify-between items-center transition-all hover:bg-gray-100 dark:hover:bg-white/10 text-left ${isOpen ? "border-[#008080] ring-2 ring-[#008080]/10 shadow-lg shadow-[#008080]/5" : ""} ${disabled ? "cursor-not-allowed" : ""}`}
         >
           <span
             className={
@@ -106,22 +112,32 @@ export function SearchableSelect<T extends SelectOption>({
           </span>
           <div className="flex items-center gap-2">
             {clearable && value && (
-              <button
+              <span
+                role="button"
+                tabIndex={0}
+                aria-label="Limpiar selección"
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange("");
                 }}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-white/10 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onChange("");
+                  }
+                }}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-white/10 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors cursor-pointer"
               >
                 <span className="text-[14px] leading-none">×</span>
-              </button>
+              </span>
             )}
             <ChevronDown
               size={16}
               className={`text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
             />
           </div>
-        </div>
+        </button>
 
         <AnimatePresence>
           {isOpen && (
@@ -142,18 +158,22 @@ export function SearchableSelect<T extends SelectOption>({
                       size={14}
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                     />
+                    <label htmlFor={`search-${label || "select"}`} className="sr-only">
+                      Buscar opciones
+                    </label>
                     <input
+                      id={`search-${label || "select"}`}
                       autoFocus
                       type="text"
                       placeholder="Buscar..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 bg-white dark:bg-white/5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#008080]/20 border border-transparent focus:border-[#008080] dark:text-white transition-all"
+                      className="w-full pl-9 pr-4 py-2 bg-white dark:bg-white/5 rounded-xl text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 border border-transparent focus-visible:border-[#008080] dark:text-white transition-all"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>
                 </div>
-                <div className="max-h-60 overflow-y-auto p-2 custom-scrollbar">
+                <div role="listbox" className="max-h-60 overflow-y-auto p-2 custom-scrollbar">
                   {isLoading ? (
                     <div className="px-4 py-10 text-center">
                       <div className="w-5 h-5 border-2 border-[#008080] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
@@ -168,10 +188,21 @@ export function SearchableSelect<T extends SelectOption>({
                       return (
                         <div
                           key={`${optValue}-${idx}`}
+                          role="option"
+                          aria-selected={isSelected}
+                          tabIndex={0}
                           onClick={() => {
                             onChange(optValue);
                             setIsOpen(false);
                             setSearchTerm("");
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              onChange(optValue);
+                              setIsOpen(false);
+                              setSearchTerm("");
+                            }
                           }}
                           className={`px-4 py-3 text-sm cursor-pointer rounded-xl transition-all flex items-center justify-between group ${
                             isSelected

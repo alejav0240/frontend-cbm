@@ -32,6 +32,7 @@ import GenericExportModal, {
   type ExportColumn,
   type Exporter,
 } from "@/shared/ui/GenericExportModal";
+import { Pagination } from "@/shared/ui/Pagination";
 import { toast } from "sonner";
 
 export const PagosPage = () => {
@@ -44,7 +45,7 @@ export const PagosPage = () => {
   const [mostrarModalDescuento, setMostrarModalDescuento] = useState(false);
   const [mostrarExportar, setMostrarExportar] = useState(false);
 
-  const { pagos } = usePagos({
+  const { pagos, paginas } = usePagos({
     pagina: paginaActual,
     pageSize: 10,
     estadoPago: filtroEstado,
@@ -235,6 +236,12 @@ export const PagosPage = () => {
             payments={pagos}
             onDelete={handleDeletePayment}
             onExportReceipt={handleExportReceipt}
+          />
+
+          <Pagination
+            currentPage={paginaActual}
+            totalPages={paginas}
+            onPageChange={setPaginaActual}
           />
         </>
       ) : (

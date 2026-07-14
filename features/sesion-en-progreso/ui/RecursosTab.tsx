@@ -57,29 +57,41 @@ export function ResourcesTab({
     >
       {/* Search */}
       <div className="relative">
+        <label htmlFor="search-recursos-sesion" className="sr-only">Buscar recursos</label>
         <Search
           size={16}
           className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
         />
         <input
+          id="search-recursos-sesion"
           type="text"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           placeholder="Buscar recurso por nombre, tipo o categoría..."
-          className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-2xl border border-transparent focus:border-[#008080]/30 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white"
+          className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-2xl border border-transparent focus-visible:border-[#008080]/30 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white"
         />
       </div>
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-        {filteredResources.map((resource) => (
-          <div
-            key={resource.id}
-            onClick={() => toggleResource(resource.id)}
-            className={`p-4 md:p-6 rounded-[24px] md:rounded-[32px] border-2 transition-all cursor-pointer flex items-center gap-3 md:gap-4 ${(selectedResources || []).includes(resource.id) ? "border-[#008080] bg-[#008080]/5" : "border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/2 hover:border-gray-200 dark:hover:border-white/10"}`}
-          >
+        {filteredResources.map((resource) => {
+          const isSelected = (selectedResources || []).includes(resource.id);
+          return (
+            <button
+              key={resource.id}
+              type="button"
+              onClick={() => toggleResource(resource.id)}
+              aria-pressed={isSelected}
+              className={`p-4 md:p-6 rounded-[24px] md:rounded-[32px] border-2 transition-all cursor-pointer flex items-center gap-3 md:gap-4 text-left ${
+                isSelected
+                  ? "border-[#008080] bg-[#008080]/5"
+                  : "border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/2 hover:border-gray-200 dark:hover:border-white/10"
+              }`}
+            >
             <div
-              className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center ${(selectedResources || []).includes(resource.id) ? "bg-[#008080] text-white" : "bg-white dark:bg-[#111] text-gray-400"}`}
+              className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center ${
+                isSelected ? "bg-[#008080] text-white" : "bg-white dark:bg-[#111] text-gray-400"
+              }`}
             >
               <Music size={18} className="md:w-5 md:h-5" />
             </div>
@@ -91,14 +103,15 @@ export function ResourcesTab({
                 {resource.type} • {resource.category}
               </p>
             </div>
-            {(selectedResources || []).includes(resource.id) && (
+            {isSelected && (
               <CheckCircle2
                 size={18}
                 className="text-[#008080] md:w-5 md:h-5 flex-shrink-0"
               />
             )}
-          </div>
-        ))}
+          </button>
+        );
+        })}
       </div>
 
       {filteredResources.length === 0 && (

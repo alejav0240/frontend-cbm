@@ -71,7 +71,7 @@ export function RoleFormModal({
             <input
               type="text"
               {...register("nombre")}
-              className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
               placeholder="Ej. Terapeuta Senior"
             />
           </div>

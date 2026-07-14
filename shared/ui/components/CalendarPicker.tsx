@@ -121,9 +121,14 @@ export function CalendarPicker({
         </label>
       )}
       <div className="relative">
-        <div
+        <button
+          type="button"
+          role="combobox"
+          aria-expanded={isOpen}
+          aria-haspopup="dialog"
+          aria-label={label || "Seleccionar fecha"}
           onClick={() => setIsOpen(!isOpen)}
-          className={`px-6 py-3 bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-white/5 cursor-pointer flex items-center gap-3 transition-all hover:shadow-md ${isOpen ? "border-[#008080] ring-2 ring-[#008080]/10" : ""}`}
+          className={`w-full px-6 py-3 bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-white/5 cursor-pointer flex items-center gap-3 transition-all hover:shadow-md ${isOpen ? "border-[#008080] ring-2 ring-[#008080]/10" : ""}`}
         >
           <CalendarIcon size={18} className="text-[#008080]" />
           <span
@@ -136,7 +141,7 @@ export function CalendarPicker({
             size={16}
             className={`text-gray-400 ml-2 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
           />
-        </div>
+        </button>
 
         <AnimatePresence>
           {isOpen && (

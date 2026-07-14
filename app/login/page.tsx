@@ -125,7 +125,7 @@ export default function Login() {
                 <input
                   type="text"
                   {...register("username")}
-                  className={`w-full pl-12 pr-6 py-4 bg-gray-50 dark:bg-white/5 rounded-2xl border focus:bg-white dark:focus:bg-white/10 outline-none transition-all dark:text-white ${errors.username ? "border-red-500" : "border-transparent focus:border-[#008080]"}`}
+                  className={`w-full pl-12 pr-6 py-4 bg-gray-50 dark:bg-white/5 rounded-2xl border focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all dark:text-white ${errors.username ? "border-red-500" : "border-transparent focus-visible:border-[#008080]"}`}
                   placeholder="usuario"
                   disabled={isBusy}
                 />
@@ -149,7 +149,7 @@ export default function Login() {
                 <input
                   type="password"
                   {...register("password")}
-                  className={`w-full pl-12 pr-6 py-4 bg-gray-50 dark:bg-white/5 rounded-2xl border focus:bg-white dark:focus:bg-white/10 outline-none transition-all dark:text-white ${errors.password ? "border-red-500" : "border-transparent focus:border-[#008080]"}`}
+                  className={`w-full pl-12 pr-6 py-4 bg-gray-50 dark:bg-white/5 rounded-2xl border focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all dark:text-white ${errors.password ? "border-red-500" : "border-transparent focus-visible:border-[#008080]"}`}
                   placeholder="••••••••"
                   disabled={isBusy}
                 />

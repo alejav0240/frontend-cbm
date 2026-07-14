@@ -20,12 +20,14 @@ import {
 } from "./components/InventoryFormModal";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
+import { Pagination } from "@/shared/ui/Pagination";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 
 export const InventarioPage = () => {
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const busquedaDebounced = useDebounce(terminoBusqueda, 500);
 
+  const [paginaActual, setPaginaActual] = useState(1);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
   const [mostrarExportar, setMostrarExportar] = useState(false);
@@ -34,7 +36,10 @@ export const InventarioPage = () => {
     null,
   );
 
-  const { articulos, refetch } = useInventario();
+  const { articulos, paginas, refetch } = useInventario({
+    pagina: paginaActual,
+    pageSize: 10,
+  });
 
   const { crearInventario } = useCrearInventario();
   const { actualizarInventario } = useActualizarInventario();
@@ -148,9 +153,18 @@ export const InventarioPage = () => {
       <InventoryTable
         inventory={articulosFiltrados}
         searchTerm={terminoBusqueda}
-        setSearchTerm={setTerminoBusqueda}
+        setSearchTerm={(term) => {
+          setTerminoBusqueda(term);
+          setPaginaActual(1);
+        }}
         onEdit={handleAbrirEditar}
         onDelete={handleSolicitarEliminar}
+      />
+
+      <Pagination
+        currentPage={paginaActual}
+        totalPages={paginas}
+        onPageChange={setPaginaActual}
       />
 
       <InventoryFormModal

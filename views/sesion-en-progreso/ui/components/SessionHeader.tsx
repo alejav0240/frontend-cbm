@@ -198,11 +198,11 @@ export function SessionHeader({
                 onMouseLeave={() => setIsHoveringRecording(false)}
                 className={`
                   relative p-2.5 sm:p-3 rounded-xl transition-all duration-200
-                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#0f0f0f]
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#0f0f0f]
                   ${
                     isRecording
-                      ? "bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 shadow-lg shadow-red-500/25"
-                      : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 focus:ring-[#008080]"
+                      ? "bg-red-500 text-white hover:bg-red-600 focus-visible:ring-red-500 shadow-lg shadow-red-500/25"
+                      : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 focus-visible:ring-[#008080]"
                   }
                 `}
                 aria-label={
@@ -229,11 +229,11 @@ export function SessionHeader({
                 onClick={() => setIsActive(!isActive)}
                 className={`
                   p-2.5 sm:p-3 rounded-xl transition-all duration-200
-                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#0f0f0f]
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#0f0f0f]
                   ${
                     isActive
-                      ? "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 focus:ring-orange-500"
-                      : "bg-green-500/10 text-green-500 hover:bg-green-500/20 focus:ring-green-500"
+                      ? "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 focus-visible:ring-orange-500"
+                      : "bg-green-500/10 text-green-500 hover:bg-green-500/20 focus-visible:ring-green-500"
                   }
                 `}
                 aria-label={isActive ? "Pausar sesión" : "Reanudar sesión"}
@@ -255,7 +255,7 @@ export function SessionHeader({
                   text-white font-bold rounded-xl
                   transition-all duration-200
                   shadow-lg shadow-red-500/30 hover:shadow-red-500/40
-                  focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#0f0f0f]
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#0f0f0f]
                   flex items-center gap-2
                 "
                 aria-label="Finalizar sesión"
@@ -280,7 +280,7 @@ export function SessionHeader({
                     text-gray-400 hover:text-gray-600 dark:hover:text-gray-300
                     hover:bg-gray-100 dark:hover:bg-white/10
                     transition-all duration-200
-                    focus:outline-none focus:ring-2 focus:ring-[#008080] focus:ring-offset-2
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008080] focus-visible:ring-offset-2
                   "
                   aria-label="Más opciones"
                   aria-expanded={showMoreOptions}

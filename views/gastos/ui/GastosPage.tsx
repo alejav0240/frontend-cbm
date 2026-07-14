@@ -18,6 +18,7 @@ import { Modal } from "@/shared/ui/components/Modal";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
+import { Pagination } from "@/shared/ui/Pagination";
 
 interface GastoFormData {
   descripcion: string;
@@ -35,9 +36,12 @@ const INITIAL_FORM_DATA: GastoFormData = {
   estado: "PENDING",
 };
 
+const PAGE_SIZE = 10;
+
 export const GastosPage = () => {
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const busquedaDebounced = useDebounce(terminoBusqueda, 500);
+  const [paginaActual, setPaginaActual] = useState(1);
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
@@ -46,7 +50,10 @@ export const GastosPage = () => {
   const [gastoFormData, setGastoFormData] =
     useState<GastoFormData>(INITIAL_FORM_DATA);
 
-  const { gastos, refetch } = useGastos();
+  const { gastos, paginas, refetch } = useGastos({
+    pagina: paginaActual,
+    pageSize: PAGE_SIZE,
+  });
 
   const { crearGasto, creando } = useCrearGasto();
   const { actualizarEstado } = useActualizarEstadoGasto();
@@ -99,7 +106,7 @@ export const GastosPage = () => {
 
       if (gastoFormData.estado === "PAID") {
         const result = await refetch();
-        const creado = result.data?.expenses?.[0];
+        const creado = result.data?.expenses?.results?.[0];
         if (creado?.id) {
           await actualizarEstado(creado.id, "PAID");
         }
@@ -189,12 +196,21 @@ export const GastosPage = () => {
       <ExpensesTable
         expenses={gastosFiltrados}
         searchTerm={terminoBusqueda}
-        setSearchTerm={setTerminoBusqueda}
+        setSearchTerm={(value) => {
+          setTerminoBusqueda(value);
+          setPaginaActual(1);
+        }}
         onToggleStatus={handleToggleStatus}
         onDeleteRequest={(id) => {
           setGastoAEliminar(id);
           setMostrarEliminar(true);
         }}
+      />
+
+      <Pagination
+        currentPage={paginaActual}
+        totalPages={paginas}
+        onPageChange={setPaginaActual}
       />
 
       <Modal

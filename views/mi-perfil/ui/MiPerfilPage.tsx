@@ -162,10 +162,10 @@ export const MiPerfilPage = () => {
                   />
                   <input
                     {...registerPerfil("firstName")}
-                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white ${
+                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${
                       errorsPerfil.firstName
                         ? "border-red-500"
-                        : "border-transparent focus:border-[#008080]"
+                        : "border-transparent focus-visible:border-[#008080]"
                     }`}
                   />
                 </div>
@@ -186,10 +186,10 @@ export const MiPerfilPage = () => {
                   />
                   <input
                     {...registerPerfil("lastName")}
-                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white ${
+                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${
                       errorsPerfil.lastName
                         ? "border-red-500"
-                        : "border-transparent focus:border-[#008080]"
+                        : "border-transparent focus-visible:border-[#008080]"
                     }`}
                   />
                 </div>
@@ -214,10 +214,10 @@ export const MiPerfilPage = () => {
                   <input
                     {...registerPerfil("email")}
                     type="email"
-                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white ${
+                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${
                       errorsPerfil.email
                         ? "border-red-500"
-                        : "border-transparent focus:border-[#008080]"
+                        : "border-transparent focus-visible:border-[#008080]"
                     }`}
                   />
                 </div>
@@ -238,10 +238,10 @@ export const MiPerfilPage = () => {
                   />
                   <input
                     {...registerPerfil("celular")}
-                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white ${
+                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${
                       errorsPerfil.celular
                         ? "border-red-500"
-                        : "border-transparent focus:border-[#008080]"
+                        : "border-transparent focus-visible:border-[#008080]"
                     }`}
                   />
                 </div>
@@ -264,10 +264,10 @@ export const MiPerfilPage = () => {
                 />
                 <input
                   {...registerPerfil("ci")}
-                  className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white ${
+                  className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${
                     errorsPerfil.ci
                       ? "border-red-500"
-                      : "border-transparent focus:border-[#008080]"
+                      : "border-transparent focus-visible:border-[#008080]"
                   }`}
                 />
               </div>
@@ -363,10 +363,10 @@ export const MiPerfilPage = () => {
             <input
               type="password"
               {...registerPassword("oldPassword")}
-              className={`w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white ${
+              className={`w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${
                 errorsPassword.oldPassword
                   ? "border-red-500"
-                  : "border-transparent focus:border-[#008080]"
+                  : "border-transparent focus-visible:border-[#008080]"
               }`}
               placeholder="Ingresa tu contraseña actual"
             />
@@ -384,10 +384,10 @@ export const MiPerfilPage = () => {
             <input
               type="password"
               {...registerPassword("newPassword")}
-              className={`w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white ${
+              className={`w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${
                 errorsPassword.newPassword
                   ? "border-red-500"
-                  : "border-transparent focus:border-[#008080]"
+                  : "border-transparent focus-visible:border-[#008080]"
               }`}
               placeholder="Mínimo 6 caracteres"
             />
@@ -405,10 +405,10 @@ export const MiPerfilPage = () => {
             <input
               type="password"
               {...registerPassword("confirmarPassword")}
-              className={`w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-sm dark:text-white ${
+              className={`w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${
                 errorsPassword.confirmarPassword
                   ? "border-red-500"
-                  : "border-transparent focus:border-[#008080]"
+                  : "border-transparent focus-visible:border-[#008080]"
               }`}
               placeholder="Repite la nueva contraseña"
             />

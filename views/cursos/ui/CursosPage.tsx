@@ -22,6 +22,7 @@ import {
 import { EnrollStudentModal } from "./components/EnrollStudentModal";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
+import { Pagination } from "@/shared/ui/Pagination";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import {
   Search,
@@ -38,6 +39,7 @@ export const CursosPage = () => {
   const router = useRouter();
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const busquedaDebounced = useDebounce(terminoBusqueda, 500);
+  const [paginaActual, setPaginaActual] = useState(1);
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
@@ -47,7 +49,10 @@ export const CursosPage = () => {
   const [cursoAInscribir, setCursoAInscribir] = useState<Curso | null>(null);
   const [mostrarInscribir, setMostrarInscribir] = useState(false);
 
-  const { cursos, refetch } = useCursos();
+  const { cursos, paginas, refetch } = useCursos({
+    page: paginaActual,
+    pageSize: 9,
+  });
 
   const { crearCurso } = useCrearCurso();
   const { actualizarCurso } = useActualizarCurso();
@@ -200,7 +205,7 @@ export const CursosPage = () => {
           placeholder="Buscar cursos..."
           value={terminoBusqueda}
           onChange={(e) => setTerminoBusqueda(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-white/5 focus:border-[#008080] outline-none transition-all text-sm shadow-sm"
+          className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-white/5 focus-visible:border-[#008080] outline-none transition-all text-sm shadow-sm"
         />
       </div>
 
@@ -295,6 +300,12 @@ export const CursosPage = () => {
           </div>
         ))}
       </div>
+
+      <Pagination
+        currentPage={paginaActual}
+        totalPages={paginas}
+        onPageChange={setPaginaActual}
+      />
 
       <EnrollStudentModal
         key={`inscribir-${cursoAInscribir?.id ?? "none"}`}

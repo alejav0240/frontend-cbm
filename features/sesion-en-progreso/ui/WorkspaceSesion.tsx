@@ -113,10 +113,14 @@ export const WorkspaceSesion = ({
   return (
     <div className="flex-1 flex flex-col bg-white dark:bg-accent">
       {/* Tabs */}
-      <div className="flex border-b border-gray-100 dark:border-white/5">
+      <div role="tablist" className="flex border-b border-gray-100 dark:border-white/5">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            role="tab"
+            aria-selected={tabActiva === tab.id}
+            aria-controls={`panel-${tab.id}`}
+            id={`tab-${tab.id}`}
             onClick={() => setTabActiva(tab.id)}
             className={`relative flex-1 flex items-center justify-center gap-2 py-4 text-xs font-bold uppercase tracking-widest transition-all ${
               tabActiva === tab.id
@@ -142,7 +146,12 @@ export const WorkspaceSesion = ({
       </div>
 
       {/* Contenido */}
-      <div className="flex-1 p-4 md:p-8 overflow-y-auto custom-scrollbar">
+      <div
+        role="tabpanel"
+        id={`panel-${tabActiva}`}
+        aria-labelledby={`tab-${tabActiva}`}
+        className="flex-1 p-4 md:p-8 overflow-y-auto custom-scrollbar"
+      >
         <AnimatePresence mode="wait">
           {tabActiva === "notas" && (
             <NotesTab

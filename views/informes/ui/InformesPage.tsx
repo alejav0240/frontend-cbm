@@ -11,9 +11,14 @@ import { ReportFormModal } from "./components/ReportFormModal";
 import { useInformes, useCrearInforme } from "@/entities/informes";
 import { useBuscarPacientes } from "@/entities/paciente";
 import { useAuthStore } from "@/shared/model/useAuthStore";
+import { Pagination } from "@/shared/ui/Pagination";
 
 export default function InformesPage() {
-  const { informes, cargando, refetch } = useInformes();
+  const [paginaActual, setPaginaActual] = useState(1);
+  const { informes, paginas, cargando, refetch } = useInformes({
+    page: paginaActual,
+    pageSize: 10,
+  });
   const { usuario } = useAuthStore();
   const { options: patientOptions, onSearch: onSearchPatient } =
     useBuscarPacientes();
@@ -105,6 +110,12 @@ export default function InformesPage() {
           ))}
         </div>
       )}
+
+      <Pagination
+        currentPage={paginaActual}
+        totalPages={paginas}
+        onPageChange={setPaginaActual}
+      />
 
       <ReportFormModal
         isOpen={showCreateModal}

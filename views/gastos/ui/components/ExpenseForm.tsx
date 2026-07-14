@@ -38,7 +38,7 @@ export function ExpenseForm({
             setNewExpense({ ...newExpense, descripcion: e.target.value })
           }
           placeholder="Ej: Alquiler de local, Compra de materiales..."
-          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all"
+          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all"
         />
       </div>
 
@@ -52,7 +52,7 @@ export function ExpenseForm({
             onChange={(e) =>
               setNewExpense({ ...newExpense, categoria: e.target.value })
             }
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all appearance-none"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all appearance-none"
           >
             {categories.map((cat) => (
               <option key={cat} value={cat}>
@@ -71,7 +71,7 @@ export function ExpenseForm({
             onChange={(e) =>
               setNewExpense({ ...newExpense, monto: Number(e.target.value) })
             }
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all"
           />
         </div>
       </div>
@@ -87,7 +87,7 @@ export function ExpenseForm({
             onChange={(e) =>
               setNewExpense({ ...newExpense, fechaGasto: e.target.value })
             }
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all"
           />
         </div>
         <div className="space-y-2">
@@ -102,7 +102,7 @@ export function ExpenseForm({
                 estado: e.target.value as "PAID" | "PENDING",
               })
             }
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#008080]/20 transition-all appearance-none"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all appearance-none"
           >
             <option value="PENDING">Pendiente</option>
             <option value="PAID">Pagado</option>

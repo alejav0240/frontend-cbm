@@ -190,7 +190,7 @@ export function FormNuevaCita({
             <input
               type="date"
               {...register("sessionDate")}
-              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
           </div>
           {errors.sessionDate && (
@@ -207,7 +207,7 @@ export function FormNuevaCita({
             <input
               type="time"
               {...register("sessionTime")}
-              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
           </div>
           {errors.sessionTime && (
@@ -223,7 +223,7 @@ export function FormNuevaCita({
           </label>
           <select
             {...register("sessionType")}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
           >
             <option value="INDIVIDUAL">Individual</option>
             <option value="GROUP">Grupal</option>
@@ -240,7 +240,7 @@ export function FormNuevaCita({
           <input
             type="number"
             {...register("durationMinutes", { valueAsNumber: true })}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
           />
           {errors.durationMinutes && (
             <p className="text-xs text-red-500">
@@ -257,7 +257,7 @@ export function FormNuevaCita({
         <textarea
           {...register("notes")}
           rows={3}
-          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
+          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
           placeholder="Observaciones adicionales..."
         />
       </div>

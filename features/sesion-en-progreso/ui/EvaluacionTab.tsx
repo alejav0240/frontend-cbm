@@ -194,7 +194,7 @@ export function EvaluationTab({
                               e.target.value,
                             )
                           }
-                          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+                          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
                         />
                       )}
                       {field.type === "number" && (
@@ -211,7 +211,7 @@ export function EvaluationTab({
                               e.target.value,
                             )
                           }
-                          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+                          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
                         />
                       )}
                       {field.type === "textarea" && (
@@ -228,7 +228,7 @@ export function EvaluationTab({
                               e.target.value,
                             )
                           }
-                          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
+                          className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
                         />
                       )}
                       {field.type === "select" && (
@@ -259,7 +259,7 @@ export function EvaluationTab({
                                 e.target.checked,
                               )
                             }
-                            className="w-5 h-5 rounded border-gray-300 text-[#008080] focus:ring-[#008080]"
+                            className="w-5 h-5 rounded border-gray-300 text-[#008080] focus-visible:ring-[#008080]"
                           />
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             Marcar si aplica

@@ -37,7 +37,7 @@ export function CoursesTable({
             placeholder="Buscar cursos por nombre o descripción..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-white/5 focus:border-[#008080] focus:ring-4 focus:ring-[#008080]/10 outline-none transition-all text-sm dark:text-white shadow-sm"
+            className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-white/5 focus-visible:border-[#008080] focus-visible:ring-4 focus-visible:ring-[#008080]/10 outline-none transition-all text-sm dark:text-white shadow-sm"
           />
         </div>
       </div>

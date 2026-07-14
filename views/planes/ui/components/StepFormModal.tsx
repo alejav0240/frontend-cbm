@@ -85,7 +85,7 @@ export function StepFormModal({
               required
               value={duracion}
               onChange={(e) => setDuracion(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
           </div>
         </div>
@@ -134,7 +134,7 @@ export function StepFormModal({
               required
               value={recursosMusicales || ""}
               onChange={(e) => setRecursosMusicales(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
               placeholder="Ej. Guitarra, Pandereta, Voz..."
             />
           </div>
@@ -164,7 +164,7 @@ export function StepFormModal({
               required
               value={enfasisMusical || ""}
               onChange={(e) => setEnfasisMusical(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
               placeholder="Ej. Encuadre Jazz, Escucha Activa..."
             />
           </div>

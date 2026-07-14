@@ -55,7 +55,7 @@ export const AjustesPage = () => {
                   <input
                     type="text"
                     defaultValue="Musicoterapia Centro Integral"
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:border-[#008080] outline-none text-sm dark:text-white"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:border-[#008080] outline-none text-sm dark:text-white"
                   />
                 </div>
                 <div className="space-y-2">
@@ -65,7 +65,7 @@ export const AjustesPage = () => {
                   <input
                     type="email"
                     defaultValue="contacto@centro.com"
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:border-[#008080] outline-none text-sm dark:text-white"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:border-[#008080] outline-none text-sm dark:text-white"
                   />
                 </div>
               </div>

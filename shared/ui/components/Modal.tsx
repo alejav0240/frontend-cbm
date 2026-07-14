@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 
@@ -19,22 +19,67 @@ export function Modal({
   children,
   maxWidth = "max-w-2xl",
 }: ModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  const getFocusableElements = useCallback(() => {
+    if (!modalRef.current) return [];
+    return Array.from(
+      modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+    );
+  }, []);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
 
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusable = getFocusableElements();
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
     if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
       document.body.style.overflow = "hidden";
       window.addEventListener("keydown", handleEscape);
+      window.addEventListener("keydown", handleTab);
+
+      requestAnimationFrame(() => {
+        const focusable = getFocusableElements();
+        if (focusable.length > 0) {
+          focusable[0].focus();
+        }
+      });
     } else {
       document.body.style.overflow = "unset";
+      previousFocusRef.current?.focus();
     }
+
     return () => {
       document.body.style.overflow = "unset";
       window.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("keydown", handleTab);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, getFocusableElements]);
 
   return (
     <AnimatePresence>
@@ -48,11 +93,13 @@ export function Modal({
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
           <motion.div
+            ref={modalRef}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             role="dialog"
             aria-modal="true"
+            aria-label={title}
             className={`relative w-full ${maxWidth} bg-white dark:bg-accent rounded-[40px] shadow-2xl overflow-hidden border border-white/20 dark:border-white/5 flex flex-col`}
           >
             <div className="flex items-center justify-between p-8 sm:p-10 border-b border-gray-100 dark:border-white/5 relative overflow-hidden shrink-0">
@@ -62,6 +109,7 @@ export function Modal({
               </h2>
               <button
                 onClick={onClose}
+                aria-label="Cerrar modal"
                 className="p-3 hover:bg-gray-100 dark:hover:bg-white/5 rounded-2xl transition-all hover:rotate-90 dark:text-white group"
               >
                 <X

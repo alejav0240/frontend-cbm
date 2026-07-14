@@ -65,7 +65,7 @@ export function SessionFormModal({
             </label>
             <select
               {...register("sessionType")}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             >
               <option value="individual">Individual</option>
               <option value="group">Grupal</option>
@@ -86,7 +86,7 @@ export function SessionFormModal({
             <input
               type="date"
               {...register("sessionDate")}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
             {errors.sessionDate && (
               <p className="text-[10px] text-red-500 font-bold uppercase">
@@ -101,7 +101,7 @@ export function SessionFormModal({
             <input
               type="time"
               {...register("sessionTime")}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
             {errors.sessionTime && (
               <p className="text-[10px] text-red-500 font-bold uppercase">
@@ -134,7 +134,7 @@ export function SessionFormModal({
             <input
               type="number"
               {...register("durationMinutes")}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
               placeholder="Ej. 45"
             />
             {errors.durationMinutes && (
@@ -152,7 +152,7 @@ export function SessionFormModal({
           <textarea
             rows={3}
             {...register("executionDescription")}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
             placeholder="Actividades realizadas..."
           ></textarea>
         </div>
@@ -164,7 +164,7 @@ export function SessionFormModal({
           <textarea
             rows={3}
             {...register("notes")}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
             placeholder="Observaciones clínicas..."
           ></textarea>
         </div>

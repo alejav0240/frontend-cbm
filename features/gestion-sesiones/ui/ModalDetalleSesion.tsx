@@ -422,7 +422,7 @@ export function ModalDetalleSesion({
                     value={notasEditadas}
                     onChange={(e) => setNotasEditadas(e.target.value)}
                     rows={8}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
                     placeholder="Escribe las observaciones clínicas aquí..."
                   />
                 ) : (

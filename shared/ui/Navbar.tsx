@@ -15,7 +15,7 @@ const NAV_LINKS = [
   { name: "Historia", href: "#historia", section: "historia" },
   { name: "Servicios", href: "#servicios", section: "servicios" },
   { name: "Galería", href: "#galeria", section: "galeria" },
-  { name: "Blog", href: "/blog", section: "blog" },
+  { name: "Blog", href: "/dashboard/blog", section: "blog" },
   { name: "Equipo", href: "/equipo", section: "equipo" },
 ] as const;
 

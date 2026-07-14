@@ -111,7 +111,7 @@ export function PaymentFormModal({
                   sessionsCount: parseInt(e.target.value) || 0,
                 })
               }
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
           </div>
           <div className="space-y-2">
@@ -127,7 +127,7 @@ export function PaymentFormModal({
                   pricePerSession: parseInt(e.target.value) || 0,
                 })
               }
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
           </div>
         </div>
@@ -168,7 +168,7 @@ export function PaymentFormModal({
                   amountPaid: parseInt(e.target.value) || 0,
                 })
               }
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
             {newPayment.amountPaid < totalToPay && (
               <p className="text-[10px] text-orange-500 font-bold uppercase tracking-widest">

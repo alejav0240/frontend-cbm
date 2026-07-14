@@ -167,7 +167,7 @@ export function FormularioCrearEscala({
                       setNewSubscale({ ...newSubscale, name: e.target.value })
                     }
                     placeholder="Nombre subescala"
-                    className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus:border-[#008080] outline-none text-xs dark:text-white"
+                    className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus-visible:border-[#008080] outline-none text-xs dark:text-white"
                   />
                   <input
                     type="number"
@@ -179,7 +179,7 @@ export function FormularioCrearEscala({
                       })
                     }
                     placeholder="Puntaje Máx"
-                    className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus:border-[#008080] outline-none text-xs dark:text-white"
+                    className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus-visible:border-[#008080] outline-none text-xs dark:text-white"
                   />
                 </div>
                 <textarea
@@ -192,7 +192,7 @@ export function FormularioCrearEscala({
                     })
                   }
                   placeholder="Descripción de la dimensión..."
-                  className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus:border-[#008080] outline-none text-xs dark:text-white resize-none"
+                  className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus-visible:border-[#008080] outline-none text-xs dark:text-white resize-none"
                 />
                 <button
                   type="button"
@@ -255,7 +255,7 @@ export function FormularioCrearEscala({
                       setNewValue({ ...newValue, label: e.target.value })
                     }
                     placeholder="Etiqueta (Ej. Malo)"
-                    className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus:border-[#008080] outline-none text-xs dark:text-white"
+                    className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus-visible:border-[#008080] outline-none text-xs dark:text-white"
                   />
                   <input
                     type="number"
@@ -267,7 +267,7 @@ export function FormularioCrearEscala({
                       })
                     }
                     placeholder="Valor numérico"
-                    className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus:border-[#008080] outline-none text-xs dark:text-white"
+                    className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus-visible:border-[#008080] outline-none text-xs dark:text-white"
                   />
                 </div>
                 <button

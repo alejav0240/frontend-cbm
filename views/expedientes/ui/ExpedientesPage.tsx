@@ -35,16 +35,18 @@ export const ExpedientesPage = () => {
       <ExpedientesHeader />
 
       <div className="relative">
+        <label htmlFor="search-expedientes" className="sr-only">Buscar expedientes</label>
         <Search
           className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
           size={20}
         />
         <input
+          id="search-expedientes"
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar paciente por nombre..."
-          className="w-full pl-12 pr-4 py-3 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+          className="w-full pl-12 pr-4 py-3 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
         />
       </div>
 

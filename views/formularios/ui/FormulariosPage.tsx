@@ -25,17 +25,22 @@ import { FormCreateModal } from "@/views/formularios/ui/components/FormCreateMod
 import { FormAssignModal } from "@/views/formularios/ui/components/FormAssignModal";
 import { FormPreviewModal } from "@/views/formularios/ui/components/FormPreviewModal";
 import { ResponseDetailModal } from "@/views/formularios/ui/components/ResponseDetailModal";
+import { Pagination } from "@/shared/ui/Pagination";
 
 export const FormulariosPage = () => {
   const [activeTab, setActiveTab] = useState<
     "templates" | "assignments" | "responses"
   >("templates");
-  const { formularios, refetch: refetchForms } = useFormularios();
+  const [paginaActualPlantillas, setPaginaActualPlantillas] = useState(1);
+  const [paginaActualAsignaciones, setPaginaActualAsignaciones] = useState(1);
+  const { formularios, paginas: paginasPlantillas, refetch: refetchForms } =
+    useFormularios({ page: paginaActualPlantillas, pageSize: 10 });
   const {
     asignaciones,
     respuestaForm,
+    paginas: paginasAsignaciones,
     refetch: refetchAssignments,
-  } = useAsignacionesFormulario();
+  } = useAsignacionesFormulario({ page: paginaActualAsignaciones, pageSize: 10 });
   const [selectedResponse, setSelectedResponse] = useState<FormResponse | null>(
     null,
   );
@@ -123,23 +128,44 @@ export const FormulariosPage = () => {
     <div className="space-y-8">
       <FormsHeader onCreateForm={() => setShowForm(true)} />
 
-      <FormsTabs activeTab={activeTab} onTabChange={setActiveTab} />
+      <FormsTabs
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          if (tab === "templates") setPaginaActualPlantillas(1);
+          if (tab === "assignments") setPaginaActualAsignaciones(1);
+        }}
+      />
 
       {activeTab === "templates" && (
-        <TemplatesList
-          templates={formularios}
-          onPreview={handlePreview}
-          onAssign={handleAssignClick}
-          onDelete={handleDeleteForm}
-        />
+        <>
+          <TemplatesList
+            templates={formularios}
+            onPreview={handlePreview}
+            onAssign={handleAssignClick}
+            onDelete={handleDeleteForm}
+          />
+          <Pagination
+            currentPage={paginaActualPlantillas}
+            totalPages={paginasPlantillas}
+            onPageChange={setPaginaActualPlantillas}
+          />
+        </>
       )}
 
       {activeTab === "assignments" && (
-        <AssignmentsTable
-          assignments={asignaciones}
-          templates={formularios}
-          responses={respuestaForm}
-        />
+        <>
+          <AssignmentsTable
+            assignments={asignaciones}
+            templates={formularios}
+            responses={respuestaForm}
+          />
+          <Pagination
+            currentPage={paginaActualAsignaciones}
+            totalPages={paginasAsignaciones}
+            onPageChange={setPaginaActualAsignaciones}
+          />
+        </>
       )}
 
       {activeTab === "responses" && (

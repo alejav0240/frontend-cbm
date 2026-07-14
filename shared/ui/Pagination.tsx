@@ -62,6 +62,7 @@ export function Pagination({
       <button
         disabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
+        aria-label="Página anterior"
         className="p-2 rounded-xl border border-gray-200 dark:border-white/5 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
       >
         <ChevronLeft size={18} className="dark:text-white" />
@@ -72,6 +73,7 @@ export function Pagination({
           <>
             <button
               onClick={() => onPageChange(1)}
+              aria-label={`Página ${reverseLayer(1)}`}
               className="w-10 h-10 rounded-xl text-sm font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
             >
               {reverseLayer(1)}
@@ -87,6 +89,8 @@ export function Pagination({
           <button
             key={`page-${page}`}
             onClick={() => onPageChange(page)}
+            aria-label={`Página ${reverseLayer(page)}`}
+            aria-current={currentPage === page ? "page" : undefined}
             className={`w-10 h-10 rounded-xl text-sm font-bold transition-all ${
               currentPage === page
                 ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
@@ -105,6 +109,7 @@ export function Pagination({
 
             <button
               onClick={() => onPageChange(totalPages)}
+              aria-label={`Página ${reverseLayer(totalPages)}`}
               className="w-10 h-10 rounded-xl text-sm font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
             >
               {reverseLayer(totalPages)}
@@ -116,6 +121,7 @@ export function Pagination({
       <button
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
+        aria-label="Página siguiente"
         className="p-2 rounded-xl border border-gray-200 dark:border-white/5 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
       >
         <ChevronRight size={18} className="dark:text-white" />

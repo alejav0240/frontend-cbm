@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRoles } from "@/entities/rol";
 import { TablaRoles } from "@/widgets/lista-roles";
@@ -9,10 +9,15 @@ import { ModalesRol } from "@/features/gestion-roles";
 import { RolesHeader } from "./components/RolesHeader";
 import { SkeletonRoles } from "./components/SkeletonRoles";
 import { useRolesStore } from "@/shared/model/useRolesStore";
+import { Pagination } from "@/shared/ui/Pagination";
 import { ShieldAlert, Shield, Trash2, X } from "lucide-react";
 
 export const RolesPage = () => {
-  const { roles, cargando } = useRoles();
+  const [paginaActual, setPaginaActual] = useState(1);
+  const { roles, paginas, cargando } = useRoles({
+    page: paginaActual,
+    pageSize: 10,
+  });
   const { rolesSeleccionadas, acciones } = useRolesStore();
 
   if (cargando) {
@@ -55,6 +60,12 @@ export const RolesPage = () => {
             acciones.seleccionarTodas([rol]);
             acciones.abrirEliminar();
           }}
+        />
+
+        <Pagination
+          currentPage={paginaActual}
+          totalPages={paginas}
+          onPageChange={setPaginaActual}
         />
       </div>
 

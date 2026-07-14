@@ -38,7 +38,7 @@ export function EvaluationsFilters({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Buscar por paciente..."
-          className="w-full pl-12 pr-4 py-3 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+          className="w-full pl-12 pr-4 py-3 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
         />
       </div>
 

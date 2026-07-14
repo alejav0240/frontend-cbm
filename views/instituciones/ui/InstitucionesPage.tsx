@@ -24,6 +24,7 @@ import { GroupFormModal } from "./components/GroupFormModal";
 import { SessionFormModal } from "./components/SessionFormModal";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
+import { Pagination } from "@/shared/ui/Pagination";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { CREAR_SESION } from "@/entities/sesion/api/mutaciones";
 import {
@@ -56,6 +57,7 @@ export const InstitucionesPage = () => {
     null,
   );
 
+  const [paginaActual, setPaginaActual] = useState(1);
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const busquedaDebounced = useDebounce(terminoBusqueda, 500);
 
@@ -76,7 +78,10 @@ export const InstitucionesPage = () => {
   );
   const [formGrupo, setFormGrupo] = useState(INITIAL_FORM_GRUPO);
 
-  const { instituciones, refetch } = useInstituciones();
+  const { instituciones, paginas, refetch } = useInstituciones({
+    page: paginaActual,
+    pageSize: 10,
+  });
   const { institucion: detalleInstitucion, cargando: cargandoDetalle } =
     useDetalleInstitucion(institucionSeleccionadaId ?? "");
   const { grupo: detalleGrupo, cargando: cargandoGrupo } = useDetalleGrupo(
@@ -358,8 +363,17 @@ export const InstitucionesPage = () => {
       <InstitutionsList
         institutions={institucionesFiltradas}
         searchTerm={terminoBusqueda}
-        onSearchChange={setTerminoBusqueda}
+        onSearchChange={(value) => {
+          setTerminoBusqueda(value);
+          setPaginaActual(1);
+        }}
         onSelectInstitution={handleSeleccionarInstitucion}
+      />
+
+      <Pagination
+        currentPage={paginaActual}
+        totalPages={paginas}
+        onPageChange={setPaginaActual}
       />
 
       <InstitutionFormModal

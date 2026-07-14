@@ -118,7 +118,7 @@ export function FormCreateModal({
                     type="text"
                     placeholder="Etiqueta del campo"
                     {...register(`questions.${index}.question`)}
-                    className="w-full px-3 py-2 bg-white dark:bg-white/5 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#008080] dark:text-white"
+                    className="w-full px-3 py-2 bg-white dark:bg-white/5 rounded-lg text-xs outline-none focus-visible:ring-1 focus-visible:ring-[#008080] dark:text-white"
                   />
                   <div className="flex gap-3">
                     <SearchableSelect
@@ -134,7 +134,7 @@ export function FormCreateModal({
                       <input
                         type="checkbox"
                         {...register(`questions.${index}.isRequired`)}
-                        className="w-4 h-4 rounded border-gray-300 text-[#008080] focus:ring-[#008080]"
+                        className="w-4 h-4 rounded border-gray-300 text-[#008080] focus-visible:ring-[#008080]"
                       />
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                         Requerido

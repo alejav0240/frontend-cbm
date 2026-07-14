@@ -40,35 +40,35 @@ export function FormPreviewModal({
                 {field.questionType === "text" && (
                   <input
                     type="text"
-                    className="w-full px-4 py-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 outline-none focus:border-[#008080] transition-all text-sm dark:text-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 outline-none focus-visible:border-[#008080] transition-all text-sm dark:text-white"
                     placeholder="..."
                   />
                 )}
                 {field.questionType === "text_long" && (
                   <textarea
                     rows={3}
-                    className="w-full px-4 py-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 outline-none focus:border-[#008080] transition-all text-sm dark:text-white resize-none"
+                    className="w-full px-4 py-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 outline-none focus-visible:border-[#008080] transition-all text-sm dark:text-white resize-none"
                     placeholder="..."
                   />
                 )}
                 {field.questionType === "number" && (
                   <input
                     type="number"
-                    className="w-full px-4 py-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 outline-none focus:border-[#008080] transition-all text-sm dark:text-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 outline-none focus-visible:border-[#008080] transition-all text-sm dark:text-white"
                     placeholder="0"
                   />
                 )}
                 {field.questionType === "date" && (
                   <input
                     type="date"
-                    className="w-full px-4 py-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 outline-none focus:border-[#008080] transition-all text-sm dark:text-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 outline-none focus-visible:border-[#008080] transition-all text-sm dark:text-white"
                   />
                 )}
                 {field.questionType === "boolean" && (
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
-                      className="w-5 h-5 rounded border-gray-300 text-[#008080] focus:ring-[#008080]"
+                      className="w-5 h-5 rounded border-gray-300 text-[#008080] focus-visible:ring-[#008080]"
                     />
                     <span className="text-sm text-gray-600 dark:text-gray-400">
                       Sí / No
@@ -86,7 +86,7 @@ export function FormPreviewModal({
                 {field.questionType === "multiple_choice" && (
                   <input
                     type="text"
-                    className="w-full px-4 py-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 outline-none focus:border-[#008080] transition-all text-sm dark:text-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 outline-none focus-visible:border-[#008080] transition-all text-sm dark:text-white"
                     placeholder="Seleccionar..."
                   />
                 )}

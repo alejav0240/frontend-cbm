@@ -59,7 +59,7 @@ export function EvaluationForm({
             type="date"
             value={newEval.date}
             onChange={(e) => setNewEval({ ...newEval, date: e.target.value })}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
           />
         </div>
       </div>
@@ -111,7 +111,7 @@ export function EvaluationForm({
                               parseInt(e.target.value) || 0,
                             )
                           }
-                          className="w-20 px-3 py-1.5 bg-gray-50 dark:bg-white/5 rounded-lg border-transparent focus:border-[#008080] outline-none text-xs dark:text-white text-center"
+                          className="w-20 px-3 py-1.5 bg-gray-50 dark:bg-white/5 rounded-lg border-transparent focus-visible:border-[#008080] outline-none text-xs dark:text-white text-center"
                         />
                         <span className="text-[10px] font-bold text-gray-400 uppercase">
                           / {sub.valorMaximo ?? sub.maxValue}

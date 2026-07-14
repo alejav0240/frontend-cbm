@@ -37,7 +37,7 @@ export function InstitutionFormModal({
             type="text"
             value={data.nombre}
             onChange={(e) => onChange({ ...data, nombre: e.target.value })}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             placeholder="Ej: Colegio San Pepito"
           />
         </div>
@@ -49,7 +49,7 @@ export function InstitutionFormModal({
             type="text"
             value={data.direccion}
             onChange={(e) => onChange({ ...data, direccion: e.target.value })}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             placeholder="Ej: Av. Principal 123"
           />
         </div>
@@ -63,7 +63,7 @@ export function InstitutionFormModal({
             onChange={(e) =>
               onChange({ ...data, nombreContacto: e.target.value })
             }
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             placeholder="Ej: Lic. Juan Pérez"
           />
         </div>
@@ -78,7 +78,7 @@ export function InstitutionFormModal({
               onChange={(e) =>
                 onChange({ ...data, telefonoContacto: e.target.value })
               }
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
               placeholder="Ej: +591 70000001"
             />
           </div>
@@ -92,7 +92,7 @@ export function InstitutionFormModal({
               onChange={(e) =>
                 onChange({ ...data, emailContacto: e.target.value })
               }
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[#008080] outline-none transition-all text-sm dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
               placeholder="Ej: contacto@institucion.com"
             />
           </div>

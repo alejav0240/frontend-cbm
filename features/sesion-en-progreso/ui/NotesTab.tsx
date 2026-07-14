@@ -55,7 +55,7 @@ export function NotesTab({
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Escribe aquí tus observaciones clínicas..."
-        className="flex-1 w-full bg-gray-50 dark:bg-white/2 rounded-[24px] md:rounded-[32px] p-6 md:p-8 outline-none focus:ring-2 focus:ring-[#008080] transition-all dark:text-white resize-none text-base md:text-lg leading-relaxed shadow-inner"
+        className="flex-1 w-full bg-gray-50 dark:bg-white/2 rounded-[24px] md:rounded-[32px] p-6 md:p-8 outline-none focus-visible:ring-2 focus-visible:ring-[#008080] transition-all dark:text-white resize-none text-base md:text-lg leading-relaxed shadow-inner"
       />
     </motion.div>
   );

@@ -14,6 +14,7 @@ import { UsersHeader } from "./components/UsersHeader";
 import { UsersFilters } from "./components/UsersFilters";
 import { UsersTable } from "./components/UsersTable";
 import { Download } from "lucide-react";
+import { Pagination } from "@/shared/ui/Pagination";
 import { toast } from "sonner";
 
 type TabType = "PERSONAL" | "TUTORES";
@@ -26,7 +27,7 @@ export const UsuariosPage = () => {
   const nombreRol = activeTab === "TUTORES" ? "TUTOR" : undefined;
   const excluirRol = activeTab === "PERSONAL" ? "TUTOR" : undefined;
 
-  const { usuarios, refetch } = useUsuarios({
+  const { usuarios, paginas, refetch } = useUsuarios({
     pagina: paginaActual,
     pageSize: 10,
     busqueda,
@@ -249,6 +250,12 @@ export const UsuariosPage = () => {
         onEdit={handleEditar}
         onDeactivate={handleDeactivate}
         onDelete={handleDelete}
+      />
+
+      <Pagination
+        currentPage={paginaActual}
+        totalPages={paginas}
+        onPageChange={setPaginaActual}
       />
 
       <ModalesUsuario

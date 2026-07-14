@@ -24,10 +24,11 @@ export const PhotoUpload = ({
 
   return (
     <div className="space-y-2">
-      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+      <label htmlFor="photo-upload" className="text-xs font-bold text-gray-400 uppercase tracking-widest">
         Fotografía
       </label>
       <input
+        id="photo-upload"
         type="file"
         ref={fileInputRef}
         onChange={manejarCambioFoto}
@@ -60,15 +61,16 @@ export const PhotoUpload = ({
           </div>
         </div>
       ) : (
-        <div
+        <button
+          type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-gray-200 dark:border-white/10 rounded-xl p-3 text-center hover:border-[#008080] cursor-pointer"
+          className="w-full border-2 border-dashed border-gray-200 dark:border-white/10 rounded-xl p-3 text-center hover:border-[#008080] focus-visible:border-[#008080] focus-visible:ring-2 focus-visible:ring-[#008080]/20 cursor-pointer transition-all"
         >
           <Upload size={14} className="inline mr-2 text-gray-400" />
           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
             Subir Foto
           </span>
-        </div>
+        </button>
       )}
     </div>
   );
