@@ -4,18 +4,30 @@ import { Curso } from "../model/tipos";
 import { useMemo } from "react";
 import { ObtenerCursosQuery } from "@/shared/api/generated/graphql";
 
-export const useCursos = (estado?: string) => {
+interface UseCursosParams {
+  page?: number;
+  pageSize?: number;
+  estado?: string;
+}
+
+export const useCursos = (params: UseCursosParams = {}) => {
   const { data, loading, error, refetch } = useQuery<ObtenerCursosQuery>(
     OBTENER_CURSOS,
     {
-      variables: { state: estado },
+      variables: {
+        state: params.estado,
+        page: params.page,
+        pageSize: params.pageSize,
+      },
+      notifyOnNetworkStatusChange: true,
     },
   );
 
   const cursos: Curso[] = useMemo(() => {
-    if (!data?.courses) return [];
+    const results = data?.courses?.results;
+    if (!results) return [];
 
-    return data.courses
+    return results
       .filter((c): c is NonNullable<typeof c> => c !== null)
       .map((c) => ({
         id: c.id,
@@ -33,6 +45,7 @@ export const useCursos = (estado?: string) => {
 
   return {
     cursos,
+    paginas: data?.courses?.totalPages || 0,
     cargando: loading,
     error,
     refetch,

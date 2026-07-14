@@ -15,7 +15,7 @@ export const OBTENER_PAGOS = gql`
       page: $page
       pageSize: $pageSize
     ) {
-      objects {
+      results {
         id
         cantidadSesiones: sessionsCount
         precioPorSesion: pricePerSession

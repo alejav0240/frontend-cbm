@@ -1,11 +1,64 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_ASIGNACIONES_FORMULARIO = gql`
-  query ObtenerAsignacionesFormulario($patientId: ID) {
-    formAssignments(patientId: $patientId) {
-      id
-      createdAt
-      form {
+  query ObtenerAsignacionesFormulario(
+    $patientId: ID
+    $page: Int
+    $pageSize: Int
+  ) {
+    formAssignments(
+      patientId: $patientId
+      page: $page
+      pageSize: $pageSize
+    ) {
+      results {
+        id
+        createdAt
+        form {
+          id
+          name
+          description
+          questions {
+            id
+            question
+            questionType
+            isRequired
+            orderIndex
+          }
+        }
+        assignedTo {
+          id
+          fullName
+        }
+        assignedBy {
+          id
+          fullName
+        }
+        patient {
+          id
+          fullName
+        }
+        responses {
+          id
+          response
+          respondedAt
+          question {
+            id
+            question
+          }
+        }
+      }
+      totalCount
+      totalPages
+      currentPage
+    }
+  }
+`;
+
+export const OBTENER_FORMULARIOS = gql`
+  query ObtenerFormularios($page: Int, $pageSize: Int) {
+    forms(page: $page, pageSize: $pageSize) {
+      results {
         id
         name
         description
@@ -17,44 +70,9 @@ export const OBTENER_ASIGNACIONES_FORMULARIO = gql`
           orderIndex
         }
       }
-      assignedTo {
-        id
-        fullName
-      }
-      assignedBy {
-        id
-        fullName
-      }
-      patient {
-        id
-        fullName
-      }
-      responses {
-        id
-        response
-        respondedAt
-        question {
-          id
-          question
-        }
-      }
-    }
-  }
-`;
-
-export const OBTENER_FORMULARIOS = gql`
-  query ObtenerFormularios {
-    forms {
-      id
-      name
-      description
-      questions {
-        id
-        question
-        questionType
-        isRequired
-        orderIndex
-      }
+      totalCount
+      totalPages
+      currentPage
     }
   }
 `;

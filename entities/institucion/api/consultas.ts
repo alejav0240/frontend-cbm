@@ -1,18 +1,23 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_INSTITUCIONES = gql`
-  query ObtenerInstituciones {
-    institutions {
-      id
-      nombre: name
-      direccion: address
-      nombreContacto: contactName
-      emailContacto: contactEmail
-      telefonoContacto: contactPhone
-      grupos: groups {
+  query ObtenerInstituciones($page: Int, $pageSize: Int) {
+    institutions(page: $page, pageSize: $pageSize) {
+      results {
         id
         nombre: name
+        direccion: address
+        nombreContacto: contactName
+        emailContacto: contactEmail
+        telefonoContacto: contactPhone
+        grupos: groups {
+          id
+          nombre: name
+        }
       }
+      totalCount
+      totalPages
+      currentPage
     }
   }
 `;

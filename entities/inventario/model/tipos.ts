@@ -11,4 +11,6 @@ export interface ArticuloInventario {
 export interface InventarioFiltros {
   estado?: string;
   tipo?: string;
+  pagina?: number;
+  pageSize?: number;
 }

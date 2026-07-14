@@ -137,3 +137,24 @@ export const OBTENER_PROGRESO_SUBESCALA = gql`
     }
   }
 `;
+
+export const OBTENER_PACIENTES_POR_USUARIO = gql`
+  query UserWithPatients($id: ID!) {
+    userWithPatients(id: $id) {
+      user {
+        fullName
+        email
+        role {
+          name
+        }
+      }
+      patientsCount
+      patients {
+        fullName
+        diagnosis
+        status
+        relation
+      }
+    }
+  }
+`;

@@ -21,7 +21,7 @@ export const usePagos = (filtros: PagoFiltros) => {
   );
 
   const pagos = useMemo(() => {
-    return (data?.payments?.objects || []).filter(Boolean) as unknown as Pago[];
+    return (data?.payments?.results || []).filter(Boolean) as unknown as Pago[];
   }, [data]);
 
   return {

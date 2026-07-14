@@ -1,15 +1,20 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_CURSOS = gql`
-  query ObtenerCursos($state: String) {
-    courses(state: $state) {
-      id
-      nombre: name
-      descripcion: description
-      precio: price
-      estado: state
-      conteoEstudiantes: studentsCount
-      ingresosTotales: totalIncome
+  query ObtenerCursos($state: String, $page: Int, $pageSize: Int) {
+    courses(state: $state, page: $page, pageSize: $pageSize) {
+      results {
+        id
+        nombre: name
+        descripcion: description
+        precio: price
+        estado: state
+        conteoEstudiantes: studentsCount
+        ingresosTotales: totalIncome
+      }
+      totalCount
+      totalPages
+      currentPage
     }
   }
 `;

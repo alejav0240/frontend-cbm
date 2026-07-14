@@ -43,7 +43,7 @@ function TextField({
     "w-full px-4 py-3 rounded-xl border-2 outline-none transition-all text-sm dark:text-white";
   const state = readOnly
     ? "bg-gray-100 dark:bg-white/10 border-transparent cursor-not-allowed"
-    : "bg-gray-50 dark:bg-white/5 border-transparent focus:border-[#008080]";
+    : "bg-gray-50 dark:bg-white/5 border-transparent focus-visible:border-[#008080]";
   return (
     <input
       type="text"
@@ -71,7 +71,7 @@ function TextLongField({
     "w-full px-4 py-3 rounded-xl border-2 outline-none transition-all text-sm dark:text-white resize-none";
   const state = readOnly
     ? "bg-gray-100 dark:bg-white/10 border-transparent cursor-not-allowed"
-    : "bg-gray-50 dark:bg-white/5 border-transparent focus:border-[#008080]";
+    : "bg-gray-50 dark:bg-white/5 border-transparent focus-visible:border-[#008080]";
   return (
     <textarea
       rows={4}
@@ -97,7 +97,7 @@ function NumberField({
     "w-full px-4 py-3 rounded-xl border-2 outline-none transition-all text-sm dark:text-white";
   const state = readOnly
     ? "bg-gray-100 dark:bg-white/10 border-transparent cursor-not-allowed"
-    : "bg-gray-50 dark:bg-white/5 border-transparent focus:border-[#008080]";
+    : "bg-gray-50 dark:bg-white/5 border-transparent focus-visible:border-[#008080]";
   return (
     <input
       type="number"
@@ -122,7 +122,7 @@ function DateField({
     "w-full px-4 py-3 rounded-xl border-2 outline-none transition-all text-sm dark:text-white";
   const state = readOnly
     ? "bg-gray-100 dark:bg-white/10 border-transparent cursor-not-allowed"
-    : "bg-gray-50 dark:bg-white/5 border-transparent focus:border-[#008080]";
+    : "bg-gray-50 dark:bg-white/5 border-transparent focus-visible:border-[#008080]";
   return (
     <input
       type="date"
@@ -217,7 +217,7 @@ function MultipleChoiceField({
     "w-full px-4 py-3 rounded-xl border-2 outline-none transition-all text-sm dark:text-white";
   const state = readOnly
     ? "bg-gray-100 dark:bg-white/10 border-transparent cursor-not-allowed"
-    : "bg-gray-50 dark:bg-white/5 border-transparent focus:border-[#008080]";
+    : "bg-gray-50 dark:bg-white/5 border-transparent focus-visible:border-[#008080]";
   return (
     <input
       type="text"

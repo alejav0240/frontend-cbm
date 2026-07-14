@@ -6,18 +6,26 @@ import { GET_THERAPY_REPORTS } from "./consultas";
 import type { ObtenerInformesQuery } from "@/shared/api/generated/graphql";
 import type { TherapyReport } from "../model/tipos";
 
-export function useInformes(patientId?: string) {
+export function useInformes(filtros: {
+  patientId?: string;
+  page?: number;
+  pageSize?: number;
+} = {}) {
   const { data, loading, error, refetch } = useQuery<ObtenerInformesQuery>(
     GET_THERAPY_REPORTS,
     {
-      variables: { patientId: patientId || undefined },
+      variables: {
+        patientId: filtros.patientId || undefined,
+        page: filtros.page,
+        pageSize: filtros.pageSize,
+      },
       notifyOnNetworkStatusChange: true,
     },
   );
 
   const informes: TherapyReport[] = useMemo(
     () =>
-      (data?.therapyReports ?? [])
+      (data?.therapyReports?.results ?? [])
         .filter((r): r is NonNullable<typeof r> => r != null)
         .map((r) => ({
           id: r.id,
@@ -41,6 +49,8 @@ export function useInformes(patientId?: string) {
 
   return {
     informes,
+    paginas: data?.therapyReports?.totalPages || 0,
+    paginaActual: data?.therapyReports?.currentPage || 0,
     cargando: loading,
     error,
     refetch,

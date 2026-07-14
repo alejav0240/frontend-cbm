@@ -6,7 +6,6 @@ import type {
 } from "@/shared/api/generated/graphql";
 import { useMemo } from "react";
 
-// 1. Definimos las interfaces de salida para que tu frontend mantenga un tipado impecable
 export interface AsignacionNormalizada {
   id: string;
   templateId: string | undefined;
@@ -14,7 +13,7 @@ export interface AsignacionNormalizada {
   assignedAt: string;
   status: "Completado" | "Activo";
   patientName: string;
-  originalData: any; // Mantenemos la referencia original por si la necesitas
+  originalData: any;
 }
 
 export interface RespuestaFormNormalizada {
@@ -28,20 +27,28 @@ export interface RespuestaFormNormalizada {
   answers: any[];
 }
 
-export const useAsignacionesFormulario = (patientId?: string) => {
+export interface AsignacionesFiltros {
+  patientId?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export const useAsignacionesFormulario = (filtros: AsignacionesFiltros = {}) => {
   const { data, loading, error, refetch } = useQuery<
     ObtenerAsignacionesFormularioQuery,
     ObtenerAsignacionesFormularioQueryVariables
   >(OBTENER_ASIGNACIONES_FORMULARIO, {
-    variables: { patientId },
-    skip: !patientId,
+    variables: {
+      patientId: filtros.patientId,
+      page: filtros.page,
+      pageSize: filtros.pageSize,
+    },
+    skip: !filtros.patientId,
     notifyOnNetworkStatusChange: true,
   });
 
-  // 2. Unificamos el procesamiento en un solo useMemo supereficiente
   const { asignaciones, respuestasForm } = useMemo(() => {
-    // IMPORTANTE: Ajusta 'formAssignments' al nombre real de tu propiedad de Query en el esquema GraphQL
-    const rawAssignments = data?.formAssignments;
+    const rawAssignments = data?.formAssignments?.results;
 
     if (!rawAssignments) {
       return { asignaciones: [], respuestasForm: [] };
@@ -50,7 +57,6 @@ export const useAsignacionesFormulario = (patientId?: string) => {
     const asignacionesList: AsignacionNormalizada[] = [];
     const respuestasList: RespuestaFormNormalizada[] = [];
 
-    // Filtramos nulos del backend de golpe
     const cleanAssignments = rawAssignments.filter(
       (a): a is NonNullable<typeof a> => a !== null,
     );
@@ -58,12 +64,10 @@ export const useAsignacionesFormulario = (patientId?: string) => {
     for (const a of cleanAssignments) {
       const tieneRespuestas = a.responses && a.responses.length > 0;
 
-      // Manejo seguro de la fecha de asignación
       const fechaAsignacion = a.createdAt
         ? new Date(a.createdAt as string).toLocaleDateString()
         : "N/A";
 
-      // A) Construimos la lista de asignaciones normalizadas
       asignacionesList.push({
         id: a.id,
         templateId: a.form?.id ?? undefined,
@@ -74,7 +78,6 @@ export const useAsignacionesFormulario = (patientId?: string) => {
         originalData: a,
       });
 
-      // B) Si tiene respuestas, extraemos y normalizamos en la misma pasada
       if (tieneRespuestas && a.responses[0]) {
         const fechaRespuesta = a.responses[0].respondedAt
           ? new Date(a.responses[0].respondedAt as string).toLocaleDateString()
@@ -88,7 +91,7 @@ export const useAsignacionesFormulario = (patientId?: string) => {
           patientName: a.patient?.fullName ?? undefined,
           submittedAt: fechaRespuesta,
           status: "Revisado",
-          answers: [...a.responses], // Aseguramos inmutabilidad
+          answers: [...a.responses],
         });
       }
     }
@@ -102,6 +105,9 @@ export const useAsignacionesFormulario = (patientId?: string) => {
   return {
     asignaciones,
     respuestaForm: respuestasForm,
+    total: data?.formAssignments?.totalCount ?? 0,
+    paginas: data?.formAssignments?.totalPages ?? 0,
+    paginaActual: data?.formAssignments?.currentPage ?? 0,
     cargando: loading,
     error,
     refetch,

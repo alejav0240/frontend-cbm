@@ -1,18 +1,36 @@
 import { useQuery } from "@apollo/client/react";
 import { OBTENER_FORMULARIOS } from "./consultas";
+import { useMemo } from "react";
 import type { ObtenerFormulariosQuery } from "@/shared/api/generated/graphql";
 
-export const useFormularios = () => {
+export interface FormulariosFiltros {
+  page?: number;
+  pageSize?: number;
+}
+
+export const useFormularios = (filtros: FormulariosFiltros = {}) => {
   const { data, loading, error, refetch } = useQuery<ObtenerFormulariosQuery>(
     OBTENER_FORMULARIOS,
     {
+      variables: {
+        page: filtros.page,
+        pageSize: filtros.pageSize,
+      },
       notifyOnNetworkStatusChange: true,
     },
   );
 
-  const forms = data?.forms ?? [];
+  const formularios = useMemo(() => {
+    return (data?.forms?.results ?? []).filter(
+      (f): f is NonNullable<typeof f> => f != null,
+    );
+  }, [data]);
+
   return {
-    formularios: forms.filter((f): f is NonNullable<typeof f> => f != null),
+    formularios,
+    total: data?.forms?.totalCount ?? 0,
+    paginas: data?.forms?.totalPages ?? 0,
+    paginaActual: data?.forms?.currentPage ?? 0,
     cargando: loading,
     error,
     refetch,

@@ -10,4 +10,6 @@ export interface Gasto {
 export interface GastoFiltros {
   estado?: string;
   categoria?: string;
+  pagina: number;
+  pageSize: number;
 }

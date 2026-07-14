@@ -10,18 +10,23 @@ export const useInventario = (filtros: InventarioFiltros = {}) => {
       variables: {
         status: filtros.estado,
         type: filtros.tipo,
+        page: filtros.pagina,
+        pageSize: filtros.pageSize,
       },
       notifyOnNetworkStatusChange: true,
     });
 
   const articulos = useMemo(() => {
-    return (data?.inventoryItems || []).filter(
+    return (data?.inventoryItems?.results || []).filter(
       Boolean,
     ) as unknown as ArticuloInventario[];
   }, [data]);
 
   return {
     articulos,
+    total: data?.inventoryItems?.totalCount || 0,
+    paginas: data?.inventoryItems?.totalPages || 0,
+    paginaActual: data?.inventoryItems?.currentPage || 0,
     cargando: loading,
     error,
     refetch,
