@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 export interface UsuarioAutenticado {
   id: string;
-  databaseId: string;
+  databaseId: number | null;
   username: string;
   email: string;
   firstName?: string;

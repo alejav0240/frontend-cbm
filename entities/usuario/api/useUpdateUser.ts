@@ -13,9 +13,34 @@ interface UpdateUserVariables {
   isActive?: boolean;
 }
 
+interface UpdateUserData {
+  updateUser: {
+    user: {
+      id: string;
+      databaseId: number | null;
+      username: string;
+      email: string | null;
+      firstName: string;
+      lastName: string;
+      fullName: string | null;
+      ci: string;
+      celular: string;
+      status: string;
+      visibility: string;
+      isStaff: boolean;
+      foto: string | null;
+      cv: string | null;
+      role: { id: string; name: string } | null;
+    } | null;
+  } | null;
+}
+
 export function useUpdateUser() {
   const { refetch } = useUsuarios({ pagina: 1, pageSize: 10 });
-  const [actualizarMutation, { loading }] = useMutation(UPDATE_USER, {
+  const [actualizarMutation, { loading }] = useMutation<
+    UpdateUserData,
+    UpdateUserVariables
+  >(UPDATE_USER, {
     onCompleted: () => refetch(),
   });
 

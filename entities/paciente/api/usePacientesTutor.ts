@@ -10,14 +10,25 @@ export interface PacienteTutor {
   relation: string;
 }
 
+interface UserWithPatientsData {
+  userWithPatients: {
+    user: { fullName: string; email: string; role: { name: string } };
+    patientsCount: number;
+    patients: PacienteTutor[];
+  } | null;
+}
+
 export const usePacientesTutor = () => {
   const { usuario } = useAuthStore();
   const [indiceSeleccionado, setIndiceSeleccionado] = useState(0);
 
-  const { data, loading, error } = useQuery(OBTENER_PACIENTES_POR_USUARIO, {
-    variables: { id: usuario?.id ?? "" },
-    skip: !usuario?.id,
-  });
+  const { data, loading, error } = useQuery<UserWithPatientsData>(
+    OBTENER_PACIENTES_POR_USUARIO,
+    {
+      variables: { id: usuario?.id ?? "" },
+      skip: !usuario?.id,
+    },
+  );
 
   const pacientes: PacienteTutor[] = useMemo(
     () =>

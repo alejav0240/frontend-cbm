@@ -73,7 +73,7 @@ export const MiPerfilPage = () => {
     if (!usuario) return;
     try {
       const { data } = await actualizarUsuario({
-        id: usuario.databaseId,
+        id: String(usuario.databaseId),
         firstName: datos.firstName,
         lastName: datos.lastName,
         email: datos.email,
@@ -86,10 +86,10 @@ export const MiPerfilPage = () => {
           ...usuario,
           firstName: actualizado.firstName,
           lastName: actualizado.lastName,
-          fullName: actualizado.fullName,
-          email: actualizado.email,
-          celular: actualizado.celular,
-          ci: actualizado.ci,
+          fullName: actualizado.fullName ?? usuario.fullName,
+          email: actualizado.email ?? usuario.email,
+          celular: actualizado.celular ?? usuario.celular,
+          ci: actualizado.ci ?? usuario.ci,
         });
       }
       setEditando(false);

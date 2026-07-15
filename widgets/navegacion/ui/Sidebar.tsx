@@ -292,9 +292,10 @@ export const Sidebar = () => {
       .map((group) => ({
         ...group,
         items: group.items.filter((item) => {
-          if (item.requiresSession) return !!sesion;
-          if (!item.permission) return true;
-          return canAccess(usuario?.modules, item.permission);
+          const i = item as { requiresSession?: boolean; permission?: string };
+          if (i.requiresSession) return !!sesion;
+          if (!i.permission) return true;
+          return canAccess(usuario?.modules, i.permission);
         }),
       }))
       .filter((group) => group.items.length > 0);

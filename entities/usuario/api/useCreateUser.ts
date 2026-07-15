@@ -13,9 +13,20 @@ interface CreateUserVariables {
   roleId: string;
 }
 
+interface CreateUserData {
+  createUser: {
+    user: {
+      id: string;
+      username: string;
+      email: string;
+    } | null;
+    plainPassword: string | null;
+  } | null;
+}
+
 export function useCreateUser() {
   const { refetch } = useUsuarios({ pagina: 1, pageSize: 10 });
-  const [crearMutation, { loading }] = useMutation(CREATE_USER, {
+  const [crearMutation, { loading }] = useMutation<CreateUserData, CreateUserVariables>(CREATE_USER, {
     onCompleted: () => refetch(),
   });
 

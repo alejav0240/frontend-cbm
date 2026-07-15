@@ -212,8 +212,8 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       if (!assignmentId) {
         const result = await assignForm({
           formId: "1",
-          assignedToId: usuario.databaseId,
-          assignedById: usuario.databaseId,
+          assignedToId: String(usuario.databaseId),
+          assignedById: String(usuario.databaseId),
           patientId: paciente.id,
         });
         const newId = result.data?.assignForm?.assignment?.id;

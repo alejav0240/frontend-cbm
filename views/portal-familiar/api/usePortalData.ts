@@ -3,7 +3,7 @@ import { useQuery } from "@apollo/client/react";
 import { GET_THERAPY_REPORTS } from "@/entities/informes/api/consultas";
 import { OBTENER_SESIONES } from "@/entities/sesion/api/consultas";
 import { OBTENER_ASIGNACIONES_FORMULARIO } from "@/entities/formulario/api/consultas";
-import type { ObtenerInformesQuery } from "@/shared/api/generated/graphql";
+import type { ObtenerInformesQuery, ObtenerSesionesQuery, ObtenerAsignacionesFormularioQuery } from "@/shared/api/generated/graphql";
 import type { TherapyReport } from "@/entities/informes/model/tipos";
 
 export interface SesionPortal {
@@ -39,7 +39,7 @@ export const usePortalData = (patientId?: string | null) => {
     },
   );
 
-  const { data: sesionesData, loading: cargandoSesiones } = useQuery(OBTENER_SESIONES, {
+  const { data: sesionesData, loading: cargandoSesiones } = useQuery<ObtenerSesionesQuery>(OBTENER_SESIONES, {
     variables: {
       patientId: patientId || undefined,
       pageSize: 50,
@@ -47,7 +47,7 @@ export const usePortalData = (patientId?: string | null) => {
     skip: !patientId,
   });
 
-  const { data: formsData, loading: cargandoForms } = useQuery(
+  const { data: formsData, loading: cargandoForms } = useQuery<ObtenerAsignacionesFormularioQuery>(
     OBTENER_ASIGNACIONES_FORMULARIO,
     {
       variables: {
@@ -90,14 +90,14 @@ export const usePortalData = (patientId?: string | null) => {
         id: s.id,
         sessionNum: s.numeroSesion ?? 0,
         date: s.fechaSesion
-          ? new Date(s.fechaSesion).toLocaleDateString("es-ES", {
+          ? new Date(s.fechaSesion as string).toLocaleDateString("es-ES", {
               day: "numeric",
               month: "short",
             })
           : "—",
         therapist: s.terapeuta?.fullName ?? "",
         recordingUrl: s.videoUrl ?? undefined,
-        sessionDate: s.fechaSesion ?? "",
+        sessionDate: String(s.fechaSesion ?? ""),
       }));
   }, [sesionesData]);
 
@@ -112,7 +112,7 @@ export const usePortalData = (patientId?: string | null) => {
     return {
       id: next.id,
       sessionDate: next.sessionDate,
-      therapist: raw?.terapeuta ? { fullName: raw.terapeuta.fullName } : undefined,
+      therapist: raw?.terapeuta ? { fullName: raw.terapeuta.fullName ?? "" } : undefined,
     };
   }, [sesiones, sesionesData]);
 

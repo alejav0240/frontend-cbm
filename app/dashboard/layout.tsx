@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@apollo/client/react";
 import { CONSULTA_YO } from "@/shared/api/auth";
 import type { MeQuery } from "@/shared/api/generated/graphql";
+import type { UsuarioAutenticado } from "@/shared/model/useAuthStore";
 import { useAuthStore } from "@/shared/model/useAuthStore";
 import { esTutor } from "@/shared/lib/permissions/permissions.config";
 import LoadingScreen from "@/shared/ui/LoadingScreen";
@@ -25,7 +26,17 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (data?.me) {
-      setUsuario(data.me);
+      const me = data.me;
+      setUsuario({
+        ...me,
+        databaseId: me.databaseId,
+        email: me.email ?? "",
+        fullName: me.fullName ?? "",
+        foto: me.foto ?? undefined,
+        cv: me.cv ?? undefined,
+        modules: me.modules?.filter((m): m is string => m != null) ?? undefined,
+        role: me.role ?? undefined,
+      } as UsuarioAutenticado);
     } else if (!loading) {
       setEstaCargando(false);
     }

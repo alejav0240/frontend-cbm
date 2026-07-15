@@ -85,7 +85,7 @@ export const FormulariosPage = () => {
       try {
         await assignForm({
           formId: selectedForm.id,
-          assignedById: usuario.databaseId,
+          assignedById: String(usuario.databaseId),
           assignedToId: null,
           patientId: null,
           sessionId: null,

@@ -94,7 +94,7 @@ export const PacientesPage = () => {
       }
 
       await addPatient({
-        authorId: usuario.databaseId,
+        authorId: String(usuario.databaseId),
         firstName: formData.firstName,
         lastName: formData.lastName,
         ci: formData.idCard,
