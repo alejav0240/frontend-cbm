@@ -100,28 +100,19 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
 
       - name: Deploy via SSH
+        env:
+          SSH_KEY: ~/.ssh/deploy_key
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'DEPLOY_SCRIPT'
+          ssh -i ${{ env.SSH_KEY }} -o StrictHostKeyChecking=yes \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash -s << 'DEPLOY_EOF'
             set -ex
-
-            echo "Pulling latest code..."
             cd ~/cbm-frontend
             git pull origin main
-
-            echo "Installing dependencies..."
             pnpm install --frozen-lockfile
-
-            echo "Building Next.js..."
             pnpm build
-
-            echo "Copying static assets to standalone..."
             cp -r .next/static .next/standalone/.next/
             cp -r public .next/standalone/
-
-            echo "Restarting PM2 process..."
             pm2 restart cbm-frontend
             pm2 save
-
             echo "Frontend deployed successfully!"
-          DEPLOY_SCRIPT
+          DEPLOY_EOF
