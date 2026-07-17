@@ -1,6 +1,30 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 
+const getSupportedMimeType = (): string => {
+  const types = [
+    "video/webm;codecs=vp8,opus",
+    "video/webm;codecs=vp9,opus",
+    "video/webm",
+    "video/mp4",
+  ];
+  for (const type of types) {
+    if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(type)) {
+      return type;
+    }
+  }
+  return "";
+};
+
+const enumerarDispositivos = async (): Promise<MediaDeviceInfo[]> => {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((d) => d.kind === "videoinput");
+  } catch {
+    return [];
+  }
+};
+
 export const useGrabacion = () => {
   const [estaGrabando, setEstaGrabando] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -9,18 +33,11 @@ export const useGrabacion = () => {
   const [archivoGrabacion, setArchivoGrabacion] = useState<File | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    navigator.mediaDevices
-      .enumerateDevices()
-      .then((devices) => {
-        const videoInputs = devices.filter((d) => d.kind === "videoinput");
-        setVideoDevices(videoInputs);
-        if (videoInputs.length > 0)
-          setSelectedDeviceId((prev) => prev || videoInputs[0].deviceId);
-      })
-      .catch(console.error);
+    return () => {
+      stream?.getTracks().forEach((t) => t.stop());
+    };
   }, []);
 
   const iniciarGrabacion = useCallback(
@@ -29,21 +46,39 @@ export const useGrabacion = () => {
         recordedChunksRef.current = [];
         setArchivoGrabacion(null);
         const targetId = deviceId || dispositivoSeleccionado;
+
+        const videoConstraints: MediaTrackConstraints = targetId
+          ? {
+              deviceId: { exact: targetId },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            }
+          : {
+              facingMode: "user",
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            };
+
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            deviceId: targetId ? { exact: targetId } : undefined,
-            width: 1280,
-            height: 720,
-          },
+          video: videoConstraints,
           audio: true,
         });
 
-        setStream(mediaStream);
-        if (videoRef.current) videoRef.current.srcObject = mediaStream;
+        const videoInputs = await enumerarDispositivos();
+        setVideoDevices(videoInputs);
+        const activeTrack = mediaStream.getVideoTracks()[0];
+        if (activeTrack) {
+          const settings = activeTrack.getSettings();
+          if (settings.deviceId) setSelectedDeviceId(settings.deviceId);
+        }
 
-        const recorder = new MediaRecorder(mediaStream, {
-          mimeType: "video/webm;codecs=vp8,opus",
-        });
+        setStream(mediaStream);
+
+        const mimeType = getSupportedMimeType();
+        const recorderOptions: MediaRecorderOptions = {};
+        if (mimeType) recorderOptions.mimeType = mimeType;
+
+        const recorder = new MediaRecorder(mediaStream, recorderOptions);
 
         recorder.ondataavailable = (e) => {
           if (e.data.size > 0) recordedChunksRef.current.push(e.data);
@@ -82,7 +117,6 @@ export const useGrabacion = () => {
     const detenerStream = () => {
       stream?.getTracks().forEach((t) => t.stop());
       setStream(null);
-      if (videoRef.current) videoRef.current.srcObject = null;
     };
 
     if (!recorder) {
@@ -129,7 +163,6 @@ export const useGrabacion = () => {
     stream,
     dispositivos,
     dispositivoSeleccionado,
-    videoRef,
     iniciarGrabacion,
     detenerGrabacion,
     cambiarCamara,

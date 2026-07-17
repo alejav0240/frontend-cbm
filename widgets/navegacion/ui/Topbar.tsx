@@ -70,7 +70,7 @@ export const Topbar = () => {
               alternarSidebar();
             }
           }}
-          className="hidden md:flex p-2 md:p-3 text-gray-400 hover:text-[#008080] hover:bg-[#008080]/10 rounded-2xl transition-all duration-300"
+          className="flex p-2 md:p-3 text-gray-400 hover:text-[#008080] hover:bg-[#008080]/10 rounded-2xl transition-all duration-300"
         >
           <MenuIcon size={20} />
         </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -263,6 +263,18 @@ export const Sidebar = () => {
   const { usuario, cerrarSesion } = useAuthStore();
 
   const [tiempoSesion, setTiempoSesion] = useState(0);
+  const touchStartXRef = useRef(0);
+
+  useEffect(() => {
+    if (menuMovilAbierto) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuMovilAbierto]);
 
   useEffect(() => {
     if (!sesion?.inicio) return;
@@ -472,10 +484,17 @@ export const Sidebar = () => {
             animate={{ x: 0 }}
             exit={{ x: -280 }}
             transition={{ type: "tween", duration: 0.25 }}
+            onTouchStart={(e) => {
+              touchStartXRef.current = e.touches[0].clientX;
+            }}
+            onTouchEnd={(e) => {
+              const diff = touchStartXRef.current - e.changedTouches[0].clientX;
+              if (diff > 80) setMenuMovilAbierto(false);
+            }}
             className="fixed top-0 left-0 h-screen w-[280px] bg-white dark:bg-accent flex flex-col z-50 shadow-2xl md:hidden"
           >
             {/* Cabecera */}
-            <div className="p-8 flex items-center justify-between">
+            <div className="px-4 py-5 md:px-8 md:py-8 flex items-center justify-between">
               <Link
                 href="/dashboard"
                 className="flex items-center gap-3"

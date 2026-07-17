@@ -132,6 +132,8 @@ export const SesionEnProgresoPage = () => {
   const [camaraAbierta, setCamaraAbierta] = useState(true);
   const [mobileCameraOpen, setMobileCameraOpen] = useState(true);
   const alertaEnviadaRef = useRef(false);
+  const mobileVideoRef = useRef<HTMLVideoElement>(null);
+  const desktopVideoRef = useRef<HTMLVideoElement>(null);
   const [estadoGuardado, setEstadoGuardado] = useState<
     Record<PasoGuardadoId, EstadoPasoGuardado>
   >(crearEstadoGuardadoInicial);
@@ -1003,7 +1005,7 @@ export const SesionEnProgresoPage = () => {
               <>
                 <VistaCamara
                   stream={grabacion.stream}
-                  videoRef={grabacion.videoRef}
+                  videoRef={mobileVideoRef}
                   isRecording={grabacion.estaGrabando}
                   videoDevices={grabacion.dispositivos}
                   selectedDeviceId={grabacion.dispositivoSeleccionado}
@@ -1037,7 +1039,14 @@ export const SesionEnProgresoPage = () => {
                     text-gray-400
                 "
               >
-                <Video size={22} />
+                <div className="relative">
+                  <Video size={22} />
+                  {grabacion.estaGrabando && (
+                    <div className="absolute -top-1 -right-1 flex items-center gap-1 bg-red-500 px-1.5 py-0.5 rounded-full">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                    </div>
+                  )}
+                </div>
               </button>
             )}
           </div>
@@ -1055,7 +1064,7 @@ export const SesionEnProgresoPage = () => {
               <>
                 <VistaCamara
                   stream={grabacion.stream}
-                  videoRef={grabacion.videoRef}
+                  videoRef={desktopVideoRef}
                   isRecording={grabacion.estaGrabando}
                   videoDevices={grabacion.dispositivos}
                   selectedDeviceId={grabacion.dispositivoSeleccionado}

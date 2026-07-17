@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "motion/react";
 import { Video } from "lucide-react";
 
@@ -23,6 +23,12 @@ export function VistaCamara({
   switchCamera = () => {},
   startRecording = () => {},
 }: CameraPreviewProps) {
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream ?? null;
+    }
+  }, [stream, videoRef]);
+
   return (
     <div className="w-full border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-white/5 p-4 md:p-8 space-y-8 bg-gray-50/30 dark:bg-white/1">
       <div className="bg-white dark:bg-[#111] p-5 md:p-8 rounded-[32px] md:rounded-[40px] border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden relative">
