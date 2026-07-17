@@ -3,19 +3,21 @@ import { gql } from "@apollo/client";
 export const OBTENER_ESCALAS = gql`
   query ObtenerEscalas {
     scales {
-      id
-      nombre: name
-      descripcion: description
-      tipoEscala: scaleType
-      subescalas: subscales {
+      results {
         id
         nombre: name
-        valorMaximo: maxValue
-      }
-      valores: values {
-        id
-        etiqueta: label
-        valor: value
+        descripcion: description
+        tipoEscala: scaleType
+        subescalas: subscales {
+          id
+          nombre: name
+          valorMaximo: maxValue
+        }
+        valores: values {
+          id
+          etiqueta: label
+          valor: value
+        }
       }
     }
   }

@@ -11,7 +11,7 @@ export const useEscalas = () => {
   );
 
   return {
-    escalas: data?.scales ?? [],
+    escalas: data?.scales?.results ?? [],
     cargando: loading,
     error,
     refetch,
