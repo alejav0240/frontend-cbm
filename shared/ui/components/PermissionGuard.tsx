@@ -17,7 +17,7 @@ export function PermissionGuard({
 }: PermissionGuardProps) {
   const { usuario } = useAuthStore();
   if (!permission) return <>{children}</>;
-  return canAccess(usuario?.modules, permission) ? (
+  return canAccess(usuario?.modules, permission, "view", usuario?.role?.name) ? (
     <>{children}</>
   ) : (
     <>{fallback}</>
@@ -26,5 +26,5 @@ export function PermissionGuard({
 
 export function useCan(permission: string) {
   const { usuario } = useAuthStore();
-  return canAccess(usuario?.modules, permission);
+  return canAccess(usuario?.modules, permission, "view", usuario?.role?.name);
 }

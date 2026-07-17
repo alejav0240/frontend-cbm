@@ -221,6 +221,7 @@ const menuGroups = [
         label: "Usuarios",
         icon: <UserCog size={18} />,
         permission: "usuarios",
+        adminOnly: true,
       },
       {
         id: "roles",
@@ -292,10 +293,15 @@ export const Sidebar = () => {
       .map((group) => ({
         ...group,
         items: group.items.filter((item) => {
-          const i = item as { requiresSession?: boolean; permission?: string };
+          const i = item as {
+            requiresSession?: boolean;
+            permission?: string;
+            adminOnly?: boolean;
+          };
           if (i.requiresSession) return !!sesion;
+          if (i.adminOnly && usuario?.role?.name !== "admin") return false;
           if (!i.permission) return true;
-          return canAccess(usuario?.modules, i.permission);
+          return canAccess(usuario?.modules, i.permission, "view", usuario?.role?.name);
         }),
       }))
       .filter((group) => group.items.length > 0);

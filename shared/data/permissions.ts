@@ -53,7 +53,9 @@ export function canAccess(
   modules: string[] | null | undefined,
   permission: string,
   defaultAction: PermissionAction = "view",
+  role?: string,
 ) {
+  if (role === "admin") return true;
   return !!modules?.includes(toPermissionKey(permission, defaultAction));
 }
 
