@@ -5,8 +5,6 @@ import {
   useUsuarios,
   useCreateUser,
   useUpdateUser,
-  useDeleteUser,
-  useDeactivateUser,
   Usuario,
 } from "@/entities/usuario";
 import { ModalesUsuario } from "@/features/gestion-usuario";
@@ -39,8 +37,6 @@ export const UsuariosPage = () => {
 
   const { crearUsuario } = useCreateUser();
   const { actualizarUsuario } = useUpdateUser();
-  const { eliminarUsuario } = useDeleteUser();
-  const { desactivarUsuario } = useDeactivateUser();
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [mostrarCredenciales, setMostrarCredenciales] = useState(false);
@@ -50,11 +46,6 @@ export const UsuariosPage = () => {
     string | undefined
   >(undefined);
   const [mostrarPassword, setMostrarPassword] = useState(false);
-  const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
-  const [usuarioAccion, setUsuarioAccion] = useState<{
-    id: string;
-    accion: "eliminar" | "desactivar";
-  } | null>(null);
   const [mostrarExportar, setMostrarExportar] = useState(false);
 
   const [formFirstName, setFormFirstName] = useState("");
@@ -107,40 +98,6 @@ export const UsuariosPage = () => {
     setMostrarPassword(false);
     setMostrarCredenciales(true);
   }, []);
-
-  const handleDeactivate = useCallback((id: string) => {
-    setUsuarioAccion({ id, accion: "desactivar" });
-    setMostrarConfirmar(true);
-  }, []);
-
-  const handleDelete = useCallback((id: string) => {
-    setUsuarioAccion({ id, accion: "eliminar" });
-    setMostrarConfirmar(true);
-  }, []);
-
-  const handleConfirmarAccion = useCallback(async () => {
-    if (!usuarioAccion) return;
-
-    try {
-      if (usuarioAccion.accion === "eliminar") {
-        await eliminarUsuario(usuarioAccion.id);
-        toast.success("Usuario eliminado correctamente");
-      } else {
-        await desactivarUsuario(usuarioAccion.id);
-        toast.success("Usuario desactivado correctamente");
-      }
-      await refetch();
-    } catch (error) {
-      const mensaje =
-        error instanceof Error
-          ? error.message
-          : "Error al realizar la operación";
-      toast.error(mensaje);
-    } finally {
-      setMostrarConfirmar(false);
-      setUsuarioAccion(null);
-    }
-  }, [usuarioAccion, eliminarUsuario, desactivarUsuario, refetch]);
 
   const handleFormSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -250,8 +207,6 @@ export const UsuariosPage = () => {
         users={usuarios}
         onShowCredentials={handleShowCredentials}
         onEdit={handleEditar}
-        onDeactivate={handleDeactivate}
-        onDelete={handleDelete}
       />
 
       <Pagination
@@ -302,22 +257,6 @@ export const UsuariosPage = () => {
         mostrarPassword={mostrarPassword}
         alternarPassword={() => setMostrarPassword(!mostrarPassword)}
         credencialesPassword={credencialesPassword}
-        mostrarConfirmarEliminar={mostrarConfirmar}
-        alCerrarConfirmarEliminar={() => {
-          setMostrarConfirmar(false);
-          setUsuarioAccion(null);
-        }}
-        alConfirmarEliminar={handleConfirmarAccion}
-        tituloConfirmar={
-          usuarioAccion?.accion === "eliminar"
-            ? "Eliminar Usuario"
-            : "Desactivar Usuario"
-        }
-        mensajeConfirmar={
-          usuarioAccion?.accion === "eliminar"
-            ? "¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer."
-            : "¿Estás seguro de desactivar este usuario? Podrás reactivarlo después."
-        }
         mostrarExportar={mostrarExportar}
         alCerrarExportar={() => setMostrarExportar(false)}
         listaUsuarios={usuarios}

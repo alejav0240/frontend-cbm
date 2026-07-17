@@ -8,16 +8,12 @@ import type { TherapyReport } from "../model/tipos";
 
 export function useInformes(filtros: {
   patientId?: string;
-  page?: number;
-  pageSize?: number;
 } = {}) {
   const { data, loading, error, refetch } = useQuery<ObtenerInformesQuery>(
     GET_THERAPY_REPORTS,
     {
       variables: {
         patientId: filtros.patientId || undefined,
-        page: filtros.page,
-        pageSize: filtros.pageSize,
       },
       notifyOnNetworkStatusChange: true,
     },
@@ -25,7 +21,7 @@ export function useInformes(filtros: {
 
   const informes: TherapyReport[] = useMemo(
     () =>
-      (data?.therapyReports?.results ?? [])
+      (data?.therapyReports ?? [])
         .filter((r): r is NonNullable<typeof r> => r != null)
         .map((r) => ({
           id: r.id,
@@ -49,8 +45,8 @@ export function useInformes(filtros: {
 
   return {
     informes,
-    paginas: data?.therapyReports?.totalPages || 0,
-    paginaActual: data?.therapyReports?.currentPage || 0,
+    paginas: 0,
+    paginaActual: 0,
     cargando: loading,
     error,
     refetch,

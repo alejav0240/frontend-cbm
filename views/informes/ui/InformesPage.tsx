@@ -15,10 +15,7 @@ import { Pagination } from "@/shared/ui/Pagination";
 
 export default function InformesPage() {
   const [paginaActual, setPaginaActual] = useState(1);
-  const { informes, paginas, cargando, refetch } = useInformes({
-    page: paginaActual,
-    pageSize: 10,
-  });
+  const { informes, paginas, cargando, refetch } = useInformes();
   const { usuario } = useAuthStore();
   const { options: patientOptions, onSearch: onSearchPatient } =
     useBuscarPacientes();

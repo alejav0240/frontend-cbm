@@ -42,15 +42,17 @@ export const OBTENER_CURSO = gql`
 export const OBTENER_INSCRIPCIONES_CURSO = gql`
   query ObtenerInscripcionesCurso($courseId: ID) {
     courseEnrollments(courseId: $courseId) {
-      id
-      nombreCompleto: fullName
-      carnet
-      fechaInscripcion: enrolledAt
-      pago: payment {
+      results {
         id
-        monto: amount
-        metodoPago: paymentMethod
-        estadoPago: paymentStatus
+        nombreCompleto: fullName
+        carnet
+        fechaInscripcion: enrolledAt
+        pago: payment {
+          id
+          monto: amount
+          metodoPago: paymentMethod
+          estadoPago: paymentStatus
+        }
       }
     }
   }

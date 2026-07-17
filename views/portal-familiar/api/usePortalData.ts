@@ -32,8 +32,6 @@ export const usePortalData = (patientId?: string | null) => {
     {
       variables: {
         patientId: patientId || undefined,
-        page: 1,
-        pageSize: 10,
       },
       skip: !patientId,
     },
@@ -60,7 +58,7 @@ export const usePortalData = (patientId?: string | null) => {
 
   const informes: TherapyReport[] = useMemo(
     () =>
-      (informesData?.therapyReports?.results ?? [])
+      (informesData?.therapyReports ?? [])
         .filter((r): r is NonNullable<typeof r> => r != null)
         .map((r) => ({
           id: r.id,

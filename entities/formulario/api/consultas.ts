@@ -3,13 +3,9 @@ import { gql } from "@apollo/client";
 export const OBTENER_ASIGNACIONES_FORMULARIO = gql`
   query ObtenerAsignacionesFormulario(
     $patientId: ID
-    $page: Int
-    $pageSize: Int
   ) {
     formAssignments(
       patientId: $patientId
-      page: $page
-      pageSize: $pageSize
     ) {
       results {
         id
@@ -105,12 +101,14 @@ export const OBTENER_RESPUESTAS_FORMULARIO = gql`
       formId: $formId
       patientId: $patientId
     ) {
-      id
-      responses {
-        question {
-          question
+      results {
+        id
+        responses {
+          question {
+            question
+          }
+          response
         }
-        response
       }
     }
   }

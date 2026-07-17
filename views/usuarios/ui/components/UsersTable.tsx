@@ -2,23 +2,19 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import { Shield, Key, Edit2, UserMinus, Trash2 } from "lucide-react";
+import { Shield, Key, Edit2 } from "lucide-react";
 import { Usuario } from "@/entities/usuario";
 
 interface UsersTableProps {
   users: Usuario[];
   onShowCredentials: (user: Usuario) => void;
   onEdit: (user: Usuario) => void;
-  onDeactivate: (id: string) => void;
-  onDelete: (id: string) => void;
 }
 
 export function UsersTable({
   users,
   onShowCredentials,
   onEdit,
-  onDeactivate,
-  onDelete,
 }: UsersTableProps) {
   return (
     <div className="bg-white dark:bg-[#111] rounded-[40px] border border-gray-200 dark:border-white/5 shadow-xl shadow-black/5 overflow-hidden">
@@ -116,20 +112,6 @@ export function UsersTable({
                       title="Editar"
                     >
                       <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => onDeactivate(user.id)}
-                      className="p-2.5 bg-gray-100 dark:bg-white/5 rounded-xl text-gray-500 hover:text-orange-500 hover:bg-orange-500/10 transition-all"
-                      title="Dar de baja"
-                    >
-                      <UserMinus size={16} />
-                    </button>
-                    <button
-                      onClick={() => onDelete(user.id)}
-                      className="p-2.5 bg-gray-100 dark:bg-white/5 rounded-xl text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition-all"
-                      title="Eliminar"
-                    >
-                      <Trash2 size={16} />
                     </button>
                   </div>
                 </td>

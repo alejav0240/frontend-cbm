@@ -17,9 +17,9 @@ export function useInscripcionesCurso(courseId?: string | number) {
   });
 
   const inscripciones: InscripcionCurso[] = useMemo(() => {
-    if (!data?.courseEnrollments) return [];
+    if (!data?.courseEnrollments?.results) return [];
 
-    return data.courseEnrollments
+    return data.courseEnrollments.results
       .filter((e): e is NonNullable<typeof e> => e !== null)
       .map((e) => ({
         id: e.id,

@@ -26,7 +26,7 @@ export function useObtenerRespuestaFormulario({
 
   // Normalizar los datos: extraer preguntas y respuestas
   const preguntasNormalizadas: PreguntaRespuesta[] =
-    data?.formAssignments?.flatMap(
+    data?.formAssignments?.results?.flatMap(
       (assignment) =>
         assignment?.responses?.map((response) => ({
           pregunta: response.question.question,
@@ -35,7 +35,7 @@ export function useObtenerRespuestaFormulario({
     ) || [];
 
   return {
-    idAssigmente: data?.formAssignments?.[0]?.id ?? null,
+    idAssigmente: data?.formAssignments?.results?.[0]?.id ?? null,
     preguntasNormalizadas, // Array plano de {pregunta, respuesta}
     cargando: loading,
     error,

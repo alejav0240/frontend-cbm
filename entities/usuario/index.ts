@@ -7,8 +7,6 @@ export * from "./api/useUsuarios";
 export * from "./api/useBuscarTerapeutas";
 export * from "./api/useCreateUser";
 export * from "./api/useUpdateUser";
-export * from "./api/useDeleteUser";
-export * from "./api/useDeactivateUser";
 export * from "./api/useChangePassword";
 export * from "./lib/exportar-pdf";
 export * from "./lib/exportar-excel";

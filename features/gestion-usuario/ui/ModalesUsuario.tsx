@@ -2,7 +2,6 @@
 
 import React, { useMemo } from "react";
 import { Modal } from "@/shared/ui/components/Modal";
-import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import {
   Usuario,
   UsuarioExportarFila,
@@ -45,11 +44,6 @@ interface ModalesUsuarioProps {
   credencialesPassword?: string;
   mostrarPassword: boolean;
   alternarPassword: () => void;
-  mostrarConfirmarEliminar: boolean;
-  alCerrarConfirmarEliminar: () => void;
-  alConfirmarEliminar: () => void;
-  tituloConfirmar: string;
-  mensajeConfirmar: string;
   mostrarExportar: boolean;
   alCerrarExportar: () => void;
   listaUsuarios: Usuario[];
@@ -65,11 +59,6 @@ export const ModalesUsuario = ({
   credencialesPassword,
   mostrarPassword,
   alternarPassword,
-  mostrarConfirmarEliminar,
-  alCerrarConfirmarEliminar,
-  alConfirmarEliminar,
-  tituloConfirmar,
-  mensajeConfirmar,
   mostrarExportar,
   alCerrarExportar,
   listaUsuarios,
@@ -153,15 +142,6 @@ export const ModalesUsuario = ({
         showPassword={mostrarPassword}
         onTogglePassword={alternarPassword}
         password={credencialesPassword}
-      />
-
-      <ConfirmModal
-        isOpen={mostrarConfirmarEliminar}
-        onClose={alCerrarConfirmarEliminar}
-        onConfirm={alConfirmarEliminar}
-        title={tituloConfirmar}
-        message={mensajeConfirmar}
-        confirmLabel="Confirmar"
       />
 
       <GenericExportModal<UsuarioExportarFila>

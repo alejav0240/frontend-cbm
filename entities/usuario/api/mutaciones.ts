@@ -77,29 +77,10 @@ export const UPDATE_USER = gql`
   }
 `;
 
-export const DELETE_USER = gql`
-  mutation DeleteUser($id: ID!) {
-    deleteUser(id: $id) {
-      success
-    }
-  }
-`;
-
 export const CHANGE_PASSWORD = gql`
   mutation ChangePassword($newPassword: String!, $oldPassword: String!) {
     changePassword(newPassword: $newPassword, oldPassword: $oldPassword) {
       success
-    }
-  }
-`;
-
-export const DEACTIVATE_USER = gql`
-  mutation DeactivateUser($id: ID!) {
-    deactivateUser(id: $id) {
-      user {
-        id
-        isActive
-      }
     }
   }
 `;

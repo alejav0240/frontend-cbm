@@ -29,8 +29,6 @@ export interface RespuestaFormNormalizada {
 
 export interface AsignacionesFiltros {
   patientId?: string;
-  page?: number;
-  pageSize?: number;
 }
 
 export const useAsignacionesFormulario = (filtros: AsignacionesFiltros = {}) => {
@@ -40,8 +38,6 @@ export const useAsignacionesFormulario = (filtros: AsignacionesFiltros = {}) => 
   >(OBTENER_ASIGNACIONES_FORMULARIO, {
     variables: {
       patientId: filtros.patientId,
-      page: filtros.page,
-      pageSize: filtros.pageSize,
     },
     skip: !filtros.patientId,
     notifyOnNetworkStatusChange: true,
