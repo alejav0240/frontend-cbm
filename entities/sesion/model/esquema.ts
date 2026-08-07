@@ -16,3 +16,24 @@ export const esquemaSesionPrueba = z.object({
 export type DatosFormularioSesionPrueba = z.infer<
   typeof esquemaSesionPrueba
 >;
+
+export const esquemaCiclo = z.object({
+  patientName: z.string().min(1, "Selecciona un paciente"),
+  startDate: z.string().min(1, "La fecha de inicio es requerida"),
+  numSessions: z.string().min(1, "Selecciona el número de sesiones"),
+  therapist: z.string().min(1, "Selecciona un terapeuta"),
+});
+
+export type DatosFormularioCiclo = z.infer<typeof esquemaCiclo>;
+
+export const esquemaSesionGrupal = z.object({
+  therapistId: z.string().min(1, "Selecciona un terapeuta"),
+  date: z.string().min(1, "La fecha es requerida"),
+  time: z.string().min(1, "La hora es requerida"),
+  notes: z.string().optional(),
+});
+
+export type DatosFormularioSesionGrupal = z.infer<
+  typeof esquemaSesionGrupal
+>;
+

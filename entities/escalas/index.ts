@@ -9,6 +9,7 @@ export {
 export { useAgregarEscalaSesion } from "./api/useAgregarEscalaSesion";
 export { useCrearEscala } from "./api/useCrearEscala";
 export { useEliminarEscala } from "./api/useEliminarEscala";
+export * from "./model/esquema";
 export type { Evaluacion } from "./model/tipos";
 export type { EvaluacionExportarFila, EvaluacionDetalleDTO } from "./model/dto";
 export {

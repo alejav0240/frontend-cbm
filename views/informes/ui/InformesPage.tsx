@@ -8,9 +8,9 @@ import { ReportsStats } from "./components/ReportsStats";
 import { ReportCard } from "./components/ReportCard";
 import { ReportDetailsModal } from "./components/ReportDetailsModal";
 import { ReportFormModal } from "./components/ReportFormModal";
+import type { NuevoInforme } from "./components/ReportFormModal";
 import { useInformes, useCrearInforme } from "@/entities/informes";
 import type { TherapyReport } from "@/entities/informes/model/tipos";
-import { NuevoInforme } from "./components/ReportFormModal";
 import { useBuscarPacientes } from "@/entities/paciente";
 import { useAuthStore } from "@/shared/model/useAuthStore";
 import { Pagination } from "@/shared/ui/Pagination";
@@ -29,12 +29,6 @@ export default function InformesPage() {
   );
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
-  const [newReport, setNewReport] = useState<NuevoInforme>({
-    patientId: "",
-    reportUrl: "",
-    type: "Mensual",
-  });
-
   const stats = useMemo(() => {
     const total = informes.length;
     const read = informes.filter((r) => readIds.has(r.id)).length;
@@ -50,24 +44,26 @@ export default function InformesPage() {
     });
   }, []);
 
-  const handleSendReport = useCallback(async () => {
-    if (!newReport.patientId || !newReport.reportUrl || !usuario?.databaseId) {
-      toast.error("Completa todos los campos requeridos");
-      return;
-    }
-    try {
-      await crearInforme({
-        patientId: newReport.patientId,
-        generatedById: String(usuario.databaseId),
-        reportUrl: newReport.reportUrl,
-      });
-      setShowCreateModal(false);
-      setNewReport({ patientId: "", reportUrl: "", type: "Mensual" });
-      refetch();
-    } catch {
-      /* toast handled in hook */
-    }
-  }, [newReport, usuario, crearInforme, refetch]);
+  const handleSendReport = useCallback(
+    async (data: NuevoInforme) => {
+      if (!usuario?.databaseId) {
+        toast.error("Completa todos los campos requeridos");
+        return;
+      }
+      try {
+        await crearInforme({
+          patientId: data.patientId,
+          generatedById: String(usuario.databaseId),
+          reportUrl: data.reportUrl,
+        });
+        setShowCreateModal(false);
+        refetch();
+      } catch {
+        /* toast handled in hook */
+      }
+    },
+    [usuario, crearInforme, refetch],
+  );
 
   if (cargando && informes.length === 0) {
     return (
@@ -119,15 +115,11 @@ export default function InformesPage() {
       />
 
       <ReportFormModal
+        key={`informe-${showCreateModal}`}
         isOpen={showCreateModal}
-        onClose={() => {
-          setShowCreateModal(false);
-          setNewReport({ patientId: "", reportUrl: "", type: "Mensual" });
-        }}
+        onClose={() => setShowCreateModal(false)}
         patientOptions={patientOptions}
         onSearchPatient={onSearchPatient}
-        newReport={newReport}
-        setNewReport={setNewReport}
         onSend={handleSendReport}
       />
 

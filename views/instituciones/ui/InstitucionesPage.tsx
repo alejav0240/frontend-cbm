@@ -32,19 +32,8 @@ import {
   CrearSesionMutationVariables,
 } from "@/shared/api/generated/graphql";
 import { toast } from "sonner";
-
-const INITIAL_FORM_INSTITUCION = {
-  nombre: "",
-  direccion: "",
-  nombreContacto: "",
-  telefonoContacto: "",
-  emailContacto: "",
-};
-
-const INITIAL_FORM_GRUPO = {
-  nombre: "",
-  descripcion: "",
-};
+import type { InstitutionFormData } from "./components/InstitutionFormModal";
+import type { GroupFormData } from "./components/GroupFormModal";
 
 export const InstitucionesPage = () => {
   const [vista, setVista] = useState<"lista" | "detalle" | "detalle-grupo">(
@@ -72,11 +61,6 @@ export const InstitucionesPage = () => {
     tipo: "institucion" | "grupo" | "sesion";
     id: string;
   } | null>(null);
-
-  const [formInstitucion, setFormInstitucion] = useState(
-    INITIAL_FORM_INSTITUCION,
-  );
-  const [formGrupo, setFormGrupo] = useState(INITIAL_FORM_GRUPO);
 
   const { instituciones, paginas, refetch } = useInstituciones({
     page: paginaActual,
@@ -163,35 +147,39 @@ export const InstitucionesPage = () => {
     setVista("detalle-grupo");
   }, []);
 
-  const handleCrearInstitucion = useCallback(async () => {
-    try {
-      await crearInstitucion({
-        name: formInstitucion.nombre,
-        contactEmail: formInstitucion.emailContacto,
-        phone: formInstitucion.telefonoContacto,
-      });
-      setMostrarFormularioInstitucion(false);
-      setFormInstitucion(INITIAL_FORM_INSTITUCION);
-      await refetch();
-    } catch {
-      // toast ya manejado en el hook
-    }
-  }, [crearInstitucion, formInstitucion, refetch]);
+  const handleCrearInstitucion = useCallback(
+    async (data: InstitutionFormData) => {
+      try {
+        await crearInstitucion({
+          name: data.nombre,
+          contactEmail: data.emailContacto ?? "",
+          phone: data.telefonoContacto ?? "",
+        });
+        setMostrarFormularioInstitucion(false);
+        await refetch();
+      } catch {
+        // toast ya manejado en el hook
+      }
+    },
+    [crearInstitucion, refetch],
+  );
 
-  const handleCrearGrupo = useCallback(async () => {
-    if (!institucionSeleccionadaId) return;
-    try {
-      await crearGrupo({
-        institutionId: institucionSeleccionadaId,
-        name: formGrupo.nombre,
-      });
-      setMostrarFormularioGrupo(false);
-      setFormGrupo(INITIAL_FORM_GRUPO);
-      await refetch();
-    } catch {
-      // toast ya manejado en el hook
-    }
-  }, [crearGrupo, formGrupo, institucionSeleccionadaId, refetch]);
+  const handleCrearGrupo = useCallback(
+    async (data: GroupFormData) => {
+      if (!institucionSeleccionadaId) return;
+      try {
+        await crearGrupo({
+          institutionId: institucionSeleccionadaId,
+          name: data.nombre,
+        });
+        setMostrarFormularioGrupo(false);
+        await refetch();
+      } catch {
+        // toast ya manejado en el hook
+      }
+    },
+    [crearGrupo, institucionSeleccionadaId, refetch],
+  );
 
   const handleCrearSesion = useCallback(
     async (data: {
@@ -280,14 +268,10 @@ export const InstitucionesPage = () => {
         />
 
         <GroupFormModal
+          key={`grupo-${mostrarFormularioGrupo}`}
           isOpen={mostrarFormularioGrupo}
-          onClose={() => {
-            setMostrarFormularioGrupo(false);
-            setFormGrupo(INITIAL_FORM_GRUPO);
-          }}
+          onClose={() => setMostrarFormularioGrupo(false)}
           onSave={handleCrearGrupo}
-          data={formGrupo}
-          onChange={setFormGrupo}
         />
 
         <ConfirmModal
@@ -317,6 +301,7 @@ export const InstitucionesPage = () => {
         />
 
         <SessionFormModal
+          key={`sesion-${mostrarFormularioSesion}`}
           isOpen={mostrarFormularioSesion}
           onClose={() => setMostrarFormularioSesion(false)}
           onSave={handleCrearSesion}
@@ -368,14 +353,10 @@ export const InstitucionesPage = () => {
       />
 
       <InstitutionFormModal
+        key={`institucion-${mostrarFormularioInstitucion}`}
         isOpen={mostrarFormularioInstitucion}
-        onClose={() => {
-          setMostrarFormularioInstitucion(false);
-          setFormInstitucion(INITIAL_FORM_INSTITUCION);
-        }}
+        onClose={() => setMostrarFormularioInstitucion(false)}
         onSave={handleCrearInstitucion}
-        data={formInstitucion}
-        onChange={setFormInstitucion}
       />
 
       <GenericExportModal<InstitucionExportarFila>

@@ -1,45 +1,61 @@
 "use client";
 
 import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Modal } from "@/shared/ui/components/Modal";
+import {
+  esquemaInstitucion,
+  type DatosFormularioInstitucion,
+} from "@/entities/institucion";
 
-interface InstitutionFormData {
-  nombre: string;
-  direccion: string;
-  nombreContacto: string;
-  telefonoContacto: string;
-  emailContacto: string;
-}
+export type InstitutionFormData = DatosFormularioInstitucion;
 
 interface InstitutionFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: () => void;
-  data: InstitutionFormData;
-  onChange: (data: InstitutionFormData) => void;
+  onSave: (data: InstitutionFormData) => void;
 }
 
 export function InstitutionFormModal({
   isOpen,
   onClose,
   onSave,
-  data,
-  onChange,
 }: InstitutionFormModalProps) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<DatosFormularioInstitucion>({
+    resolver: zodResolver(esquemaInstitucion),
+    defaultValues: {
+      nombre: "",
+      direccion: "",
+      nombreContacto: "",
+      telefonoContacto: "",
+      emailContacto: "",
+    },
+  });
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Nueva Institución">
-      <div className="space-y-6">
+      <form
+        className="space-y-6"
+        onSubmit={handleSubmit((data) => onSave(data))}
+      >
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
             Nombre de la Institución
           </label>
           <input
             type="text"
-            value={data.nombre}
-            onChange={(e) => onChange({ ...data, nombre: e.target.value })}
+            {...register("nombre")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             placeholder="Ej: Colegio San Pepito"
           />
+          {errors.nombre && (
+            <p className="text-xs text-red-500">{errors.nombre.message}</p>
+          )}
         </div>
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -47,8 +63,7 @@ export function InstitutionFormModal({
           </label>
           <input
             type="text"
-            value={data.direccion}
-            onChange={(e) => onChange({ ...data, direccion: e.target.value })}
+            {...register("direccion")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             placeholder="Ej: Av. Principal 123"
           />
@@ -59,10 +74,7 @@ export function InstitutionFormModal({
           </label>
           <input
             type="text"
-            value={data.nombreContacto}
-            onChange={(e) =>
-              onChange({ ...data, nombreContacto: e.target.value })
-            }
+            {...register("nombreContacto")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             placeholder="Ej: Lic. Juan Pérez"
           />
@@ -74,10 +86,7 @@ export function InstitutionFormModal({
             </label>
             <input
               type="text"
-              value={data.telefonoContacto}
-              onChange={(e) =>
-                onChange({ ...data, telefonoContacto: e.target.value })
-              }
+              {...register("telefonoContacto")}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
               placeholder="Ej: +591 70000001"
             />
@@ -88,30 +97,33 @@ export function InstitutionFormModal({
             </label>
             <input
               type="email"
-              value={data.emailContacto}
-              onChange={(e) =>
-                onChange({ ...data, emailContacto: e.target.value })
-              }
+              {...register("emailContacto")}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
               placeholder="Ej: contacto@institucion.com"
             />
+            {errors.emailContacto && (
+              <p className="text-xs text-red-500">
+                {errors.emailContacto.message}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex justify-end gap-4 pt-4">
           <button
+            type="button"
             onClick={onClose}
             className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
           >
             Cancelar
           </button>
           <button
-            onClick={onSave}
+            type="submit"
             className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg"
           >
             Guardar Institución
           </button>
         </div>
-      </div>
+      </form>
     </Modal>
   );
 }

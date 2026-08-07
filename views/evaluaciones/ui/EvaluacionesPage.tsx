@@ -7,6 +7,7 @@ import { EvaluationsHeader } from "./components/EvaluationsHeader";
 import { EvaluationCard } from "./components/EvaluationCard";
 import { EvaluationDetailsModal } from "./components/EvaluationDetailsModal";
 import { EvaluationForm } from "./components/EvaluationForm";
+import type { DatosEvaluacionEnviar } from "./components/EvaluationForm";
 import { EvaluationsFilters } from "./components/EvaluationsFilters";
 import { EvaluationsStats } from "./components/EvaluationsStats";
 import {
@@ -27,7 +28,7 @@ import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { Pagination } from "@/shared/ui/Pagination";
 import Modal from "@/shared/ui/components/Modal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
-import { EvaluacionDetallada, NuevaEvaluacion } from "./tipos";
+import { EvaluacionDetallada } from "./tipos";
 
 export const EvaluacionesPage = () => {
   const [search, setSearch] = useState("");
@@ -52,9 +53,8 @@ export const EvaluacionesPage = () => {
   const {
     options: patientOptions,
     onSearch: onSearchPatient,
-    buscando,
   } = useBuscarPacientes();
-  const { agregarEscalaSesion, agregando } = useAgregarEscalaSesion();
+  const { agregarEscalaSesion } = useAgregarEscalaSesion();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -80,59 +80,20 @@ export const EvaluacionesPage = () => {
     });
   }, []);
 
-  const [newEval, setNewEval] = useState<NuevaEvaluacion>({
-    patientId: "",
-    type: "Inicial",
-    date: new Date().toISOString().split("T")[0],
-    score: 0,
-  });
-  const [selectedScaleId, setSelectedScaleId] = useState<number | null>(null);
-  const [subscaleScores, setSubscaleScores] = useState<Record<string, number>>(
-    {},
-  );
-
-  const handleScaleChange = useCallback((scaleId: string) => {
-    const id = parseInt(scaleId, 10);
-    setSelectedScaleId(isNaN(id) ? null : id);
-    setSubscaleScores({});
-    setNewEval((prev) => ({ ...prev, score: 0 }));
-  }, []);
-
-  const handleSubscaleScoreChange = useCallback(
-    (subId: string, score: number) => {
-      const updated = { ...subscaleScores, [subId]: score };
-      setSubscaleScores(updated);
-      const total = Object.values(updated).reduce((a, b) => a + b, 0);
-      setNewEval((prev) => ({ ...prev, score: total }));
-    },
-    [subscaleScores],
-  );
-
-  const resetForm = useCallback(() => {
-    setNewEval({
-      patientId: "",
-      type: "Inicial",
-      date: new Date().toISOString().split("T")[0],
-      score: 0,
-    });
-    setSelectedScaleId(null);
-    setSubscaleScores({});
-  }, []);
-
   const handleCreateSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!newEval.patientId || !selectedScaleId || !usuario?.databaseId) {
+    async (data: DatosEvaluacionEnviar) => {
+      if (!usuario?.databaseId) {
         toast.error("Completa todos los campos requeridos");
         return;
       }
 
       const currentScale = escalasValidas.find(
-        (s) => s.id === String(selectedScaleId),
+        (s) => s.id === String(data.scaleId),
       );
-      const isSubscale = currentScale?.tipoEscala?.toLowerCase() === "subscale";
+      const isSubscale =
+        currentScale?.tipoEscala?.toLowerCase() === "subscale";
       const subscales = isSubscale
-        ? Object.entries(subscaleScores)
+        ? Object.entries(data.subscaleScores)
             .filter((entry) => entry[1] > 0)
             .map(([subId, score]) => ({
               subscaleId: subId,
@@ -141,20 +102,19 @@ export const EvaluacionesPage = () => {
         : undefined;
 
       const valueId = !isSubscale
-        ? currentScale?.valores?.find((v) => v.valor === newEval.score)?.id
+        ? currentScale?.valores?.find((v) => v.valor === data.score)?.id
         : undefined;
 
       try {
         await agregarEscalaSesion({
-          patientId: newEval.patientId,
+          patientId: data.patientId,
           evaluatorId: String(usuario.databaseId),
-          scaleId: String(selectedScaleId),
+          scaleId: String(data.scaleId),
           sessionId: null,
           subscales: subscales ?? null,
           valueId: valueId ?? null,
         });
         setShowCreateModal(false);
-        resetForm();
         toast.success("Evaluación registrada correctamente");
         refetch();
       } catch (err: unknown) {
@@ -165,16 +125,7 @@ export const EvaluacionesPage = () => {
         );
       }
     },
-    [
-      newEval,
-      selectedScaleId,
-      usuario,
-      escalasValidas,
-      subscaleScores,
-      agregarEscalaSesion,
-      refetch,
-      resetForm,
-    ],
+    [usuario, escalasValidas, agregarEscalaSesion, refetch],
   );
 
   const construirDetalleDTO = useCallback(
@@ -341,29 +292,17 @@ export const EvaluacionesPage = () => {
 
       <Modal
         isOpen={showCreateModal}
-        onClose={() => {
-          setShowCreateModal(false);
-          resetForm();
-        }}
+        onClose={() => setShowCreateModal(false)}
         title="Nueva Evaluación"
         maxWidth="max-w-2xl"
       >
         <EvaluationForm
+          key={`evaluacion-${showCreateModal}`}
           patientOptions={patientOptions}
           onSearchPatient={onSearchPatient}
           evaluationScales={escalasValidas}
-          newEval={newEval}
-          setNewEval={setNewEval}
-          selectedScaleId={selectedScaleId}
-          handleScaleChange={handleScaleChange}
-          subscaleScores={subscaleScores}
-          handleSubscaleScoreChange={handleSubscaleScoreChange}
           onSubmit={handleCreateSubmit}
-          onCancel={() => {
-            setShowCreateModal(false);
-            resetForm();
-          }}
-          isLoading={agregando || buscando}
+          onCancel={() => setShowCreateModal(false)}
         />
       </Modal>
 

@@ -21,6 +21,10 @@ import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { Pagination } from "@/shared/ui/Pagination";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import type { PasoPlan } from "@/entities/plan-tratamiento";
+import type {
+  DatosFormularioPlan,
+  DatosFormularioPasoPlan,
+} from "@/entities/plan-tratamiento";
 import type { PasoTarjeta, PlanTarjeta } from "./tipos";
 
 function mapPasos(pasos: PasoPlan[]): PasoTarjeta[] {
@@ -69,21 +73,6 @@ export const PlanesPage = () => {
     id: string;
   } | null>(null);
 
-  const [patientId, setPatientId] = useState("");
-  const [objective, setObjective] = useState("");
-  const [startDate, setStartDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
-
-  const [momento, setMomento] = useState("");
-  const [duracion, setDuracion] = useState("45");
-  const [objetivoPaso, setObjetivoPaso] = useState("");
-  const [focoPaso, setFocoPaso] = useState("");
-  const [recursosMusicales, setRecursosMusicales] = useState("");
-  const [enfasisMusical, setEnfasisMusical] = useState("");
-  const [enfoque, setEnfoque] = useState("");
-  const [mltEnfoque, setMltEnfoque] = useState("");
-
   const cards = useMemo<PlanTarjeta[]>(
     () =>
       planes.map((plan) => ({
@@ -110,75 +99,42 @@ export const PlanesPage = () => {
     [],
   );
 
-  const resetForm = useCallback(() => {
-    setPatientId("");
-    setObjective("");
-    setStartDate(new Date().toISOString().split("T")[0]);
-  }, []);
-
   const handleCreatePlan = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!patientId || !objective || !usuario?.databaseId) {
+    async (data: DatosFormularioPlan) => {
+      if (!usuario?.databaseId) {
         toast.error("Completa todos los campos requeridos");
         return;
       }
       try {
         await crearPlan({
-          patientId,
+          patientId: data.patientId,
           createdById: String(usuario.databaseId),
-          mainObjective: objective,
-          startDate,
+          mainObjective: data.objective,
+          startDate: data.startDate,
         });
         setShowCreateModal(false);
-        resetForm();
         refetch();
       } catch {
         /* toast handled in hook */
       }
     },
-    [patientId, objective, startDate, usuario, crearPlan, refetch, resetForm],
+    [usuario, crearPlan, refetch],
   );
 
-  const resetStepForm = useCallback(() => {
-    setMomento("");
-    setDuracion("45");
-    setObjetivoPaso("");
-    setFocoPaso("");
-    setRecursosMusicales("");
-    setEnfasisMusical("");
-    setEnfoque("");
-    setMltEnfoque("");
-    setEditingStep(null);
+  const handleAddStep = useCallback((planId: string) => {
+    setSelectedPlanId(planId);
+    setShowStepModal(true);
   }, []);
-
-  const handleAddStep = useCallback(
-    (planId: string) => {
-      setSelectedPlanId(planId);
-      resetStepForm();
-      setShowStepModal(true);
-    },
-    [resetStepForm],
-  );
 
   const handleEditStep = useCallback((planId: string, step: PasoTarjeta) => {
     setSelectedPlanId(planId);
     setEditingStep(step);
-    setMomento(step.momento ?? "");
-    setDuracion(String(step.duracion ?? 45));
-    setObjetivoPaso(step.objetivo ?? "");
-    setFocoPaso(step.foco ?? "");
-    setRecursosMusicales(step.recursosMusicales ?? "");
-    setEnfasisMusical(step.enfasisMusical ?? "");
-    setEnfoque(step.enfoque ?? "");
-    setMltEnfoque(step.mltEnfoque ?? "");
     setShowStepModal(true);
   }, []);
 
   const handleCreateStep = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!selectedPlanId || !momento || !objetivoPaso) {
+    async (data: DatosFormularioPasoPlan) => {
+      if (!selectedPlanId) {
         toast.error("Completa los campos requeridos");
         return;
       }
@@ -186,51 +142,36 @@ export const PlanesPage = () => {
         if (editingStep) {
           await actualizarPaso({
             id: editingStep.id,
-            moment: momento,
-            objective: objetivoPaso,
-            durationMinutes: Number(duracion),
-            focus: focoPaso || undefined,
-            musicalResources: recursosMusicales || undefined,
-            musicalEmphasis: enfasisMusical || undefined,
-            approach: enfoque || undefined,
-            mltMethod: mltEnfoque || undefined,
+            moment: data.momento,
+            objective: data.objetivoPaso,
+            durationMinutes: data.duracion,
+            focus: data.focoPaso || undefined,
+            musicalResources: data.recursosMusicales || undefined,
+            musicalEmphasis: data.enfasisMusical || undefined,
+            approach: data.enfoque || undefined,
+            mltMethod: data.mltEnfoque || undefined,
           });
         } else {
           await crearPaso({
             planId: selectedPlanId,
-            moment: momento,
-            objective: objetivoPaso,
-            durationMinutes: Number(duracion),
-            focus: focoPaso || undefined,
-            musicalResources: recursosMusicales || undefined,
-            musicalEmphasis: enfasisMusical || undefined,
-            approach: enfoque || undefined,
-            mltMethod: mltEnfoque || undefined,
+            moment: data.momento,
+            objective: data.objetivoPaso,
+            durationMinutes: data.duracion,
+            focus: data.focoPaso || undefined,
+            musicalResources: data.recursosMusicales || undefined,
+            musicalEmphasis: data.enfasisMusical || undefined,
+            approach: data.enfoque || undefined,
+            mltMethod: data.mltEnfoque || undefined,
           });
         }
         setShowStepModal(false);
-        resetStepForm();
+        setEditingStep(null);
         refetch();
       } catch {
         /* toast handled in hook */
       }
     },
-    [
-      selectedPlanId,
-      momento,
-      objetivoPaso,
-      duracion,
-      focoPaso,
-      recursosMusicales,
-      enfasisMusical,
-      enfoque,
-      mltEnfoque,
-      editingStep,
-      crearPaso,
-      actualizarPaso,
-      resetStepForm,
-      refetch,
-    ],
+    [selectedPlanId, editingStep, crearPaso, actualizarPaso, refetch],
   );
 
   const handleDeleteConfirm = useCallback(async () => {
@@ -331,46 +272,26 @@ export const PlanesPage = () => {
       )}
 
       <InterventionPlanForm
+        key={`plan-${showCreateModal}`}
         isOpen={showCreateModal}
         onClose={() => {
           setShowCreateModal(false);
-          resetForm();
         }}
         onSubmit={handleCreatePlan}
-        patientId={patientId}
-        setPatientId={setPatientId}
-        objective={objective}
-        setObjective={setObjective}
-        startDate={startDate}
-        setStartDate={setStartDate}
         patientOptions={patientOptions}
         onSearchPatient={onSearchPatient}
       />
 
       <StepFormModal
+        key={`paso-${showStepModal}-${editingStep?.id ?? "new"}`}
         isOpen={showStepModal}
         onClose={() => {
           setShowStepModal(false);
-          resetStepForm();
+          setEditingStep(null);
         }}
         onSubmit={handleCreateStep}
         editingStepId={editingStep?.id ?? null}
-        momento={momento}
-        setMomento={setMomento}
-        duracion={duracion}
-        setDuracion={setDuracion}
-        objetivoPaso={objetivoPaso}
-        setObjetivoPaso={setObjetivoPaso}
-        focoPaso={focoPaso}
-        setFocoPaso={setFocoPaso}
-        recursosMusicales={recursosMusicales}
-        setRecursosMusicales={setRecursosMusicales}
-        enfasisMusical={enfasisMusical}
-        setEnfasisMusical={setEnfasisMusical}
-        enfoque={enfoque}
-        setEnfoque={setEnfoque}
-        mltEnfoque={mltEnfoque}
-        setMltEnfoque={setMltEnfoque}
+        initialData={editingStep}
       />
 
       <ConfirmModal

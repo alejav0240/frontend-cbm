@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import Modal from "@/shared/ui/components/Modal";
 import { CycleForm } from "./CycleForm";
 import { useCreateCycle } from "@/entities/sesion";
+import type { DatosFormularioCiclo } from "@/entities/sesion";
 import { usePacientes } from "@/entities/paciente";
 import { useUsuarios } from "@/entities/usuario";
 import { toast } from "sonner";
@@ -25,7 +26,11 @@ export const CrearCicloModal = ({
       onClose={onClose}
       title="Crear Nuevo Ciclo Terapéutico"
     >
-      <ContenidoFormulario onClose={onClose} onCicloCreado={onCicloCreado} />
+      <ContenidoFormulario
+        key={String(isOpen)}
+        onClose={onClose}
+        onCicloCreado={onCicloCreado}
+      />
     </Modal>
   );
 };
@@ -38,11 +43,6 @@ const ContenidoFormulario = ({
   onCicloCreado: () => void;
 }) => {
   const { createCycle } = useCreateCycle();
-
-  const [patientName, setPatientName] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [numSessions, setNumSessions] = useState("4");
-  const [therapist, setTherapist] = useState("");
 
   const { pacientes } = usePacientes({
     search: "",
@@ -73,29 +73,20 @@ const ContenidoFormulario = ({
     [terapeutas],
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!patientName || !therapist || !startDate) {
-      toast.error("Completa todos los campos obligatorios");
-      return;
-    }
+  const handleSubmit = async (data: DatosFormularioCiclo) => {
     try {
-      const { data } = await createCycle(
-        patientName,
-        therapist,
-        startDate,
-        parseInt(numSessions, 10),
+      const { data: result } = await createCycle(
+        data.patientName,
+        data.therapist,
+        data.startDate,
+        parseInt(data.numSessions, 10),
       );
-      if (data?.createCycle?.success) {
+      if (result?.createCycle?.success) {
         toast.success("Ciclo creado exitosamente");
         onClose();
-        setPatientName("");
-        setStartDate("");
-        setNumSessions("4");
-        setTherapist("");
         onCicloCreado();
       } else {
-        toast.error(data?.createCycle?.message || "Error al crear el ciclo");
+        toast.error(result?.createCycle?.message || "Error al crear el ciclo");
       }
     } catch {
       toast.error("Error al crear el ciclo");
@@ -104,14 +95,6 @@ const ContenidoFormulario = ({
 
   return (
     <CycleForm
-      patientName={patientName}
-      setPatientName={setPatientName}
-      startDate={startDate}
-      setStartDate={setStartDate}
-      numSessions={numSessions}
-      setNumSessions={setNumSessions}
-      therapist={therapist}
-      setTherapist={setTherapist}
       patientOptions={patientOptions}
       therapistOptions={therapistOptions}
       onSearchTherapist={undefined}

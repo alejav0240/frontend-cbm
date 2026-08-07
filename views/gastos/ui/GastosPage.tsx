@@ -21,22 +21,7 @@ import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { useUrlFiltros } from "@/shared/lib/hooks/useUrlFiltros";
 import { Pagination } from "@/shared/ui/Pagination";
 import { FilterBar } from "@/shared/ui/components/FilterBar";
-
-interface GastoFormData {
-  descripcion: string;
-  categoria: string;
-  monto: number;
-  fechaGasto: string;
-  estado: "PAID" | "PENDING";
-}
-
-const INITIAL_FORM_DATA: GastoFormData = {
-  descripcion: "",
-  categoria: "",
-  monto: 0,
-  fechaGasto: new Date().toISOString().split("T")[0],
-  estado: "PENDING",
-};
+import type { DatosFormularioGasto } from "@/entities/gasto";
 
 const PAGE_SIZE = 10;
 
@@ -67,8 +52,6 @@ export const GastosPage = () => {
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
   const [mostrarExportar, setMostrarExportar] = useState(false);
   const [gastoAEliminar, setGastoAEliminar] = useState<string | null>(null);
-  const [gastoFormData, setGastoFormData] =
-    useState<GastoFormData>(INITIAL_FORM_DATA);
 
   const { gastos, paginas, refetch } = useGastos({
     pagina: paginaActual,
@@ -109,16 +92,16 @@ export const GastosPage = () => {
     [gastos],
   );
 
-  const handleCrearGasto = async () => {
+  const handleCrearGasto = async (data: DatosFormularioGasto) => {
     try {
       await crearGasto({
-        description: gastoFormData.descripcion,
-        category: gastoFormData.categoria,
-        amount: gastoFormData.monto,
-        expenseDate: gastoFormData.fechaGasto,
+        description: data.descripcion,
+        category: data.categoria,
+        amount: data.monto,
+        expenseDate: data.fechaGasto,
       });
 
-      if (gastoFormData.estado === "PAID") {
+      if (data.estado === "PAID") {
         const result = await refetch();
         const creado = result.data?.expenses?.results?.[0];
         if (creado?.id) {
@@ -127,7 +110,6 @@ export const GastosPage = () => {
       }
 
       setMostrarFormulario(false);
-      setGastoFormData(INITIAL_FORM_DATA);
       await refetch();
     } catch {
       // toast ya manejado en el hook
@@ -252,21 +234,14 @@ export const GastosPage = () => {
 
       <Modal
         isOpen={mostrarFormulario}
-        onClose={() => {
-          setMostrarFormulario(false);
-          setGastoFormData(INITIAL_FORM_DATA);
-        }}
+        onClose={() => setMostrarFormulario(false)}
         title="Registrar Gasto"
       >
         <ExpenseForm
-          newExpense={gastoFormData}
-          setNewExpense={setGastoFormData}
+          key={`gasto-${mostrarFormulario}`}
           categories={categorias.length > 0 ? categorias : ["General"]}
           onSubmit={handleCrearGasto}
-          onCancel={() => {
-            setMostrarFormulario(false);
-            setGastoFormData(INITIAL_FORM_DATA);
-          }}
+          onCancel={() => setMostrarFormulario(false)}
         />
       </Modal>
 

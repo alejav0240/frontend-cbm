@@ -1,20 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { toast } from "sonner";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
-import { EscalaEvaluacion, NuevaEvaluacion } from "../tipos";
+import {
+  esquemaEvaluacion,
+  type DatosFormularioEvaluacion,
+} from "@/entities/escalas";
+import { EscalaEvaluacion } from "../tipos";
+
+export interface DatosEvaluacionEnviar {
+  patientId: string;
+  type: string;
+  date: string;
+  scaleId: string;
+  score: number;
+  subscaleScores: Record<string, number>;
+}
 
 interface EvaluationFormProps {
   patientOptions: { label: string; value: string }[];
   onSearchPatient: (term: string) => void;
   evaluationScales: EscalaEvaluacion[];
-  newEval: NuevaEvaluacion;
-  setNewEval: React.Dispatch<React.SetStateAction<NuevaEvaluacion>>;
-  selectedScaleId: number | null;
-  handleScaleChange: (scaleId: string) => void;
-  subscaleScores: Record<string, number>;
-  handleSubscaleScoreChange: (subId: string, score: number) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (data: DatosEvaluacionEnviar) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -23,65 +33,147 @@ export function EvaluationForm({
   patientOptions,
   onSearchPatient,
   evaluationScales,
-  newEval,
-  setNewEval,
-  selectedScaleId,
-  handleScaleChange,
-  subscaleScores,
-  handleSubscaleScoreChange,
   onSubmit,
   onCancel,
 }: EvaluationFormProps) {
-  const currentScale = evaluationScales.find(
-    (s) => s.id === String(selectedScaleId),
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<DatosFormularioEvaluacion>({
+    resolver: zodResolver(esquemaEvaluacion),
+    defaultValues: {
+      patientId: "",
+      type: "Inicial",
+      date: new Date().toISOString().split("T")[0],
+      scaleId: "",
+    },
+  });
+
+  const scaleId = watch("scaleId");
+  const currentScale = evaluationScales.find((s) => s.id === String(scaleId));
+  const isSubscale =
+    (currentScale?.tipoEscala ?? currentScale?.scaleType)?.toLowerCase() ===
+    "subscale";
+
+  const [subscaleScores, setSubscaleScores] = useState<Record<string, number>>(
+    {},
   );
+  const [score, setScore] = useState(0);
+
+  const handleScaleChange = (val: string) => {
+    setValue("scaleId", val, { shouldValidate: true });
+    setSubscaleScores({});
+    setScore(0);
+  };
+
+  const handleSubscaleScoreChange = (subId: string, value: number) => {
+    const updated = { ...subscaleScores, [subId]: value };
+    setSubscaleScores(updated);
+    setScore(Object.values(updated).reduce((a, b) => a + b, 0));
+  };
+
+  const handleFormSubmit = (data: DatosFormularioEvaluacion) => {
+    if (scaleId && !isSubscale) {
+      const hasSelectedValue = (currentScale?.valores ?? currentScale?.values)
+        ?.some((v) => (v.valor ?? v.value) === score);
+      if (!hasSelectedValue) {
+        toast.error("Selecciona un valor de la escala");
+        return;
+      }
+    }
+    onSubmit({
+      ...data,
+      score,
+      subscaleScores,
+    });
+  };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <SearchableSelect
-        label="Paciente"
-        options={patientOptions}
-        value={newEval.patientId}
-        onChange={(val) => setNewEval({ ...newEval, patientId: val })}
-        onSearch={onSearchPatient}
-        placeholder="Buscar paciente..."
-      />
-      <div className="grid grid-cols-2 gap-6">
-        <SearchableSelect
-          label="Etapa de Evaluación"
-          options={["Inicial", "Seguimiento", "Final"]}
-          value={newEval.type}
-          onChange={(val) => setNewEval({ ...newEval, type: val })}
+    <form
+      onSubmit={handleSubmit(handleFormSubmit)}
+      className="space-y-6"
+    >
+      <div className="space-y-2">
+        <Controller
+          name="patientId"
+          control={control}
+          render={({ field }) => (
+            <SearchableSelect
+              label="Paciente"
+              options={patientOptions}
+              value={field.value}
+              onChange={field.onChange}
+              onSearch={onSearchPatient}
+              placeholder="Buscar paciente..."
+            />
+          )}
         />
+        {errors.patientId && (
+          <p className="text-xs text-red-500">{errors.patientId.message}</p>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Controller
+            name="type"
+            control={control}
+            render={({ field }) => (
+              <SearchableSelect
+                label="Etapa de Evaluación"
+                options={["Inicial", "Seguimiento", "Final"]}
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
+          {errors.type && (
+            <p className="text-xs text-red-500">{errors.type.message}</p>
+          )}
+        </div>
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
             Fecha
           </label>
           <input
             type="date"
-            value={newEval.date}
-            onChange={(e) => setNewEval({ ...newEval, date: e.target.value })}
+            {...register("date")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
           />
+          {errors.date && (
+            <p className="text-xs text-red-500">{errors.date.message}</p>
+          )}
         </div>
       </div>
 
-      <SearchableSelect
-        label="Escala de Evaluación"
-        options={evaluationScales.map((scale) => ({
-          label: scale.nombre ?? scale.name ?? "",
-          value: String(scale.id),
-        }))}
-        value={selectedScaleId?.toString() || ""}
-        onChange={handleScaleChange}
-        placeholder="Seleccionar Escala..."
-      />
+      <div className="space-y-2">
+        <Controller
+          name="scaleId"
+          control={control}
+          render={({ field }) => (
+            <SearchableSelect
+              label="Escala de Evaluación"
+              options={evaluationScales.map((scale) => ({
+                label: scale.nombre ?? scale.name ?? "",
+                value: String(scale.id),
+              }))}
+              value={field.value}
+              onChange={handleScaleChange}
+              placeholder="Seleccionar Escala..."
+            />
+          )}
+        />
+        {errors.scaleId && (
+          <p className="text-xs text-red-500">{errors.scaleId.message}</p>
+        )}
+      </div>
 
-      {selectedScaleId && (
+      {scaleId && (
         <div className="p-6 bg-gray-50 dark:bg-white/2 rounded-3xl border border-gray-100 dark:border-white/5 space-y-4">
-          {(
-            currentScale?.tipoEscala ?? currentScale?.scaleType
-          )?.toLowerCase() === "subscale" ? (
+          {isSubscale ? (
             <>
               <p className="text-xs font-bold text-[#008080] uppercase tracking-widest mb-4">
                 Puntuación por Subescalas
@@ -136,13 +228,10 @@ export function EvaluationForm({
                       key={val.id}
                       type="button"
                       onClick={() =>
-                        setNewEval((prev) => ({
-                          ...prev,
-                          score: val.valor ?? val.value ?? 0,
-                        }))
+                        setScore(val.valor ?? val.value ?? 0)
                       }
                       className={`p-4 rounded-2xl border transition-all text-center ${
-                        newEval.score === (val.valor ?? val.value)
+                        score === (val.valor ?? val.value)
                           ? "bg-[#008080] text-white border-[#008080] shadow-md"
                           : "bg-white dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-600 dark:text-gray-400 hover:border-[#008080]"
                       }`}
@@ -164,7 +253,7 @@ export function EvaluationForm({
               Puntaje Total:
             </span>
             <span className="text-xl font-bold text-[#008080]">
-              {newEval.score}
+              {score}
             </span>
           </div>
         </div>
