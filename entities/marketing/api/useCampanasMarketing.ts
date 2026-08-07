@@ -26,12 +26,16 @@ export const useCampanasMarketing = (params: UseCampanasMarketingParams = {}) =>
     });
 
   const campanas = useMemo(() => {
-    return ((data?.marketingCampaigns?.results || []).filter(Boolean) as any[]).map(
-      (c) => ({
-        ...c,
-        conteoLeads: (c.leads || []).length,
-      }),
-    ) as CampanaMarketing[];
+    const results = (data?.marketingCampaigns?.results ?? []).filter(
+      (c): c is NonNullable<typeof c> => c !== null,
+    );
+    return results.map((c) => ({
+      ...c,
+      presupuesto: Number(c.presupuesto) || 0,
+      gastado: Number(c.gastado) || 0,
+      presupuestoRestante: c.presupuestoRestante ?? 0,
+      conteoLeads: (c.leads ?? []).length,
+    })) as CampanaMarketing[];
   }, [data]);
 
   return {

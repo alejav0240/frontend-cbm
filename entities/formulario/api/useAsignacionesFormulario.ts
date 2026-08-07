@@ -13,8 +13,16 @@ export interface AsignacionNormalizada {
   assignedAt: string;
   status: "Completado" | "Activo";
   patientName: string;
-  originalData: any;
+  originalData: AsignacionRaw;
 }
+
+type AsignacionRaw = NonNullable<
+  NonNullable<
+    NonNullable<ObtenerAsignacionesFormularioQuery["formAssignments"]>["results"]
+  >[number]
+>;
+
+type RespuestaRaw = NonNullable<AsignacionRaw>["responses"];
 
 export interface RespuestaFormNormalizada {
   id: string;
@@ -24,7 +32,7 @@ export interface RespuestaFormNormalizada {
   patientName: string | undefined;
   submittedAt: string;
   status: "Revisado";
-  answers: any[];
+  answers: RespuestaRaw;
 }
 
 export interface AsignacionesFiltros {

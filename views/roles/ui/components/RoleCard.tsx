@@ -5,16 +5,18 @@ import { motion } from "motion/react";
 import { Shield, Trash2, Users, Edit3 } from "lucide-react";
 import { countPermissionModules } from "@/shared/data/permissions";
 
+export interface RoleData {
+  id: number;
+  name: string;
+  users: number;
+  permissions: string[];
+}
+
 interface RoleCardProps {
-  role: {
-    id: number;
-    name: string;
-    users: number;
-    permissions: string[];
-  };
+  role: RoleData;
   idx: number;
   onDelete: (id: number) => void;
-  onEditPermissions: (role: any) => void;
+  onEditPermissions: (role: RoleData) => void;
 }
 
 export function RoleCard({

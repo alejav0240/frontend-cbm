@@ -21,6 +21,7 @@ import {
 import { generarSesionesExcel } from "@/entities/sesion/lib/exportar-excel";
 import { useSesionActivaStore } from "@/entities/sesion";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
+import { useUrlFiltros } from "@/shared/lib/hooks/useUrlFiltros";
 import { SessionsHeader, type ModoVista } from "./components/SessionsHeader";
 import { SessionsStats } from "./components/SessionsStats";
 import { SkeletonSesiones } from "./components/SkeletonSesiones";
@@ -55,24 +56,57 @@ import {
 export const SesionesPage = () => {
   const router = useRouter();
 
+  const { filtros: urlFiltros, setFiltros } = useUrlFiltros([
+    "page",
+    "q",
+    "estado",
+    "estadoPago",
+    "tipo",
+    "terapeuta",
+    "periodo",
+    "desde",
+    "hasta",
+  ] as const);
+
   const [modoVista, setModoVista] = useState<ModoVista>("lista");
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("all");
-  const [filtroTipo, setFiltroTipo] = useState("all");
-  const [filtroTerapeuta, setFiltroTerapeuta] = useState("");
+  const paginaActual = Number(urlFiltros.page || "1");
+  const [busqueda, setBusqueda] = useState(urlFiltros.q);
+  const filtroEstado = urlFiltros.estado || "all";
+  const filtroEstadoPago = urlFiltros.estadoPago || "all";
+  const filtroTipo = urlFiltros.tipo || "all";
+  const filtroTerapeuta = urlFiltros.terapeuta || "";
+  const filtroPeriodo = urlFiltros.periodo || "all";
+  const fechaDesde = urlFiltros.desde || "";
+  const fechaHasta = urlFiltros.hasta || "";
 
   const busquedaDebounced = useDebounce(busqueda, 400);
 
-  const filtros = useMemo(
+  if (busqueda !== urlFiltros.q) {
+    setBusqueda(urlFiltros.q);
+  }
+
+  const filtrosConsulta = useMemo(
     () => ({
       page: paginaActual,
       pageSize: 10,
       estadoSesion: filtroEstado === "all" ? "" : filtroEstado,
+      estadoPago: filtroEstadoPago === "all" ? "" : filtroEstadoPago,
       tipoSesion: filtroTipo === "all" ? "" : filtroTipo,
+      terapeutaId: filtroTerapeuta || "",
+      fechaDesde: fechaDesde || "",
+      fechaHasta: fechaHasta || "",
       busqueda: busquedaDebounced || "",
     }),
-    [paginaActual, filtroEstado, filtroTipo, busquedaDebounced],
+    [
+      paginaActual,
+      filtroEstado,
+      filtroEstadoPago,
+      filtroTipo,
+      filtroTerapeuta,
+      fechaDesde,
+      fechaHasta,
+      busquedaDebounced,
+    ],
   );
 
   const {
@@ -81,7 +115,7 @@ export const SesionesPage = () => {
     totalPages: totalPaginasSesiones,
     cargando,
     refetch: refetchSesiones,
-  } = useSesiones(filtros);
+  } = useSesiones(filtrosConsulta);
 
   const {
     ciclos,
@@ -93,7 +127,6 @@ export const SesionesPage = () => {
   } = useCiclosPacientes({ page: paginaActual, pageSize: 10 });
 
   const terapeutas = useBuscarTerapeutas();
-  const terapeutasDisponibles = terapeutas.options.map((t) => t.label);
 
   const stats = useSesionesStats();
 
@@ -112,7 +145,7 @@ export const SesionesPage = () => {
   const { actualizarSesion } = useActualizarSesion();
   const { setSesion: setSesionActiva } = useSesionActivaStore();
 
-  const { crearSesion, creando: creandoSesion } = useCrearSesionAgenda();
+  const { crearSesion } = useCrearSesionAgenda();
 
   const refetch = useCallback(() => {
     refetchSesiones();
@@ -321,8 +354,8 @@ export const SesionesPage = () => {
 
   const handleCambioModo = useCallback((modo: ModoVista) => {
     setModoVista(modo);
-    setPaginaActual(1);
-  }, []);
+    setFiltros({ page: "1" });
+  }, [setFiltros]);
 
   const handleCrearSesion = useCallback(
     async (data: DatosCita) => {
@@ -360,23 +393,25 @@ export const SesionesPage = () => {
         <>
           <FiltrosSesiones
             busqueda={busqueda}
-            onBusquedaChange={setBusqueda}
+            onBusquedaChange={(v) => {
+              setBusqueda(v);
+              setFiltros({ q: v, page: "1" });
+            }}
             filtroEstado={filtroEstado}
-            onEstadoChange={(v) => {
-              setFiltroEstado(v);
-              setPaginaActual(1);
-            }}
+            onEstadoChange={(v) => setFiltros({ estado: v, page: "1" })}
+            filtroEstadoPago={filtroEstadoPago}
+            onEstadoPagoChange={(v) => setFiltros({ estadoPago: v, page: "1" })}
             filtroTipo={filtroTipo}
-            onTipoChange={(v) => {
-              setFiltroTipo(v);
-              setPaginaActual(1);
-            }}
+            onTipoChange={(v) => setFiltros({ tipo: v, page: "1" })}
             filtroTerapeuta={filtroTerapeuta}
-            onTerapeutaChange={(v) => {
-              setFiltroTerapeuta(v);
-              setPaginaActual(1);
-            }}
-            terapeutasDisponibles={terapeutasDisponibles}
+            onTerapeutaChange={(v) => setFiltros({ terapeuta: v, page: "1" })}
+            terapeutaOpciones={terapeutas.options}
+            filtroPeriodo={filtroPeriodo}
+            onPeriodoChange={(v) => setFiltros({ periodo: v, page: "1" })}
+            fechaDesde={fechaDesde}
+            fechaHasta={fechaHasta}
+            onFechaDesdeChange={(v) => setFiltros({ desde: v, page: "1" })}
+            onFechaHastaChange={(v) => setFiltros({ hasta: v, page: "1" })}
           />
 
           {cargando ? (
@@ -387,7 +422,7 @@ export const SesionesPage = () => {
               totalRegistros={totalSesiones}
               paginaActual={paginaActual}
               totalPaginas={totalPaginasSesiones}
-              onCambioPagina={setPaginaActual}
+              onCambioPagina={(p) => setFiltros({ page: String(p) })}
               onVerDetalles={verDetalles}
               onExportarSesion={exportarSesionIndividual}
               onIniciarSesion={iniciarSesion}
@@ -412,7 +447,7 @@ export const SesionesPage = () => {
           total={totalCiclos}
           totalPaginas={totalPaginasCiclos}
           paginaActual={paginaCiclos}
-          onCambioPagina={setPaginaActual}
+          onCambioPagina={(p) => setFiltros({ page: String(p) })}
           onNuevaSesion={() => setMostrarFormulario(true)}
         />
       )}
@@ -544,7 +579,7 @@ function SkeletonCicloCard({ delay }: { delay: number }) {
 function VistaCiclos({
   ciclos,
   cargando,
-  total,
+  total: _total,
   totalPaginas,
   paginaActual,
   onCambioPagina,

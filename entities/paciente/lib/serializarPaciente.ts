@@ -90,7 +90,7 @@ export const serializarDetallesPaciente = (
           };
         }
       }
-    } catch (e) {
+    } catch (_e) {
       // Ignorar error si no es un JSON válido
     }
   }
@@ -141,7 +141,8 @@ export const serializarDetallesPaciente = (
     tutorPhone: patient.tutor?.celular || "No registrado",
     contactEmail: undefined,
     tutorRaw: patient.tutor,
-    clinicalNotesRaw: patient.clinicalNotes as any,
+    clinicalNotesRaw:
+      patient.clinicalNotes as unknown as PacienteDetalleSerializado["clinicalNotesRaw"],
     objetivosGenerales: getNoteContent("GENERAL_OBJECTIVE"),
     fisico: getNoteContent("PHYSICAL_AREA"),
     emocional: getNoteContent("EMOTIONAL_AREA"),

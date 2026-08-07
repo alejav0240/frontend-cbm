@@ -15,19 +15,32 @@ import { Download } from "lucide-react";
 import { Pagination } from "@/shared/ui/Pagination";
 import { toast } from "sonner";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
+import { useUrlFiltros } from "@/shared/lib/hooks/useUrlFiltros";
+import { useRoles } from "@/entities/rol";
+import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 
 type TabType = "PERSONAL" | "TUTORES";
 
+const CLAVES_FILTRO = ["page", "q", "rol", "tab"] as const;
+
 export const UsuariosPage = () => {
-  const [activeTab, setActiveTab] = useState<TabType>("PERSONAL");
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [busqueda, setBusqueda] = useState("");
+  const { filtros, setFiltros } = useUrlFiltros(CLAVES_FILTRO);
+  const activeTab: TabType =
+    filtros.tab === "TUTORES" ? "TUTORES" : "PERSONAL";
+  const paginaActual = Number(filtros.page || "1");
+  const [busqueda, setBusqueda] = useState(filtros.q);
+  const rolSeleccionado = filtros.rol || "";
   const busquedaDebounced = useDebounce(busqueda, 500);
 
-  const nombreRol = activeTab === "TUTORES" ? "TUTOR" : undefined;
-  const excluirRol = activeTab === "PERSONAL" ? "TUTOR" : undefined;
+  if (busqueda !== filtros.q) {
+    setBusqueda(filtros.q);
+  }
+  const { roles } = useRoles({ pageSize: 50 });
 
-  const { usuarios, paginas, refetch } = useUsuarios({
+  const nombreRol = rolSeleccionado || (activeTab === "TUTORES" ? "TUTOR" : undefined);
+  const excluirRol = rolSeleccionado ? undefined : activeTab === "PERSONAL" ? "TUTOR" : undefined;
+
+  const { usuarios, paginas } = useUsuarios({
     pagina: paginaActual,
     pageSize: 10,
     busqueda: busquedaDebounced || undefined,
@@ -180,20 +193,30 @@ export const UsuariosPage = () => {
       <UsersHeader
         onCreateClick={handleCrearClick}
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          setPaginaActual(1);
-        }}
+        setActiveTab={(tab) => setFiltros({ tab, page: "1" })}
       />
 
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <UsersFilters
-          searchTerm={busqueda}
-          onSearchChange={(val) => {
-            setBusqueda(val);
-            setPaginaActual(1);
-          }}
-        />
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <UsersFilters
+            searchTerm={busqueda}
+            onSearchChange={(val) => {
+              setBusqueda(val);
+              setFiltros({ q: val, page: "1" });
+            }}
+          />
+          <SearchableSelect
+            options={[
+              { label: "Todos los roles", value: "" },
+              ...roles.map((rol) => ({ label: rol.nombre, value: rol.nombre })),
+            ]}
+            value={rolSeleccionado}
+            onChange={(val) => setFiltros({ rol: val, page: "1" })}
+            placeholder="Filtrar por rol"
+            label="Rol"
+            className="sm:w-56"
+          />
+        </div>
         <button
           onClick={() => setMostrarExportar(true)}
           className="p-4 bg-white dark:bg-accent border border-gray-200 dark:border-white/5 rounded-2xl shadow-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/10 transition-all flex items-center gap-2 shrink-0"
@@ -212,7 +235,7 @@ export const UsuariosPage = () => {
       <Pagination
         currentPage={paginaActual}
         totalPages={paginas}
-        onPageChange={setPaginaActual}
+        onPageChange={(p) => setFiltros({ page: String(p) })}
       />
 
       <ModalesUsuario

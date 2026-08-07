@@ -47,21 +47,31 @@ export function ModalDetalleSesion({
 
   const { obtenerSesion, cargando, sesion } = useSesionDetalles();
 
-  useEffect(() => {
+  const [prevAbierto, setPrevAbierto] = useState(isOpen && !!sesionId);
+  if ((isOpen && !!sesionId) !== prevAbierto) {
+    setPrevAbierto(isOpen && !!sesionId);
     if (isOpen && sesionId) {
       setActiveTab("info");
       setEditandoNotas(false);
+    }
+  }
+
+  useEffect(() => {
+    if (isOpen && sesionId) {
       obtenerSesion({ variables: { id: sesionId } });
     }
   }, [isOpen, sesionId, obtenerSesion]);
 
-  useEffect(() => {
-    if (sesion?.notes) {
+  const notasSesion = sesion?.notes;
+  const [prevNotas, setPrevNotas] = useState(notasSesion);
+  if (notasSesion !== prevNotas) {
+    setPrevNotas(notasSesion);
+    if (notasSesion) {
       setNotasEditadas(
-        Array.isArray(sesion.notes) ? sesion.notes.join("\n") : sesion.notes,
+        Array.isArray(notasSesion) ? notasSesion.join("\n") : notasSesion,
       );
     }
-  }, [sesion?.notes]);
+  }
 
   const fechaFormateada = sesion?.sessionDate
     ? new Intl.DateTimeFormat("es-ES", {

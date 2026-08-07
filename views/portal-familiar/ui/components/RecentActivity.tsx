@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { Video, Mic, Play, Download } from 'lucide-react';
+import type { SesionPortal } from '@/views/portal-familiar/api/usePortalData';
 
 interface RecentActivityProps {
-  sessions: any[];
+  sessions: SesionPortal[];
 }
 
 export function RecentActivity({ sessions }: RecentActivityProps) {

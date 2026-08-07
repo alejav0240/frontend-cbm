@@ -2,6 +2,7 @@
 
 import { useMutation } from "@apollo/client/react";
 import { UPDATE_INTERVENTION_PLAN } from "./mutaciones";
+import { UpdateInterventionPlanMutation } from "@/shared/api/generated/graphql";
 import { toast } from "sonner";
 
 interface ActualizarPlanInput {
@@ -25,9 +26,11 @@ export function useActualizarPlan() {
         },
       });
       toast.success("Plan actualizado correctamente");
-      return (data as any)?.updateInterventionPlan?.plan;
-    } catch (err: any) {
-      toast.error(err?.message || "Error al actualizar el plan");
+      return (data as UpdateInterventionPlanMutation)?.updateInterventionPlan?.plan;
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al actualizar el plan",
+      );
       throw err;
     }
   };

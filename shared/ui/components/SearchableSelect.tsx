@@ -62,13 +62,17 @@ export function SearchableSelect<T extends SelectOption>({
   );
 
   // Keep last known label so the display doesn't flash empty while async options reload
-  const lastKnownLabel = React.useRef("");
-  if (selectedOption) lastKnownLabel.current = getLabel(selectedOption);
-  else if (!value) lastKnownLabel.current = "";
+  const [lastKnownLabel, setLastKnownLabel] = React.useState("");
+  if (selectedOption) {
+    const currentLabel = getLabel(selectedOption);
+    if (currentLabel !== lastKnownLabel) setLastKnownLabel(currentLabel);
+  } else if (!value && lastKnownLabel !== "") {
+    setLastKnownLabel("");
+  }
 
   const displayLabel = selectedOption
     ? getLabel(selectedOption)
-    : lastKnownLabel.current;
+    : lastKnownLabel;
 
   const filteredOptions = React.useMemo(
     () =>
@@ -96,6 +100,7 @@ export function SearchableSelect<T extends SelectOption>({
           role="combobox"
           aria-expanded={isOpen}
           aria-haspopup="listbox"
+          aria-controls="select-listbox"
           aria-label={label || placeholder}
           disabled={disabled}
           onClick={() => setIsOpen(!isOpen)}
@@ -173,7 +178,7 @@ export function SearchableSelect<T extends SelectOption>({
                     />
                   </div>
                 </div>
-                <div role="listbox" className="max-h-60 overflow-y-auto p-2 custom-scrollbar">
+                <div id="select-listbox" role="listbox" className="max-h-60 overflow-y-auto p-2 custom-scrollbar">
                   {isLoading ? (
                     <div className="px-4 py-10 text-center">
                       <div className="w-5 h-5 border-2 border-[#008080] border-t-transparent rounded-full animate-spin mx-auto mb-2" />

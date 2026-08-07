@@ -28,8 +28,10 @@ export function useActualizarSesion() {
         variables: { id, ...input },
       });
       toast.success("Sesión actualizada");
-    } catch (err: any) {
-      toast.error(err?.message || "Error al actualizar la sesión");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al actualizar la sesión",
+      );
       throw err;
     }
   };

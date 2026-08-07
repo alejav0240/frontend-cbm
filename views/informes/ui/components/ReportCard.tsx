@@ -5,24 +5,15 @@ import {
   FileText,
   User,
   Calendar,
-  ChevronRight,
   CheckCircle2,
   Clock,
+  ChevronRight,
 } from "lucide-react";
-
-interface ReportCardData {
-  id: string;
-  title: string;
-  patientName: string;
-  date: string;
-  status: string;
-  therapistName: string;
-  reportUrl: string;
-}
+import type { TherapyReport } from "@/entities/informes/model/tipos";
 
 interface ReportCardProps {
-  report: ReportCardData;
-  onClick: (report: ReportCardData) => void;
+  report: TherapyReport;
+  onClick: (report: TherapyReport) => void;
 }
 
 export function ReportCard({ report, onClick }: ReportCardProps) {

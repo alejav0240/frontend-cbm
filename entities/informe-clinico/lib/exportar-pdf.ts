@@ -10,7 +10,9 @@ export async function generarInformeClinicoPDF(datos: InformeClinicoDTO[]) {
   const informe = datos[0];
   if (!informe) throw new Error("No hay datos para exportar");
 
-  const doc = new jsPDF();
+  const doc = new jsPDF() as InstanceType<typeof jsPDF> & {
+    lastAutoTable: { finalY: number };
+  };
   const p = informe.paciente;
   const pagX = 14;
   let y = 22;
@@ -129,7 +131,7 @@ export async function generarInformeClinicoPDF(datos: InformeClinicoDTO[]) {
       headStyles: { fillColor: [0, 128, 128] },
       margin: { left: pagX, right: 14 },
     });
-    y = (doc as any).lastAutoTable.finalY + 10;
+    y = doc.lastAutoTable.finalY + 10;
 
     // Notes for each session
     for (const s of informe.sesiones) {
@@ -172,7 +174,7 @@ export async function generarInformeClinicoPDF(datos: InformeClinicoDTO[]) {
           headStyles: { fillColor: [0, 128, 128] },
           margin: { left: pagX, right: 14 },
         });
-        y = (doc as any).lastAutoTable.finalY + 8;
+        y = doc.lastAutoTable.finalY + 8;
 
         // Chart
         if (escala.puntuaciones.length > 1) {

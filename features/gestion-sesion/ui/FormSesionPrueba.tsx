@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Modal from "@/shared/ui/components/Modal";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 
@@ -50,13 +50,13 @@ export function FormSesionPrueba({
 
   // SOLUCIÓN AL SETSTATE-IN-EFFECT:
   // Solo reseteamos cuando 'isOpen' pasa a true de forma controlada y aislada
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setFormValues(obtenerValoresIniciales(therapists[0]?.value || ""));
     }
-    // Dejamos intencionalmente fuera a 'therapists' para evitar sobreescribir
-    // la selección del usuario si el array cambia su referencia asíncronamente.
-  }, [isOpen]);
+  }
 
   // Manejador genérico para inputs tradicionales (Texto, Tel, Date, Time)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

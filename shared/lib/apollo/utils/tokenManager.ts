@@ -1,5 +1,6 @@
 import { isBrowser } from "./isBrowser";
 import { useAuthStore } from "@/shared/model/useAuthStore";
+import type { ApolloError } from "@/shared/lib/apollo/types";
 
 /**
  * Gestor centralizado de tokens de autenticación
@@ -12,7 +13,7 @@ export const TokenManager = {
   handleRefreshSuccess: (payload?: {
     payload?: string;
     refreshExpiresIn?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   }): void => {
     if (payload?.payload) {
       console.debug("[TokenManager] Token refreshed successfully");
@@ -25,7 +26,7 @@ export const TokenManager = {
    * Maneja el fallo del refresh token
    * Limpia estado y redirige al login
    */
-  handleRefreshFailure: (error?: any): void => {
+  handleRefreshFailure: (error?: ApolloError): void => {
     console.error("[TokenManager] Refresh token failed", error);
 
     // Limpiar estado de autenticación

@@ -12,21 +12,21 @@ import { useMutation } from "@apollo/client/react";
 import MusicalNotes from "@/shared/ui/MusicalNotes";
 import { useTheme } from "next-themes";
 import { INICIO_SESION_MUTACION } from "@/shared/api/auth";
+import type { TokenAuthMutation } from "@/shared/api/generated/graphql";
 import { esquemaLogin, DatosFormularioLogin } from "@/shared/lib/esquemas-auth";
-import { useAuthStore } from "@/shared/model/useAuthStore";
 
 export default function Login() {
   const { theme, setTheme } = useTheme();
   const isDarkMode = theme === "dark";
   const router = useRouter();
-  const { setUsuario } = useAuthStore();
   const [isNavigating, setIsNavigating] = useState(false);
 
   const [login, { loading }] = useMutation(INICIO_SESION_MUTACION, {
-    onCompleted: (data: any) => {
-      if (data.tokenAuth?.token) {
-        localStorage.setItem("token", data.tokenAuth.token);
-        localStorage.setItem("refreshToken", data.tokenAuth.refreshToken);
+    onCompleted: (data: unknown) => {
+      const resultado = data as TokenAuthMutation;
+      if (resultado.tokenAuth?.token) {
+        localStorage.setItem("token", resultado.tokenAuth.token);
+        localStorage.setItem("refreshToken", resultado.tokenAuth.refreshToken);
         toast.success("¡Bienvenido de nuevo!");
         setIsNavigating(true);
         router.push("/dashboard");

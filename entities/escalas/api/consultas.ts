@@ -1,8 +1,18 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_ESCALAS = gql`
-  query ObtenerEscalas {
-    scales {
+  query ObtenerEscalas(
+    $scaleType: String
+    $search: String
+    $page: Int
+    $pageSize: Int
+  ) {
+    scales(
+      scaleType: $scaleType
+      search: $search
+      page: $page
+      pageSize: $pageSize
+    ) {
       results {
         id
         nombre: name
@@ -19,6 +29,9 @@ export const OBTENER_ESCALAS = gql`
           valor: value
         }
       }
+      totalCount
+      totalPages
+      currentPage
     }
   }
 `;

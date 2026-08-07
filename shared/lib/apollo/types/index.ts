@@ -7,9 +7,9 @@ export interface GraphQLErrorExtension {
   code?: string;
   exception?: {
     status?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface GraphQLError {
@@ -17,7 +17,7 @@ export interface GraphQLError {
   locations?: Array<{ line: number; column: number }>;
   path?: string[];
   extensions?: GraphQLErrorExtension;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface NetworkError {
@@ -25,16 +25,16 @@ export interface NetworkError {
   bodyText?: string;
   result?: {
     errors?: GraphQLError[];
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ApolloError {
   graphQLErrors?: readonly GraphQLError[];
   networkError?: NetworkError | null;
   message: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -77,8 +77,8 @@ export const isAuthError = (error?: ApolloError | null): boolean => {
       const body = JSON.parse(error.networkError.bodyText);
       if (body?.errors?.length) {
         return body.errors.some(
-          (err: any) =>
-            AUTH_ERRORS.includes(err.extensions?.code) ||
+          (err: { extensions?: { code?: string }; message?: string }) =>
+            AUTH_ERRORS.includes(err.extensions?.code as AuthErrorCode) ||
             AUTH_ERRORS.some((keyword) => err.message?.includes(keyword)),
         );
       }

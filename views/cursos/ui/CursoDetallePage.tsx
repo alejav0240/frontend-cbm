@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   useCurso,
@@ -253,7 +253,7 @@ export const CursoDetallePage = ({ id }: CursoDetallePageProps) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-white/5">
-                {curso.inscripciones.map((inscripcion, idx) => (
+                {curso.inscripciones.map((inscripcion) => (
                   <tr
                     key={inscripcion.id}
                     className="hover:bg-gray-50/80 dark:hover:bg-white/2 transition-colors"

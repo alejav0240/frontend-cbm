@@ -11,7 +11,6 @@ import {
   Check,
   Edit3,
   RefreshCw,
-  ArrowRight,
 } from "lucide-react";
 import { SesionAgenda } from "@/entities/sesion/model/tipos-agenda";
 import { useActualizarEstadoSesion } from "@/entities/sesion/api/useActualizarEstadoSesion";

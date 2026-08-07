@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { Calendar, Clock } from 'lucide-react';
+import type { ProximaSesion } from '@/views/portal-familiar/api/usePortalData';
 
 interface NextSessionCardProps {
-  session?: any;
+  session?: ProximaSesion | null;
 }
 
 export function NextSessionCard({ session }: NextSessionCardProps) {

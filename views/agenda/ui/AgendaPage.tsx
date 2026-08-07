@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo, useState, useCallback } from "react";
-import { Calendar as CalendarIcon, Clock, Plus } from "lucide-react";
 import { AgendaHeader } from "@/views/agenda/ui/components/AgendaHeader";
 import { AgendaSidebar } from "@/views/agenda/ui/components/AgendaSider";
 import { AnimatePresence } from "motion/react";
@@ -13,6 +12,7 @@ import {
   useSensors,
   PointerSensor,
   KeyboardSensor,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useAgendaSessions } from "@/entities/sesion/api/useAgendaSessions";
@@ -51,14 +51,14 @@ export const AgendaPage = () => {
   const [selectedSession, setSelectedSession] = useState<SesionAgenda | null>(
     null,
   );
-  const [activeId, setActiveId] = useState<number | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [pendingSlotHour, setPendingSlotHour] = useState<number | undefined>(
     undefined,
   );
 
   const hours = Array.from({ length: 13 }, (_, i) => i + 8);
 
-  const { sesiones, cargando, refetch } = useAgendaSessions({
+  const { sesiones, refetch } = useAgendaSessions({
     month: selectedDate,
   });
 
@@ -101,7 +101,16 @@ export const AgendaPage = () => {
       const date = new Date(selectedDate);
       date.setHours(hour, 0, 0, 0);
       setPendingSlotHour(hour);
-      setSelectedSession({ sessionDate: date.toISOString() } as any);
+      setSelectedSession({
+        id: "",
+        patientName: "",
+        time: "",
+        status: "",
+        therapist: "",
+        duration: "",
+        isTest: false,
+        date: date.toISOString().split("T")[0],
+      });
       setFormMode("create");
       setEditingSession(null);
       setShowForm(true);
@@ -241,8 +250,8 @@ export const AgendaPage = () => {
     [crearSesion, refetch],
   );
 
-  const handleDragStart = (event: any) => {
-    setActiveId(event.active.id);
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
   };
 
   const handleDragEnd = () => {

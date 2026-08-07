@@ -7,6 +7,8 @@ export const OBTENER_SESIONES = gql`
     $sessionType: String
     $sessionStatus: String
     $therapistId: ID
+    $dateFrom: Date
+    $dateTo: Date
     $page: Int
     $pageSize: Int
     $byCycles: Boolean
@@ -18,6 +20,8 @@ export const OBTENER_SESIONES = gql`
       sessionStatus: $sessionStatus
       therapistId: $therapistId
       sessionType: $sessionType
+      dateFrom: $dateFrom
+      dateTo: $dateTo
       byCycles: $byCycles
       page: $page
       pageSize: $pageSize
@@ -74,6 +78,8 @@ export const OBTENER_CICLOS = gql`
     $sessionStatus: String
     $sessionType: String
     $therapistId: ID
+    $dateFrom: Date
+    $dateTo: Date
     $page: Int
     $pageSize: Int
   ) {
@@ -86,6 +92,8 @@ export const OBTENER_CICLOS = gql`
       sessionType: $sessionType
       sessionStatus: $sessionStatus
       therapistId: $therapistId
+      dateFrom: $dateFrom
+      dateTo: $dateTo
     ) {
       currentPage
       totalCount

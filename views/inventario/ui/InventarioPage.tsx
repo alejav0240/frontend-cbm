@@ -22,12 +22,39 @@ import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
 import { Pagination } from "@/shared/ui/Pagination";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
+import { useUrlFiltros } from "@/shared/lib/hooks/useUrlFiltros";
+import { FilterBar } from "@/shared/ui/components/FilterBar";
+
+const ESTADO_OPCIONES = [
+  { label: "Todos los estados", value: "all" },
+  { label: "Disponible", value: "available", color: "bg-green-500" },
+  { label: "En uso", value: "in_use", color: "bg-blue-500" },
+  { label: "En mantenimiento", value: "maintenance", color: "bg-red-500" },
+];
+
+const TIPO_OPCIONES = [
+  { label: "Todos los tipos", value: "all" },
+  { label: "Instrumento", value: "instrument", color: "bg-purple-500" },
+  { label: "Equipo", value: "equipment", color: "bg-indigo-500" },
+  { label: "Material", value: "material", color: "bg-cyan-500" },
+];
 
 export const InventarioPage = () => {
-  const [terminoBusqueda, setTerminoBusqueda] = useState("");
+  const { filtros, setFiltros } = useUrlFiltros([
+    "page",
+    "q",
+    "tipo",
+    "estado",
+  ] as const);
+  const paginaActual = Number(filtros.page || "1");
+  const filtroTipo = filtros.tipo || "all";
+  const filtroEstado = filtros.estado || "all";
+  const [terminoBusqueda, setTerminoBusqueda] = useState(filtros.q);
   const busquedaDebounced = useDebounce(terminoBusqueda, 500);
 
-  const [paginaActual, setPaginaActual] = useState(1);
+  if (terminoBusqueda !== filtros.q) {
+    setTerminoBusqueda(filtros.q);
+  }
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
   const [mostrarExportar, setMostrarExportar] = useState(false);
@@ -40,6 +67,8 @@ export const InventarioPage = () => {
     pagina: paginaActual,
     pageSize: 10,
     busqueda: busquedaDebounced || undefined,
+    tipo: filtroTipo === "all" ? undefined : filtroTipo,
+    estado: filtroEstado === "all" ? undefined : filtroEstado,
   });
 
   const { crearInventario } = useCrearInventario();
@@ -140,12 +169,32 @@ export const InventarioPage = () => {
 
       <InventoryStats inventory={articulos} />
 
+      <FilterBar
+        filtros={[
+          {
+            clave: "tipo",
+            etiqueta: "Tipo",
+            opciones: TIPO_OPCIONES,
+            valor: filtroTipo,
+            alCambiar: (v) => setFiltros({ tipo: v, page: "1" }),
+          },
+          {
+            clave: "estado",
+            etiqueta: "Estado",
+            opciones: ESTADO_OPCIONES,
+            valor: filtroEstado,
+            alCambiar: (v) => setFiltros({ estado: v, page: "1" }),
+          },
+        ]}
+        onLimpiar={() => setFiltros({ tipo: "", estado: "", page: "1" })}
+      />
+
       <InventoryTable
         inventory={articulos}
         searchTerm={terminoBusqueda}
         setSearchTerm={(term) => {
           setTerminoBusqueda(term);
-          setPaginaActual(1);
+          setFiltros({ q: term, page: "1" });
         }}
         onEdit={handleAbrirEditar}
         onDelete={handleSolicitarEliminar}
@@ -154,7 +203,7 @@ export const InventarioPage = () => {
       <Pagination
         currentPage={paginaActual}
         totalPages={paginas}
-        onPageChange={setPaginaActual}
+        onPageChange={(p) => setFiltros({ page: String(p) })}
       />
 
       <InventoryFormModal

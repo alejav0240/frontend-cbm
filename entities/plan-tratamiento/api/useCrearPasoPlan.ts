@@ -2,6 +2,7 @@
 
 import { useMutation } from "@apollo/client/react";
 import { CREATE_STEP_PLAN } from "./mutaciones";
+import { CreateStepPlanMutation } from "@/shared/api/generated/graphql";
 import { toast } from "sonner";
 
 interface CrearPasoInput {
@@ -35,9 +36,11 @@ export function useCrearPasoPlan() {
         },
       });
       toast.success("Paso añadido correctamente");
-      return (data as any)?.createStepPlan?.step;
-    } catch (err: any) {
-      toast.error(err?.message || "Error al añadir el paso");
+      return (data as CreateStepPlanMutation)?.createStepPlan?.step;
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al añadir el paso",
+      );
       throw err;
     }
   };

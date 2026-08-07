@@ -10,12 +10,14 @@ import {
   useActualizarPaciente,
   useEliminarPaciente,
   PuntoCrecimiento,
+  PacienteNormalizado,
 } from "@/entities/paciente";
 import { EstadisticasPacientes } from "@/widgets/estadisticas-pacientes";
 import { TablaPacientes } from "@/widgets/tabla-pacientes";
 import { FiltrarPacientes } from "@/features/filtrar-pacientes";
 import { ModalesPaciente } from "@/features/gestion-paciente";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
+import { useUrlFiltros } from "@/shared/lib/hooks/useUrlFiltros";
 import { useRouter } from "next/navigation";
 import { Plus, Download } from "lucide-react";
 import { toast } from "sonner";
@@ -25,13 +27,22 @@ import { FormularioClinicoDataSchema } from "@/features/gestion-paciente/model/F
 
 export const PacientesPage = () => {
   const router = useRouter();
-  const [terminoBusqueda, setTerminoBusqueda] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("Todos");
-  const [paginaActual, setPaginaActual] = useState(1);
+  const { filtros, setFiltros } = useUrlFiltros([
+    "page",
+    "q",
+    "estado",
+  ] as const);
+  const paginaActual = Number(filtros.page || "1");
+  const filtroEstado = filtros.estado || "Todos";
+  const [terminoBusqueda, setTerminoBusqueda] = useState(filtros.q);
   const busquedaDebounced = useDebounce(terminoBusqueda, 500);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { pacientes, total, paginas, cargando, refetch } = usePacientes({
+  if (terminoBusqueda !== filtros.q) {
+    setTerminoBusqueda(filtros.q);
+  }
+
+  const { pacientes, total, paginas, refetch } = usePacientes({
     search: busquedaDebounced,
     page: paginaActual,
     status: filtroEstado,
@@ -41,8 +52,7 @@ export const PacientesPage = () => {
   const { setPaciente } = usePacienteSeleccionadoStore();
 
   const { addPatient, loading } = useCreatePaciente();
-  const { updateClinicalNotes, loading: updatingNotes } =
-    useActualizarNotasClinicas();
+  const { updateClinicalNotes } = useActualizarNotasClinicas();
   const { deletePatient } = useEliminarPaciente();
 
   // Estados de modales
@@ -54,7 +64,8 @@ export const PacientesPage = () => {
   const [mostrarExportar, setMostrarExportar] = useState(false);
   const [mostrarFormularioClinico, setMostrarFormularioClinico] =
     useState(false);
-  const [pacienteSeleccionado, setPacienteSeleccionado] = useState<any>(null);
+  const [pacienteSeleccionado, setPacienteSeleccionado] =
+    useState<PacienteNormalizado | null>(null);
 
   const manejarVerPerfil = (id: string, nombre: string) => {
     setPaciente({ id, nombre });
@@ -116,8 +127,12 @@ export const PacientesPage = () => {
       // pero si currentPage ya era 1, el refetch() manual lo garantiza.
       await refetch();
       toast.success(`Paciente registrado correctamente`);
-    } catch (error: any) {
-      toast.error(error?.message || "Error al registrar el paciente");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Error al registrar el paciente",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -141,8 +156,12 @@ export const PacientesPage = () => {
       });
       toast.success("Notas clínicas actualizadas correctamente");
       await refetch();
-    } catch (error: any) {
-      toast.error(error?.message || "Error al actualizar notas clínicas");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Error al actualizar notas clínicas",
+      );
     }
   };
 
@@ -154,8 +173,12 @@ export const PacientesPage = () => {
       await deletePatient(pacienteAEliminar);
       toast.success("Paciente Eliminado correctamente");
       await refetch();
-    } catch (error: any) {
-      toast.error(error?.message || "Error al actualizar notas clínicas");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Error al actualizar notas clínicas",
+      );
     }
   };
 
@@ -202,9 +225,12 @@ export const PacientesPage = () => {
 
       <FiltrarPacientes
         terminoBusqueda={terminoBusqueda}
-        alCambiarBusqueda={setTerminoBusqueda}
+        alCambiarBusqueda={(v) => {
+          setTerminoBusqueda(v);
+          setFiltros({ q: v, page: "1" });
+        }}
         filtroEstado={filtroEstado}
-        alCambiarEstado={setFiltroEstado}
+        alCambiarEstado={(v) => setFiltros({ estado: v, page: "1" })}
       />
 
       <div className="bg-white dark:bg-[#111] rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
@@ -221,7 +247,7 @@ export const PacientesPage = () => {
           }}
           totalPaginas={paginas}
           paginaActual={paginaActual}
-          alCambiarPagina={setPaginaActual}
+          alCambiarPagina={(p) => setFiltros({ page: String(p) })}
         />
       </div>
 

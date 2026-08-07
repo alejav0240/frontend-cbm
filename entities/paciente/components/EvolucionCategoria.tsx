@@ -18,14 +18,9 @@ interface PatientAITrendChartProps {
   data: AreaChartData[];
 }
 
-// Definimos el tipo de las llaves válidas basadas en tu objeto real
-type SectionColorKey = keyof typeof SECTION_COLORS;
-
 export function EvolucionCategoria({ data }: PatientAITrendChartProps) {
   // Estado tipado correctamente para evitar records implícitos
-  const [lineasOcultas, setLineasOcultas] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [lineasOcultas] = useState<Record<string, boolean>>({});
 
   // 1. Extraer dinámicamente todas las categorías presentes en los datos
   const keysCategorias = useMemo(() => {
@@ -44,17 +39,6 @@ export function EvolucionCategoria({ data }: PatientAITrendChartProps) {
     // Mapeo seguro: tratamos SECTION_COLORS como un diccionario indexable por strings
     const colores: Record<string, string> = SECTION_COLORS;
     return colores[claveAlineada] || "#af52de";
-  };
-
-  // Solución al ESLint 'no-explicit-any': Tipamos usando una estructura genérica basada en Recharts
-  const alternarVisibilidadLinea = (e: { dataKey?: string | number }) => {
-    const { dataKey } = e;
-    if (!dataKey) return;
-
-    setLineasOcultas((prev) => ({
-      ...prev,
-      [dataKey]: !prev[dataKey],
-    }));
   };
 
   return (

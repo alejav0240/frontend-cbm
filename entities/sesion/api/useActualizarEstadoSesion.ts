@@ -18,8 +18,10 @@ export function useActualizarEstadoSesion() {
         variables: { id, sessionStatus },
       });
       toast.success("Estado de sesión actualizado");
-    } catch (err: any) {
-      toast.error(err?.message || "Error al actualizar estado");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al actualizar estado",
+      );
       throw err;
     }
   };

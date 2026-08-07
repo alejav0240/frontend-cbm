@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Download, Eye, Filter } from "lucide-react";
 import Modal from "@/shared/ui/components/Modal";
 
@@ -11,24 +11,33 @@ export interface FilterConfig {
   options?: { value: string; label: string }[];
 }
 
-interface PDFExportModalProps {
+export interface PDFDocument {
+  output: (type: string) => string;
+  save: (filename: string) => void;
+}
+
+interface DateRangeFilter {
+  start?: string;
+  end?: string;
+}
+
+type FilterValue = string | DateRangeFilter | undefined;
+
+interface PDFExportModalProps<T> {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  data: any[];
-  generatePDF: (filteredData: any[]) => any | Promise<any>;
-  generateExcel?: (
-    filteredData: any[],
-    fileName: string,
-  ) => void | Promise<void>;
-  generateWord?: (filteredData: any[]) => void | Promise<void>;
+  data: T[];
+  generatePDF: (filteredData: T[]) => PDFDocument | Promise<PDFDocument>;
+  generateExcel?: (filteredData: T[], fileName: string) => void | Promise<void>;
+  generateWord?: (filteredData: T[]) => void | Promise<void>;
   fileName: string;
   filtersConfig?: FilterConfig[];
 }
 
 const EMPTY_FILTERS: FilterConfig[] = [];
 
-export function PDFExportModal({
+export function PDFExportModal<T>({
   isOpen,
   onClose,
   title,
@@ -38,14 +47,21 @@ export function PDFExportModal({
   generateWord,
   fileName,
   filtersConfig = EMPTY_FILTERS,
-}: PDFExportModalProps) {
-  const [filters, setFilters] = useState<Record<string, any>>({});
+}: PDFExportModalProps<T>) {
+  const [filters, setFilters] = useState<Record<string, FilterValue>>({});
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+
+  const getStringFilter = (key: string): string =>
+    typeof filters[key] === "string" ? filters[key] : "";
+
+  const getRangeFilter = (key: string): DateRangeFilter | undefined =>
+    typeof filters[key] === "object" ? filters[key] : undefined;
 
   const filteredData = useMemo(() => {
     if (!data) return [];
     return data.filter((item) => {
+      const row = item as Record<string, unknown>;
       return Object.entries(filters).every(([key, value]) => {
         if (!value || value === "all") return true;
 
@@ -53,18 +69,19 @@ export function PDFExportModal({
         if (!config) return true;
 
         if (config.type === "select") {
-          return item[key] === value;
+          return row[key] === value;
         }
 
         if (config.type === "text") {
-          return item[key]
-            ?.toString()
+          return String(row[key] ?? "")
             .toLowerCase()
-            .includes(value.toLowerCase());
+            .includes(String(value).toLowerCase());
         }
 
-        if (config.type === "date-range") {
-          const itemDate = new Date(item[key]);
+        if (config.type === "date-range" && typeof value === "object") {
+          const raw = row[key];
+          const itemDate =
+            raw instanceof Date ? raw : new Date(String(raw ?? ""));
           if (value.start && itemDate < new Date(value.start)) return false;
           if (value.end && itemDate > new Date(value.end)) return false;
           return true;
@@ -75,29 +92,64 @@ export function PDFExportModal({
     });
   }, [data, filters, filtersConfig]);
 
-  const updatePreview = useCallback(async () => {
-    if (filteredData.length === 0) {
-      setPdfUrl(null);
-      return;
-    }
-    setIsPreviewLoading(true);
-    try {
-      const doc = await generatePDF(filteredData);
-      const url = doc.output("datauristring");
+  const filteredDataRef = useRef(filteredData);
+  const generatePDFRef = useRef(generatePDF);
 
-      setPdfUrl(url);
-    } catch (error) {
-      console.error("Error generating PDF preview:", error);
-    } finally {
-      setIsPreviewLoading(false);
+  // Mantener los refs sincronizados con los valores más recientes,
+  // fuera del render (dentro de un efecto).
+  useEffect(() => {
+    filteredDataRef.current = filteredData;
+    generatePDFRef.current = generatePDF;
+  });
+
+  const [previewKey, setPreviewKey] = useState(0);
+
+  // Resetear preview al cerrar y regenerar al abrir o cambiar filtros,
+  // ajustando el estado durante el render (sin llamar a setState en un efecto).
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (!isOpen) {
+      setPdfUrl(null);
+    } else {
+      setPreviewKey((k) => k + 1);
     }
-  }, [filteredData, generatePDF]);
+  }
+
+  const [prevFilters, setPrevFilters] = useState(filters);
+  if (filters !== prevFilters) {
+    setPrevFilters(filters);
+    if (isOpen) {
+      setPreviewKey((k) => k + 1);
+    }
+  }
 
   useEffect(() => {
-    if (isOpen) {
-      updatePreview();
-    }
-  }, [isOpen, updatePreview]);
+    if (!isOpen || previewKey === 0) return;
+    let cancelled = false;
+    const generate = async () => {
+      const currentData = filteredDataRef.current;
+      if (currentData.length === 0) {
+        setPdfUrl(null);
+        return;
+      }
+      setIsPreviewLoading(true);
+      try {
+        const doc = await generatePDFRef.current(currentData);
+        if (cancelled) return;
+        const url = doc.output("datauristring");
+        setPdfUrl(url);
+      } catch (error) {
+        if (!cancelled) console.error("Error generating PDF preview:", error);
+      } finally {
+        if (!cancelled) setIsPreviewLoading(false);
+      }
+    };
+    generate();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, previewKey]);
 
   const handleDownload = async () => {
     const doc = await generatePDF(filteredData);
@@ -125,7 +177,7 @@ export function PDFExportModal({
 
                 {config.type === "select" && (
                   <select
-                    value={filters[config.key] || "all"}
+                    value={getStringFilter(config.key) || "all"}
                     onChange={(e) =>
                       setFilters((prev) => ({
                         ...prev,
@@ -146,7 +198,7 @@ export function PDFExportModal({
                 {config.type === "text" && (
                   <input
                     type="text"
-                    value={filters[config.key] || ""}
+                    value={getStringFilter(config.key)}
                     onChange={(e) =>
                       setFilters((prev) => ({
                         ...prev,
@@ -162,12 +214,12 @@ export function PDFExportModal({
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="date"
-                      value={filters[config.key]?.start || ""}
+                      value={getRangeFilter(config.key)?.start || ""}
                       onChange={(e) =>
                         setFilters((prev) => ({
                           ...prev,
                           [config.key]: {
-                            ...prev[config.key],
+                            ...getRangeFilter(config.key),
                             start: e.target.value,
                           },
                         }))
@@ -176,12 +228,12 @@ export function PDFExportModal({
                     />
                     <input
                       type="date"
-                      value={filters[config.key]?.end || ""}
+                      value={getRangeFilter(config.key)?.end || ""}
                       onChange={(e) =>
                         setFilters((prev) => ({
                           ...prev,
                           [config.key]: {
-                            ...prev[config.key],
+                            ...getRangeFilter(config.key),
                             end: e.target.value,
                           },
                         }))

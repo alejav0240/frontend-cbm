@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import { Search, Filter, Download, Trash2, DollarSign } from "lucide-react";
+import { Search, Trash2, DollarSign } from "lucide-react";
 import { Gasto } from "@/entities/gasto";
 
 interface ExpensesTableProps {
@@ -35,14 +35,6 @@ export function ExpensesTable({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all text-sm"
           />
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="p-3 text-gray-400 hover:text-[#008080] hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all">
-            <Filter size={20} />
-          </button>
-          <button className="p-3 text-gray-400 hover:text-[#008080] hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all">
-            <Download size={20} />
-          </button>
         </div>
       </div>
 

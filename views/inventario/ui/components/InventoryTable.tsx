@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import { Search, Filter, Music, Guitar, Edit2, Trash2 } from "lucide-react";
+import { Search, Music, Guitar, Edit2, Trash2 } from "lucide-react";
 import { ArticuloInventario } from "@/entities/inventario";
 
 interface InventoryTableProps {
@@ -14,15 +14,15 @@ interface InventoryTableProps {
 }
 
 const CONDICION_MAP: Record<string, { label: string; color: string }> = {
-  GOOD: { label: "Bueno", color: "text-blue-500 bg-blue-500/10" },
-  FAIR: { label: "Regular", color: "text-amber-500 bg-amber-500/10" },
-  DAMAGED: { label: "Dañado", color: "text-red-500 bg-red-500/10" },
+  good: { label: "Bueno", color: "text-blue-500 bg-blue-500/10" },
+  fair: { label: "Regular", color: "text-amber-500 bg-amber-500/10" },
+  damaged: { label: "Dañado", color: "text-red-500 bg-red-500/10" },
 };
 
 const ESTADO_MAP: Record<string, string> = {
-  AVAILABLE: "text-green-500",
-  IN_USE: "text-blue-500",
-  MAINTENANCE: "text-red-500",
+  available: "text-green-500",
+  in_use: "text-blue-500",
+  maintenance: "text-red-500",
 };
 
 export function InventoryTable({
@@ -40,8 +40,8 @@ export function InventoryTable({
 
   const tipoIcon = (tipo: string) => {
     switch (tipo) {
-      case "INSTRUMENT":
-      case "EQUIPMENT":
+      case "instrument":
+      case "equipment":
         return <Music size={16} />;
       default:
         return <Guitar size={16} />;
@@ -65,11 +65,6 @@ export function InventoryTable({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all text-sm"
           />
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="p-3 text-gray-400 hover:text-[#008080] hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all">
-            <Filter size={20} />
-          </button>
         </div>
       </div>
 

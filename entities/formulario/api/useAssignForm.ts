@@ -1,5 +1,9 @@
 import { useMutation } from "@apollo/client/react";
 import { ASSIGN_FORM } from "./mutaciones";
+import {
+  MyMutationMutation,
+  MyMutationMutationVariables,
+} from "@/shared/api/generated/graphql";
 
 interface AssignFormVariables {
   formId: string;
@@ -10,15 +14,18 @@ interface AssignFormVariables {
 }
 
 export function useAssignForm() {
-  const [mutation, { loading, error, data }] = useMutation(ASSIGN_FORM);
+  const [mutation, { loading, error, data }] = useMutation<
+    MyMutationMutation,
+    MyMutationMutationVariables
+  >(ASSIGN_FORM);
 
   const assignForm = (variables: AssignFormVariables) =>
-    mutation({ variables }) as Promise<any>;
+    mutation({ variables });
 
   return {
     assignForm,
     asignando: loading,
     error,
-    data: data as any,
+    data,
   };
 }

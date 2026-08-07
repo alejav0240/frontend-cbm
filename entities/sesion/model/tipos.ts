@@ -47,6 +47,8 @@ export interface SesionFiltros {
   estadoSesion?: string;
   terapeutaId?: string;
   tipoSesion?: string;
+  fechaDesde?: string;
+  fechaHasta?: string;
   page?: number;
   pageSize?: number;
   verCiclo?: boolean;

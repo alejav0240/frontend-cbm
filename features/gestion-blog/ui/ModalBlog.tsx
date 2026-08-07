@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { Modal } from "@/shared/ui/components/Modal";
 import { BlogForm } from "@/views/blog/ui/components/BlogForm";
 import { PostBlog, FormularioPostBlog } from "@/entities/blog";
@@ -40,12 +40,14 @@ export function ModalBlog({
     setConfirmDiscard(false);
   }, []);
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (!isOpen) {
       setFormDirty(false);
       setConfirmDiscard(false);
     }
-  }, [isOpen]);
+  }
 
   return (
     <>

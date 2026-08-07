@@ -13,11 +13,50 @@ const ESTADO_OPCIONES = [
   { label: "Cancelada", value: "CANCELADA", color: "bg-red-500" },
 ];
 
+const ESTADO_PAGO_OPCIONES = [
+  { label: "Todos los pagos", value: "all" },
+  { label: "Pagado", value: "PAID", color: "bg-green-500" },
+  { label: "Parcial", value: "PARTIAL", color: "bg-yellow-500" },
+  { label: "Pendiente", value: "PENDING", color: "bg-orange-500" },
+  { label: "Exento", value: "EXEMPT", color: "bg-purple-500" },
+];
+
 const TIPO_OPCIONES = [
   { label: "Todos los tipos", value: "all" },
   { label: "Individual", value: "individual" },
   { label: "Grupal", value: "group" },
 ];
+
+const PERIODO_OPCIONES = [
+  { label: "Todo el historial", value: "all" },
+  { label: "Hoy", value: "today" },
+  { label: "Esta semana", value: "week" },
+  { label: "Este mes", value: "month" },
+];
+
+function calcularRango(presete: string): { fechaDesde: string; fechaHasta: string } {
+  const hoy = new Date();
+  const formato = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+      d.getDate(),
+    ).padStart(2, "0")}`;
+
+  if (presete === "today") {
+    const s = formato(hoy);
+    return { fechaDesde: s, fechaHasta: s };
+  }
+  if (presete === "week") {
+    const lunes = new Date(hoy);
+    const dia = hoy.getDay() || 7;
+    lunes.setDate(hoy.getDate() - dia + 1);
+    return { fechaDesde: formato(lunes), fechaHasta: formato(hoy) };
+  }
+  if (presete === "month") {
+    const primero = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    return { fechaDesde: formato(primero), fechaHasta: formato(hoy) };
+  }
+  return { fechaDesde: "", fechaHasta: "" };
+}
 
 interface FiltrosSesionesProps {
   busqueda: string;
@@ -28,7 +67,15 @@ interface FiltrosSesionesProps {
   onTipoChange: (value: string) => void;
   filtroTerapeuta: string;
   onTerapeutaChange: (value: string) => void;
-  terapeutasDisponibles?: string[];
+  terapeutaOpciones?: { label: string; value: string }[];
+  filtroEstadoPago: string;
+  onEstadoPagoChange: (value: string) => void;
+  filtroPeriodo: string;
+  onPeriodoChange: (value: string) => void;
+  fechaDesde: string;
+  fechaHasta: string;
+  onFechaDesdeChange: (value: string) => void;
+  onFechaHastaChange: (value: string) => void;
 }
 
 export function FiltrosSesiones({
@@ -40,8 +87,33 @@ export function FiltrosSesiones({
   onTipoChange,
   filtroTerapeuta,
   onTerapeutaChange,
-  terapeutasDisponibles = [],
+  terapeutaOpciones = [],
+  filtroEstadoPago,
+  onEstadoPagoChange,
+  filtroPeriodo,
+  onPeriodoChange,
+  fechaDesde,
+  fechaHasta,
+  onFechaDesdeChange,
+  onFechaHastaChange,
 }: FiltrosSesionesProps) {
+  const aplicarPresete = (presete: string) => {
+    onPeriodoChange(presete);
+    if (presete === "all") {
+      onFechaDesdeChange("");
+      onFechaHastaChange("");
+      return;
+    }
+    const { fechaDesde: fd, fechaHasta: fh } = calcularRango(presete);
+    onFechaDesdeChange(fd);
+    onFechaHastaChange(fh);
+  };
+
+  const terapeutaOpcionesFinal = [
+    { label: "Todos los terapeutas", value: "" },
+    ...terapeutaOpciones,
+  ];
+
   const chips: { label: string; onRemove: () => void }[] = [];
 
   if (filtroEstado !== "all") {
@@ -49,6 +121,13 @@ export function FiltrosSesiones({
     chips.push({
       label: opt?.label ?? filtroEstado,
       onRemove: () => onEstadoChange("all"),
+    });
+  }
+  if (filtroEstadoPago !== "all") {
+    const opt = ESTADO_PAGO_OPCIONES.find((o) => o.value === filtroEstadoPago);
+    chips.push({
+      label: opt?.label ?? filtroEstadoPago,
+      onRemove: () => onEstadoPagoChange("all"),
     });
   }
   if (filtroTipo !== "all") {
@@ -59,9 +138,20 @@ export function FiltrosSesiones({
     });
   }
   if (filtroTerapeuta) {
+    const opt = terapeutaOpcionesFinal.find((o) => o.value === filtroTerapeuta);
     chips.push({
-      label: filtroTerapeuta,
+      label: opt?.label ?? filtroTerapeuta,
       onRemove: () => onTerapeutaChange(""),
+    });
+  }
+  if (fechaDesde || fechaHasta) {
+    chips.push({
+      label: `${fechaDesde || "…"} → ${fechaHasta || "…"}`,
+      onRemove: () => {
+        onPeriodoChange("all");
+        onFechaDesdeChange("");
+        onFechaHastaChange("");
+      },
     });
   }
   if (busqueda) {
@@ -70,11 +160,6 @@ export function FiltrosSesiones({
       onRemove: () => onBusquedaChange(""),
     });
   }
-
-  const terapeutaOpciones = [
-    { label: "Todos los terapeutas", value: "" },
-    ...terapeutasDisponibles.map((t) => ({ label: t, value: t })),
-  ];
 
   return (
     <div className="flex flex-col gap-3">
@@ -109,7 +194,16 @@ export function FiltrosSesiones({
           onChange={onEstadoChange}
           placeholder="Estado"
           clearable={false}
-          className="min-w-[180px]"
+          className="min-w-[170px]"
+        />
+
+        <SearchableSelect
+          options={ESTADO_PAGO_OPCIONES}
+          value={filtroEstadoPago}
+          onChange={onEstadoPagoChange}
+          placeholder="Estado de pago"
+          clearable={false}
+          className="min-w-[170px]"
         />
 
         <SearchableSelect
@@ -118,19 +212,57 @@ export function FiltrosSesiones({
           onChange={onTipoChange}
           placeholder="Tipo"
           clearable={false}
-          className="min-w-[160px]"
+          className="min-w-[150px]"
         />
 
-        {terapeutaOpciones.length > 1 && (
+        {terapeutaOpcionesFinal.length > 1 && (
           <SearchableSelect
-            options={terapeutaOpciones}
+            options={terapeutaOpcionesFinal}
             value={filtroTerapeuta}
             onChange={onTerapeutaChange}
             placeholder="Terapeuta"
             clearable={false}
-            className="min-w-[180px]"
+            className="min-w-[170px]"
           />
         )}
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <SearchableSelect
+          options={PERIODO_OPCIONES}
+          value={filtroPeriodo}
+          onChange={aplicarPresete}
+          placeholder="Periodo"
+          clearable={false}
+          className="min-w-[160px]"
+        />
+
+        <div className="flex items-center gap-2">
+          <label htmlFor="fecha-desde" className="sr-only">Fecha desde</label>
+          <input
+            id="fecha-desde"
+            type="date"
+            value={fechaDesde}
+            onChange={(e) => {
+              onFechaDesdeChange(e.target.value);
+              onPeriodoChange("all");
+            }}
+            className="px-3 py-2.5 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent focus-visible:border-[#008080] focus-visible:ring-2 focus-visible:ring-[#008080]/10 outline-none transition-all text-sm dark:text-white text-gray-500 dark:text-gray-300"
+          />
+          <span className="text-gray-400 text-xs">→</span>
+          <label htmlFor="fecha-hasta" className="sr-only">Fecha hasta</label>
+          <input
+            id="fecha-hasta"
+            type="date"
+            value={fechaHasta}
+            min={fechaDesde || undefined}
+            onChange={(e) => {
+              onFechaHastaChange(e.target.value);
+              onPeriodoChange("all");
+            }}
+            className="px-3 py-2.5 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent focus-visible:border-[#008080] focus-visible:ring-2 focus-visible:ring-[#008080]/10 outline-none transition-all text-sm dark:text-white text-gray-500 dark:text-gray-300"
+          />
+        </div>
       </div>
 
       {chips.length > 0 && (
@@ -155,8 +287,12 @@ export function FiltrosSesiones({
             onClick={() => {
               onBusquedaChange("");
               onEstadoChange("all");
+              onEstadoPagoChange("all");
               onTipoChange("all");
               onTerapeutaChange("");
+              onPeriodoChange("all");
+              onFechaDesdeChange("");
+              onFechaHastaChange("");
             }}
             className="text-[10px] font-bold text-gray-400 hover:text-[#008080] uppercase tracking-widest transition-colors ml-1"
           >

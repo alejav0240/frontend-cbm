@@ -71,7 +71,7 @@ export function ResponseDetailModal({
               Respuestas
             </h4>
             <div className="grid gap-4">
-              {selectedResponse.answers.map((field: any) => (
+              {selectedResponse.answers.map((field) => (
                 <div
                   key={field.id}
                   className="p-6 bg-white dark:bg-white/2 rounded-[32px] border border-gray-100 dark:border-white/5 hover:border-[#008080]/30 transition-all group"

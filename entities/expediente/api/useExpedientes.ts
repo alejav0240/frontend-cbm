@@ -24,10 +24,10 @@ export function useExpedientes() {
         completedSessions: c.completedSessions,
         status: c.status,
         paymentSummary: c.paymentSummary,
-        sessionsList: c.sessionsList.map((s: any) => ({
-          id: s?.id ?? "",
-          sessionDate: String(s?.sessionDate ?? ""),
-          sessionStatus: s?.sessionStatus ?? "",
+        sessionsList: c.sessionsList.map((s) => ({
+          id: s.id,
+          sessionDate: String(s.sessionDate ?? ""),
+          sessionStatus: s.sessionStatus,
         })),
         startDate: c.startDate,
         lastSessionDate:

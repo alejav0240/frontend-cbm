@@ -1,6 +1,5 @@
 import { useQuery } from "@apollo/client/react";
 import { OBTENER_CRECIMIENTO_PACIENTES } from "./consultas";
-import { PuntoCrecimiento } from "../model/tipos";
 import { ObtenerCrecimientoPacientesQuery } from "@/shared/api/generated/graphql";
 
 export const usePacienteCrecimiento = () => {

@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { FileText, Eye } from 'lucide-react';
+import type { TherapyReport } from '@/entities/informes/model/tipos';
 
 interface TherapyReportsListProps {
-  reports: any[];
-  onViewReport: (report: any) => void;
+  reports: TherapyReport[];
+  onViewReport: (report: TherapyReport) => void;
 }
 
 export function TherapyReportsList({ reports, onViewReport }: TherapyReportsListProps) {

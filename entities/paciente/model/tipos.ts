@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 export interface Paciente {
   id: string;
   databaseId: number;

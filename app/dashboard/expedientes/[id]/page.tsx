@@ -1,7 +1,7 @@
 "use client";
 
 import { HeaderPaciente } from "@/entities/paciente/ui/headerPaciente";
-import { use, useState, useEffect, useMemo } from "react";
+import { use, useState, useMemo } from "react";
 import {
   useActualizarNotasClinicas,
   usePacienteDetalles,
@@ -13,8 +13,8 @@ import { useRouter } from "next/navigation";
 import { Search, Loader2, FileText, FileDown } from "lucide-react";
 import { useObtenerProgresoEscala } from "@/entities/paciente/api/useObtenerProgresoEscala";
 import AnalisDemuca from "@/entities/paciente/ui/AnalisDemuca";
-import { EriCimTablas } from "@/entities/paciente/ui/EriCimTablas";
 import { HistorialSesiones } from "@/entities/sesion/ui/HistorialSesiones";
+import type { SessionType } from "@/entities/sesion/ui/SessionCard";
 import { useObtenerProgresoSubEscala } from "@/entities/paciente/api/useObtenerProgresoSubEscala";
 import {
   useCiclos,
@@ -27,11 +27,39 @@ import {
 } from "@/entities/sesion";
 import type { FormularioClinicoDataSchema } from "@/features/gestion-paciente/model/FormularioClinicoData.schema";
 
-type SessionData = Record<string, unknown> & {
-  id?: string;
-  databaseId?: number;
-  notes?: string;
+type SessionData = SessionType;
+
+type SesionCiclo = NonNullable<
+  NonNullable<
+    NonNullable<NonNullable<ObtenerCiclosQuery["sessions"]>["cycles"]>[number]
+  >["sessions"]
+>[number];
+
+type SesionInforme = NonNullable<SesionCiclo> & {
+  numeroSesion?: number | null;
+  fecha?: string | null;
+  therapist?: { fullname?: string | null } | null;
+  terapeuta?: string | null;
+  estado?: string | null;
 };
+
+type SesionDetallada = NonNullable<VerSesionQuery["session"]>;
+
+type ResourceSesion = SesionDetallada["sessionResources"][number];
+type InventorySesion = SesionDetallada["sessionInventory"][number];
+type PlanStepSesion = SesionDetallada["sessionPlanSteps"][number];
+type ScaleEvalSesion = SesionDetallada["scaleEvaluations"][number] & {
+  scale?: { name?: string | null } | null;
+};
+type SubscaleRespSesion =
+  ScaleEvalSesion["subscaleResponses"][number] & {
+    subscale?: { name?: string | null } | null;
+  };
+type ValueRespSesion = SesionDetallada["scaleEvaluations"][number]["valueResponses"][number];
+type FormAssignSesion = NonNullable<
+  NonNullable<SesionDetallada["formAssignments"]>[number]
+>;
+
 import Modal from "@/shared/ui/components/Modal";
 import { FormularioClinico } from "@/features/gestion-paciente/ui/FormularioClinico";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
@@ -51,6 +79,10 @@ import {
   generarInformeClinicoWord,
 } from "@/entities/informe-clinico";
 import type { InformeClinicoDTO } from "@/entities/informe-clinico";
+import type {
+  ObtenerCiclosQuery,
+  VerSesionQuery,
+} from "@/shared/api/generated/graphql";
 
 interface RouteParams {
   id: string;
@@ -82,7 +114,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     { patientId: idPaciente, formId: "1" },
   );
 
-  const { formulario, cargando: cargandoForm } = useFormulario("1");
+  const { formulario } = useFormulario("1");
   const { asignaciones } = useAsignacionesFormulario({ patientId: idPaciente });
   const { submitFullForm, enviando } = useSubmitFullForm();
   const { assignForm, asignando: asignandoForm } = useAssignForm();
@@ -114,7 +146,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     page: sessionsPage,
   });
 
-  const { paciente, cargando, refetch } = usePacienteDetalles(idPaciente);
+  const { paciente, refetch } = usePacienteDetalles(idPaciente);
   const router = useRouter();
 
   const [mostrarFormularioClinico, setMostrarFormularioClinico] =
@@ -140,8 +172,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
   // Detalle y exportación de sesión única
   const [selectedSessionForDetails, setSelectedSessionForDetails] =
     useState<SessionData | null>(null);
-  const [selectedSessionForExport, setSelectedSessionForExport] =
-    useState<SessionData | null>(null);
+  const [, setSelectedSessionForExport] = useState<SessionData | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
 
@@ -150,28 +181,26 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     cargando: cargandoDetalles,
     sesion: sesionDetallada,
   } = useSesionDetalles();
-  const { actualizarSesion, actualizando: actualizandoSesion } =
-    useActualizarSesion();
-  const { eliminarSesion, eliminando: eliminandoSesion } = useEliminarSesion();
+  const { actualizarSesion } = useActualizarSesion();
+  const { eliminarSesion } = useEliminarSesion();
 
-  const handleViewSessionDetails = (session: any) => {
+  const handleViewSessionDetails = (session: SessionData) => {
     setSelectedSessionForDetails(session);
     setShowDetailsModal(true);
     obtenerSesion({
-      variables: { id: session.id || String(session.databaseId) },
+      variables: { id: String(session.id || String(session.databaseId)) },
     });
   };
 
-  const handleExportSession = (session: any) => {
+  const handleExportSession = (session: SessionData) => {
     setSelectedSessionForExport(session);
     setShowExportModal(true);
     obtenerSesion({
-      variables: { id: session.id || String(session.databaseId) },
+      variables: { id: String(session.id || String(session.databaseId)) },
     });
   };
 
-  const { updateClinicalNotes, loading: updatingNotes } =
-    useActualizarNotasClinicas();
+  const { updateClinicalNotes } = useActualizarNotasClinicas();
 
   const { usuario } = useAuthStore();
 
@@ -189,8 +218,12 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       setMostrarFormularioClinico(false);
       toast.success("Notas clínicas actualizadas correctamente");
       refetch();
-    } catch (error: any) {
-      toast.error(error?.message || "Error al actualizar notas clínicas");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Error al actualizar notas clínicas",
+      );
     }
   };
 
@@ -224,8 +257,12 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       await submitFullForm({ assignmentId: assignmentId as string, responses });
       setMostrarCuestionario(false);
       toast.success("Cuestionario guardado correctamente");
-    } catch (error: any) {
-      toast.error(error?.message || "Error al guardar el cuestionario");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Error al guardar el cuestionario",
+      );
     }
   };
 
@@ -246,7 +283,9 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
   const handleSaveSessionEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSession?.id && !selectedSession?.databaseId) return;
-    const sessionId = selectedSession.id || String(selectedSession.databaseId);
+    const sessionId = String(
+      selectedSession.id || String(selectedSession.databaseId),
+    );
     try {
       await actualizarSesion(sessionId, { notes: editedNotes });
       setShowEditSessionModal(false);
@@ -281,7 +320,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       escalas.push({
         nombre: "ERI",
         etiqueta: "Escala de Regulación Emocional",
-        puntuaciones: eriResults.map((e: any) => ({
+        puntuaciones: eriResults.map((e) => ({
           sesion: new Date(e.evaluatedAt).toLocaleDateString("es-ES"),
           valor: e.totalScore,
         })),
@@ -291,7 +330,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       escalas.push({
         nombre: "CIM",
         etiqueta: "Cambio en la Identidad Musical",
-        puntuaciones: cimResults.map((e: any) => ({
+        puntuaciones: cimResults.map((e) => ({
           sesion: new Date(e.evaluatedAt).toLocaleDateString("es-ES"),
           valor: e.totalScore,
         })),
@@ -301,7 +340,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       escalas.push({
         nombre: "DEMUCA",
         etiqueta: "Detección de Musicoterapia",
-        puntuaciones: dataDemuca.map((e: any) => ({
+        puntuaciones: dataDemuca.map((e) => ({
           sesion: new Date(e.evaluatedAt).toLocaleDateString("es-ES"),
           valor: e.totalScore,
         })),
@@ -326,9 +365,9 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
           metodosAUsar: paciente.metodosAUsar || "",
           notas: paciente.notas || paciente.notes || "",
         },
-        sesiones: (sesiones ?? []).map((s: any) => ({
+        sesiones: (sesiones ?? []).map((s: SesionInforme) => ({
           numero: s.sessionNumber ?? s.numeroSesion ?? 0,
-          fecha: s.sessionDate ?? s.fecha ?? "",
+          fecha: String(s.sessionDate ?? s.fecha ?? ""),
           terapeuta: s.therapist?.fullname ?? s.terapeuta ?? "",
           duracion: s.durationMinutes ? `${s.durationMinutes} min` : "",
           estado: s.sessionStatus ?? s.estado ?? "",
@@ -339,31 +378,37 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     ];
   }, [paciente, dataEri, dataCIM, dataDemuca, sesiones]);
 
-  const informePdfExporter: Exporter<InformeClinicoDTO> = {
-    id: "pdf",
-    label: "Exportar PDF",
-    async execute(data) {
-      const doc = await generarInformeClinicoPDF(data);
-      doc.save(`informe_clinico_${Date.now()}.pdf`);
-    },
-    async preview(data) {
-      const doc = await generarInformeClinicoPDF(data);
-      return doc.output("blob");
-    },
-  };
+  const informePdfExporter = useMemo(
+    (): Exporter<InformeClinicoDTO> => ({
+      id: "pdf",
+      label: "Exportar PDF",
+      async execute(data) {
+        const doc = await generarInformeClinicoPDF(data);
+        doc.save(`informe_clinico_${Date.now()}.pdf`);
+      },
+      async preview(data) {
+        const doc = await generarInformeClinicoPDF(data);
+        return doc.output("blob");
+      },
+    }),
+    [],
+  );
 
-  const informeWordExporter: Exporter<InformeClinicoDTO> = {
-    id: "word",
-    label: "Exportar Word",
-    color: "#2b5797",
-    async execute(data, _columns, fileName) {
-      await generarInformeClinicoWord(data, fileName);
-    },
-  };
+  const informeWordExporter = useMemo(
+    (): Exporter<InformeClinicoDTO> => ({
+      id: "word",
+      label: "Exportar Word",
+      color: "#2b5797",
+      async execute(data, _columns, fileName) {
+        await generarInformeClinicoWord(data, fileName);
+      },
+    }),
+    [],
+  );
 
   const exporters = useMemo(
     () => [informePdfExporter, informeWordExporter],
-    [],
+    [informePdfExporter, informeWordExporter],
   );
 
   const eriData = dataEri?.scaleEvaluations?.results ?? [];
@@ -428,7 +473,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
         title="Actualizar Información Clínica"
       >
         <FormularioClinico
-          paciente={paciente}
+          paciente={paciente ?? null}
           alEnviar={handleClinicalNotesSubmit}
           alCancelar={() => setMostrarFormularioClinico(false)}
         />
@@ -487,17 +532,17 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
           {
             key: "paciente",
             label: "Paciente",
-            formatter: (v) => (v as any)?.nombre || "",
+            formatter: (v) => (v as { nombre?: string })?.nombre || "",
           },
           {
             key: "sesiones",
             label: "Sesiones",
-            formatter: (v) => String((v as any)?.length || 0),
+            formatter: (v) => String((v as { length?: number })?.length || 0),
           },
           {
             key: "escalas",
             label: "Escalas",
-            formatter: (v) => String((v as any)?.length || 0),
+            formatter: (v) => String((v as { length?: number })?.length || 0),
           },
         ]}
         exporters={exporters}
@@ -625,8 +670,8 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                   Terapeuta
                 </span>
                 <span className="text-sm font-semibold dark:text-white font-sans">
-                  {(sesionDetallada as any).therapist?.fullname ||
-                    "No asignado"}
+                  {(sesionDetallada as { therapist?: { fullname?: string | null } | null })
+                    .therapist?.fullname || "No asignado"}
                 </span>
               </div>
             </div>
@@ -654,7 +699,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                   {sesionDetallada.sessionResources &&
                   sesionDetallada.sessionResources.length > 0 ? (
                     sesionDetallada.sessionResources.map(
-                      (r: any, idx: number) => (
+                      (r: ResourceSesion, idx: number) => (
                         <span
                           key={idx}
                           className="text-xs bg-teal-500/10 text-[#008080] px-2.5 py-1 rounded-full font-medium font-sans"
@@ -680,7 +725,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                   {sesionDetallada.sessionInventory &&
                   sesionDetallada.sessionInventory.length > 0 ? (
                     sesionDetallada.sessionInventory.map(
-                      (i: any, idx: number) => (
+                      (i: InventorySesion, idx: number) => (
                         <span
                           key={idx}
                           className="text-xs bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 px-2.5 py-1 rounded-full font-medium font-sans"
@@ -717,7 +762,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                         </tr>
                       </thead>
                       <tbody>
-                        {sesionDetallada.sessionPlanSteps.map((s: any) => (
+                        {sesionDetallada.sessionPlanSteps.map((s: PlanStepSesion) => (
                           <tr
                             key={s.id}
                             className="border-b last:border-0 border-slate-200/60 dark:border-zinc-800/60 hover:bg-slate-50/50 dark:hover:bg-zinc-800/20"
@@ -762,7 +807,8 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                     Evaluaciones Realizadas
                   </h4>
                   <div className="grid md:grid-cols-2 gap-4">
-                    {sesionDetallada.scaleEvaluations.map((evalData: any) => (
+                    {sesionDetallada.scaleEvaluations.map(
+                      (evalData: ScaleEvalSesion) => (
                       <div
                         key={evalData.id}
                         className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 space-y-2"
@@ -779,7 +825,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                         <div className="space-y-1 pt-1">
                           {evalData.subscaleResponses &&
                             evalData.subscaleResponses.map(
-                              (r: any, idx: number) => (
+                              (r: SubscaleRespSesion, idx: number) => (
                                 <div
                                   key={idx}
                                   className="flex justify-between text-xs text-gray-500 font-sans"
@@ -794,7 +840,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                             )}
                           {evalData.valueResponses &&
                             evalData.valueResponses.map(
-                              (v: any, idx: number) => (
+                              (v: ValueRespSesion, idx: number) => (
                                 <div
                                   key={idx}
                                   className="flex justify-between text-xs text-gray-500 font-sans"
@@ -824,7 +870,9 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                   </h4>
                   <div className="space-y-3">
                     {sesionDetallada.formAssignments.map(
-                      (formAssign: any, assignIdx: number) => (
+                      (formAssign, assignIdx: number) => {
+                        if (formAssign == null) return null;
+                        return (
                         <div
                           key={assignIdx}
                           className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 space-y-3"
@@ -834,7 +882,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                               Respuestas del Cuestionario
                             </span>
                             <span className="text-[10px] font-bold text-[#008080] bg-teal-500/10 px-2 py-0.5 rounded-full font-sans">
-                              {Math.round(formAssign.completionRatio * 100)}%
+                              {Math.round(Number(formAssign.completionRatio ?? 0) * 100)}%
                               Completado
                             </span>
                           </div>
@@ -842,7 +890,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                           <div className="space-y-3">
                             {formAssign.responses &&
                               formAssign.responses.map(
-                                (r: any, idx: number) => (
+                                (r: FormAssignSesion["responses"][number], idx: number) => (
                                   <div key={idx} className="space-y-1">
                                     <p className="text-xs font-bold text-slate-700 dark:text-zinc-300 font-sans">
                                       Q: {r.question?.question}
@@ -855,7 +903,8 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                               )}
                           </div>
                         </div>
-                      ),
+                        );
+                      },
                     )}
                   </div>
                 </div>

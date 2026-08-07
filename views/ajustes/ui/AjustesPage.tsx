@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Settings, Bell, Lock, Globe, Palette, Save } from "lucide-react";
+import { Settings, Bell, Lock, Palette, Save } from "lucide-react";
 
 export const AjustesPage = () => {
   return (

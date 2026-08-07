@@ -38,7 +38,7 @@ export const useGrabacion = () => {
     return () => {
       stream?.getTracks().forEach((t) => t.stop());
     };
-  }, []);
+  }, [stream]);
 
   const iniciarGrabacion = useCallback(
     async (deviceId?: string) => {

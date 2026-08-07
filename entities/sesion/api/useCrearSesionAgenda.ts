@@ -35,8 +35,10 @@ export function useCrearSesionAgenda() {
       });
       toast.success("Sesión creada correctamente");
       return result.data?.createSession?.session;
-    } catch (err: any) {
-      toast.error(err?.message || "Error al crear la sesión");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al crear la sesión",
+      );
       throw err;
     }
   };

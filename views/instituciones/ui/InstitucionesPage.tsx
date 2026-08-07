@@ -83,13 +83,14 @@ export const InstitucionesPage = () => {
     pageSize: 10,
     busqueda: busquedaDebounced || undefined,
   });
-  const { institucion: detalleInstitucion, cargando: cargandoDetalle } =
-    useDetalleInstitucion(institucionSeleccionadaId ?? "");
-  const { grupo: detalleGrupo, cargando: cargandoGrupo } = useDetalleGrupo(
+  const { institucion: detalleInstitucion } = useDetalleInstitucion(
+    institucionSeleccionadaId ?? "",
+  );
+  const { grupo: detalleGrupo } = useDetalleGrupo(
     grupoSeleccionadoId ?? "",
   );
 
-  const { crearInstitucion, creando } = useCrearInstitucion();
+  const { crearInstitucion } = useCrearInstitucion();
   const { eliminarInstitucion } = useEliminarInstitucion();
   const { crearGrupo } = useCrearGrupo();
   const { eliminarGrupo } = useEliminarGrupo();

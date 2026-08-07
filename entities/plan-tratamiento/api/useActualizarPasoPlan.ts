@@ -35,8 +35,10 @@ export function useActualizarPasoPlan() {
         },
       });
       toast.success("Paso actualizado correctamente");
-    } catch (err: any) {
-      toast.error(err?.message || "Error al actualizar el paso");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al actualizar el paso",
+      );
       throw err;
     }
   };

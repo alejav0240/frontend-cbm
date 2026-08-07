@@ -12,7 +12,7 @@ export const useTemporizador = (
   });
 
   useEffect(() => {
-    let intervalo: any;
+    let intervalo: ReturnType<typeof setInterval> | undefined;
     if (estaActivo) {
       intervalo = setInterval(() => {
         setSegundos((s) => s + 1);

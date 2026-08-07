@@ -11,8 +11,20 @@ import {
 import { InputField } from "@/shared/ui/form/InputField";
 import { TextAreaField } from "@/shared/ui/form/TextAreaField";
 
+interface PacienteFormularioClinico {
+  name?: string;
+  nombre?: string;
+  objetivosGenerales?: string;
+  fisico?: string;
+  emocional?: string;
+  cognitivo?: string;
+  social?: string;
+  metodosAUsar?: string;
+  notas?: string | null;
+}
+
 interface FormularioClinicoProps {
-  paciente: any | null;
+  paciente: PacienteFormularioClinico | null;
   alEnviar: (data: FormularioClinicoDataSchema) => void;
   alCancelar: () => void;
   estaCargando?: boolean;
@@ -22,7 +34,6 @@ export function FormularioClinico({
   paciente,
   alEnviar,
   alCancelar,
-  estaCargando,
 }: FormularioClinicoProps) {
   const {
     register,

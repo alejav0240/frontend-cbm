@@ -4,16 +4,24 @@ import React from "react";
 import { motion } from "motion/react";
 import { Layers, FileText, X } from "lucide-react";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
+import type {
+  MappedScale,
+  MappedFormTemplate,
+  MappedSubscale,
+  MappedScaleValue,
+  MappedFormField,
+  FormResponseValue,
+} from "@/features/sesion-en-progreso/model/tipos";
 
 interface EvaluationTabProps {
-  evaluationScales: any[];
+  evaluationScales: MappedScale[];
   selectedScales: string[];
   toggleScale: (id: string) => void;
-  formTemplates: any[];
+  formTemplates: MappedFormTemplate[];
   selectedForms: string[];
   toggleForm: (id: string) => void;
-  formResponses: Record<string, any>;
-  updateForm: (key: string, value: any) => void;
+  formResponses: Record<string, FormResponseValue>;
+  updateForm: (key: string, value: FormResponseValue) => void;
 }
 
 export function EvaluationTab({
@@ -77,7 +85,7 @@ export function EvaluationTab({
 
                 <div className="grid gap-6">
                   {scale.type === "subscales" ? (
-                    scale.subscales?.map((sub: any) => (
+                    scale.subscales.map((sub: MappedSubscale) => (
                       <div key={sub.id} className="space-y-3">
                         <div className="flex justify-between items-center">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -94,10 +102,11 @@ export function EvaluationTab({
                           type="range"
                           min="0"
                           max={sub.maxScore}
-                          value={
-                            formResponses[`scale_${scale.id}_sub_${sub.id}`] ||
-                            0
-                          }
+                          value={Number(
+                            formResponses[
+                              `scale_${scale.id}_sub_${sub.id}`
+                            ] || 0,
+                          )}
                           onChange={(e) =>
                             updateForm(
                               `scale_${scale.id}_sub_${sub.id}`,
@@ -110,7 +119,7 @@ export function EvaluationTab({
                     ))
                   ) : (
                     <div className="flex flex-wrap gap-3">
-                      {scale.values?.map((val: any) => (
+                      {scale.values?.map((val: MappedScaleValue) => (
                         <button
                           key={val.id}
                           type="button"
@@ -172,7 +181,7 @@ export function EvaluationTab({
                 <p className="text-xs text-gray-500 mb-6">{form.description}</p>
 
                 <div className="grid gap-6">
-                  {form.fields.map((field: any) => (
+                  {form.fields.map((field: MappedFormField) => (
                     <div key={field.id} className="space-y-2">
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                         {field.label}{" "}
@@ -183,11 +192,11 @@ export function EvaluationTab({
                       {field.type === "text" && (
                         <input
                           type="text"
-                          value={
+                          value={String(
                             formResponses[
                               `form_${form.id}_field_${field.id}`
-                            ] || ""
-                          }
+                            ] || "",
+                          )}
                           onChange={(e) =>
                             updateForm(
                               `form_${form.id}_field_${field.id}`,
@@ -200,11 +209,11 @@ export function EvaluationTab({
                       {field.type === "number" && (
                         <input
                           type="number"
-                          value={
+                          value={String(
                             formResponses[
                               `form_${form.id}_field_${field.id}`
-                            ] || ""
-                          }
+                            ] || "",
+                          )}
                           onChange={(e) =>
                             updateForm(
                               `form_${form.id}_field_${field.id}`,
@@ -217,11 +226,11 @@ export function EvaluationTab({
                       {field.type === "textarea" && (
                         <textarea
                           rows={3}
-                          value={
+                          value={String(
                             formResponses[
                               `form_${form.id}_field_${field.id}`
-                            ] || ""
-                          }
+                            ] || "",
+                          )}
                           onChange={(e) =>
                             updateForm(
                               `form_${form.id}_field_${field.id}`,
@@ -234,11 +243,11 @@ export function EvaluationTab({
                       {field.type === "select" && (
                         <SearchableSelect
                           options={field.options || []}
-                          value={
+                          value={String(
                             formResponses[
                               `form_${form.id}_field_${field.id}`
-                            ] || ""
-                          }
+                            ] || "",
+                          )}
                           onChange={(v) =>
                             updateForm(`form_${form.id}_field_${field.id}`, v)
                           }
@@ -251,7 +260,7 @@ export function EvaluationTab({
                             checked={
                               formResponses[
                                 `form_${form.id}_field_${field.id}`
-                              ] || false
+                              ] === true
                             }
                             onChange={(e) =>
                               updateForm(

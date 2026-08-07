@@ -33,22 +33,34 @@ import GenericExportModal, {
   type Exporter,
 } from "@/shared/ui/GenericExportModal";
 import { Pagination } from "@/shared/ui/Pagination";
+import { SearchInput } from "@/shared/ui/components/SearchInput";
+import { useDebounce } from "@/shared/lib/hooks/useDebounce";
+import { useUrlFiltros } from "@/shared/lib/hooks/useUrlFiltros";
 import { toast } from "sonner";
 
+const CLAVES_FILTRO = ["page", "q", "estado", "tab"] as const;
+
 export const PagosPage = () => {
-  const [activeTab, setActiveTab] = useState<"payments" | "discounts">(
-    "payments",
-  );
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [filtroEstado, setFiltroEstado] = useState("Todos");
+  const { filtros, setFiltros } = useUrlFiltros(CLAVES_FILTRO);
+  const activeTab: "payments" | "discounts" =
+    filtros.tab === "discounts" ? "discounts" : "payments";
+  const paginaActual = Number(filtros.page || "1");
+  const filtroEstado = filtros.estado || "Todos";
+  const [terminoBusqueda, setTerminoBusqueda] = useState(filtros.q);
+  const busquedaDebounced = useDebounce(terminoBusqueda, 500);
   const [mostrarModalPago, setMostrarModalPago] = useState(false);
   const [mostrarModalDescuento, setMostrarModalDescuento] = useState(false);
   const [mostrarExportar, setMostrarExportar] = useState(false);
+
+  if (terminoBusqueda !== filtros.q) {
+    setTerminoBusqueda(filtros.q);
+  }
 
   const { pagos, paginas } = usePagos({
     pagina: paginaActual,
     pageSize: 10,
     estadoPago: filtroEstado,
+    busqueda: busquedaDebounced || undefined,
   });
 
   const { descuentos } = useDescuentos();
@@ -188,7 +200,6 @@ export const PagosPage = () => {
     [deleteDiscount],
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleExportReceipt = useCallback((_pago: Pago) => {
     toast.info("Descarga de recibo próximamente disponible");
   }, []);
@@ -201,35 +212,50 @@ export const PagosPage = () => {
         onAction={handleAction}
       />
 
-      <PaymentsTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      <PaymentsTabs
+        activeTab={activeTab}
+        setActiveTab={(tab) => setFiltros({ tab, page: "1" })}
+      />
 
       {activeTab === "payments" ? (
         <>
           <PaymentsStats payments={pagos} />
 
-          <div className="flex gap-4">
-            {["Todos", "PAID", "PARTIAL", "PENDING"].map((estado) => (
-              <button
-                key={estado}
-                onClick={() => {
-                  setFiltroEstado(estado);
-                  setPaginaActual(1);
-                }}
-                className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${
-                  filtroEstado === estado
-                    ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
-                    : "bg-white dark:bg-accent text-gray-400 hover:text-[#008080]"
-                }`}
-              >
-                {estado === "Todos"
-                  ? "Todos"
-                  : estado === "PAID"
-                    ? "Pagados"
-                    : estado === "PARTIAL"
-                      ? "Parciales"
-                      : "Pendientes"}
-              </button>
-            ))}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex gap-4 flex-wrap">
+              {["Todos", "PAID", "PARTIAL", "PENDING"].map((estado) => (
+                <button
+                  key={estado}
+                  onClick={() => {
+                    setFiltros({ estado, page: "1" });
+                  }}
+                  className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${
+                    filtroEstado === estado
+                      ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
+                      : "bg-white dark:bg-accent text-gray-400 hover:text-[#008080]"
+                  }`}
+                >
+                  {estado === "Todos"
+                    ? "Todos"
+                    : estado === "PAID"
+                      ? "Pagados"
+                      : estado === "PARTIAL"
+                        ? "Parciales"
+                        : "Pendientes"}
+                </button>
+              ))}
+            </div>
+            <SearchInput
+              id="search-pagos"
+              value={terminoBusqueda}
+              onChange={(v) => {
+                setTerminoBusqueda(v);
+                setFiltros({ q: v, page: "1" });
+              }}
+              placeholder="Buscar por paciente..."
+              variant="compact"
+              className="sm:max-w-xs"
+            />
           </div>
 
           <PaymentsTable
@@ -241,7 +267,7 @@ export const PagosPage = () => {
           <Pagination
             currentPage={paginaActual}
             totalPages={paginas}
-            onPageChange={setPaginaActual}
+            onPageChange={(p) => setFiltros({ page: String(p) })}
           />
         </>
       ) : (

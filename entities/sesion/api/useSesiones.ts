@@ -6,6 +6,8 @@ import { useMemo } from "react";
 import {
   ObtenerCiclosQuery,
   ObtenerSesionesQuery,
+  CreateCycleMutation,
+  CreateCycleMutationVariables,
 } from "@/shared/api/generated/graphql";
 
 export const useSesiones = (filtros: SesionFiltros = {}) => {
@@ -18,6 +20,8 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
         sessionStatus: filtros.estadoSesion || "",
         therapistId: filtros.terapeutaId || "",
         sessionType: filtros.tipoSesion || "",
+        dateFrom: filtros.fechaDesde || null,
+        dateTo: filtros.fechaHasta || null,
         page: filtros.page || 1,
         pageSize: filtros.pageSize || 10,
         byCycles: filtros.verCiclo || false,
@@ -104,6 +108,8 @@ export const useCiclos = (filtros: SesionFiltros = {}) => {
         sessionStatus: filtros.estadoSesion || "",
         therapistId: filtros.terapeutaId || "",
         sessionType: filtros.tipoSesion || "",
+        dateFrom: filtros.fechaDesde || null,
+        dateTo: filtros.fechaHasta || null,
         page: filtros.page || 1,
         pageSize: filtros.pageSize || 10,
         byCycles: filtros.verCiclo || true,
@@ -137,7 +143,10 @@ export const useCiclos = (filtros: SesionFiltros = {}) => {
 };
 
 export const useCreateCycle = () => {
-  const [mutate, { loading }] = useMutation(CREAR_CICLO);
+  const [mutate, { loading }] = useMutation<
+    CreateCycleMutation,
+    CreateCycleMutationVariables
+  >(CREAR_CICLO);
 
   const createCycle = async (
     patientId: string,
@@ -152,7 +161,7 @@ export const useCreateCycle = () => {
         startDate,
         numSessions,
       },
-    }) as Promise<any>;
+    });
   };
 
   return { createCycle, creando: loading };

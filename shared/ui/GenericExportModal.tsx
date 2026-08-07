@@ -142,22 +142,37 @@ export default function GenericExportModal<T>({
   // The preview effect only depends on stable/user-initiated values (isOpen, filterValues),
   // while derived data (filteredData, exporters) is read from refs.
   const filteredDataRef = useRef(filteredData);
-  filteredDataRef.current = filteredData;
 
   const exportersRef = useRef(exporters);
-  exportersRef.current = exporters;
 
   const [previewKey, setPreviewKey] = useState(0);
 
-  // Signal the preview-effect when the modal opens or a filter changes.
-  // isOpen and filterValues are stable — filterValues only changes on user interaction.
-  useEffect(() => {
+  // Resetear preview al cerrar y regenerar al abrir o cambiar filtros,
+  // ajustando el estado durante el render (sin llamar a setState en un efecto).
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (!isOpen) {
       setPdfUrl(null);
-      return;
+    } else {
+      setPreviewKey((k) => k + 1);
     }
-    setPreviewKey((k) => k + 1);
-  }, [isOpen, filterValues]);
+  }
+
+  const [prevFilterValues, setPrevFilterValues] = useState(filterValues);
+  if (filterValues !== prevFilterValues) {
+    setPrevFilterValues(filterValues);
+    if (isOpen) {
+      setPreviewKey((k) => k + 1);
+    }
+  }
+
+  // Mantener los refs sincronizados con los valores más recientes,
+  // fuera del render (dentro de un efecto).
+  useEffect(() => {
+    filteredDataRef.current = filteredData;
+    exportersRef.current = exporters;
+  });
 
   // Actually generate the preview, reading latest data/exporters from refs.
   // Deps only include stable booleans/numbers so this effect never causes a loop.

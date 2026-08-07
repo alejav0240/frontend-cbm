@@ -2,6 +2,7 @@
 
 import { useMutation } from "@apollo/client/react";
 import { CREATE_INTERVENTION_PLAN } from "./mutaciones";
+import { CreateInterventionPlanMutation } from "@/shared/api/generated/graphql";
 import { toast } from "sonner";
 
 interface CrearPlanInput {
@@ -27,9 +28,11 @@ export function useCrearPlan() {
         },
       });
       toast.success("Plan de intervención creado correctamente");
-      return (data as any)?.createInterventionPlan?.plan;
-    } catch (err: any) {
-      toast.error(err?.message || "Error al crear el plan");
+      return (data as CreateInterventionPlanMutation)?.createInterventionPlan?.plan;
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al crear el plan",
+      );
       throw err;
     }
   };

@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { Search, Loader2, ClipboardList, AlertCircle } from "lucide-react";
+import { Search, Loader2, ClipboardList } from "lucide-react";
 import { InterventionPlanHeader } from "./components/InterventionPlanHeader";
 import { InterventionPlanCard } from "./components/InterventionPlanCard";
 import { InterventionPlanForm } from "./components/InterventionPlanForm";
@@ -20,9 +20,10 @@ import { useAuthStore } from "@/shared/model/useAuthStore";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { Pagination } from "@/shared/ui/Pagination";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
-import type { PasoPlan, PlanTratamiento } from "@/entities/plan-tratamiento";
+import type { PasoPlan } from "@/entities/plan-tratamiento";
+import type { PasoTarjeta, PlanTarjeta } from "./tipos";
 
-function mapPasos(pasos: PasoPlan[]) {
+function mapPasos(pasos: PasoPlan[]): PasoTarjeta[] {
   return pasos.map((p) => ({
     id: p.id,
     momento: p.momento,
@@ -52,18 +53,17 @@ export const PlanesPage = () => {
   const { usuario } = useAuthStore();
   const { options: patientOptions, onSearch: onSearchPatient } =
     useBuscarPacientes();
-  const { crearPlan, creando } = useCrearPlan();
-  const { eliminarPlan, eliminando } = useEliminarPlan();
-  const { crearPaso, creando: creandoPaso } = useCrearPasoPlan();
-  const { actualizarPaso, actualizando: actualizandoPaso } =
-    useActualizarPasoPlan();
-  const { eliminarPaso, eliminando: eliminandoPaso } = useEliminarPasoPlan();
+  const { crearPlan } = useCrearPlan();
+  const { eliminarPlan } = useEliminarPlan();
+  const { crearPaso } = useCrearPasoPlan();
+  const { actualizarPaso } = useActualizarPasoPlan();
+  const { eliminarPaso } = useEliminarPasoPlan();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
   const [showStepModal, setShowStepModal] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [editingStep, setEditingStep] = useState<any>(null);
+  const [editingStep, setEditingStep] = useState<PasoTarjeta | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{
     type: "plan" | "step";
     id: string;
@@ -84,7 +84,7 @@ export const PlanesPage = () => {
   const [enfoque, setEnfoque] = useState("");
   const [mltEnfoque, setMltEnfoque] = useState("");
 
-  const cards = useMemo(
+  const cards = useMemo<PlanTarjeta[]>(
     () =>
       planes.map((plan) => ({
         ...plan,
@@ -110,6 +110,12 @@ export const PlanesPage = () => {
     [],
   );
 
+  const resetForm = useCallback(() => {
+    setPatientId("");
+    setObjective("");
+    setStartDate(new Date().toISOString().split("T")[0]);
+  }, []);
+
   const handleCreatePlan = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -131,14 +137,8 @@ export const PlanesPage = () => {
         /* toast handled in hook */
       }
     },
-    [patientId, objective, startDate, usuario, crearPlan, refetch],
+    [patientId, objective, startDate, usuario, crearPlan, refetch, resetForm],
   );
-
-  const resetForm = useCallback(() => {
-    setPatientId("");
-    setObjective("");
-    setStartDate(new Date().toISOString().split("T")[0]);
-  }, []);
 
   const resetStepForm = useCallback(() => {
     setMomento("");
@@ -161,7 +161,7 @@ export const PlanesPage = () => {
     [resetStepForm],
   );
 
-  const handleEditStep = useCallback((planId: string, step: any) => {
+  const handleEditStep = useCallback((planId: string, step: PasoTarjeta) => {
     setSelectedPlanId(planId);
     setEditingStep(step);
     setMomento(step.momento ?? "");
@@ -311,7 +311,7 @@ export const PlanesPage = () => {
                 onDeleteStep={(stepId) =>
                   setDeleteConfirm({ type: "step", id: String(stepId) })
                 }
-                onToggleStepCompletion={(stepId) => {
+                onToggleStepCompletion={() => {
                   toast.info(
                     "Completar pasos está disponible desde la sesión en vivo",
                   );

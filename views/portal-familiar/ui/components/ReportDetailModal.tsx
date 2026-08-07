@@ -3,9 +3,10 @@
 import React from 'react';
 import { FileText, Download } from 'lucide-react';
 import { Modal } from "@/shared/ui/components/Modal";
+import type { TherapyReport } from "@/entities/informes/model/tipos";
 
 interface ReportDetailModalProps {
-  report: any;
+  report: TherapyReport | null;
   isOpen: boolean;
   onClose: () => void;
 }

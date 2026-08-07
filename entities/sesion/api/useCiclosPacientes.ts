@@ -22,6 +22,8 @@ export interface CicloPaciente {
     id: string;
     sessionDate: unknown;
     sessionStatus: string;
+    paymentStatusDisplay?: string;
+    sessionNumber?: number;
   }>;
   patientPhone: string;
   therapists: string;
@@ -53,7 +55,7 @@ export const useCiclosPacientes = (filtros: CicloPacienteFiltros = {}) => {
       .map((r) => ({
         id: `${r.patientName || "anonimo"}-${r.cycleNumber || 0}`,
         patientName: r.patientName || "",
-        patientId: (r as any).patient?.id || "",
+        patientId: r.patient?.id || "",
         cycleNumber: r.cycleNumber || 0,
         startDate: r.sessions?.[0]?.sessionDate
           ? new Date(r.sessions[0].sessionDate as string).toLocaleDateString()

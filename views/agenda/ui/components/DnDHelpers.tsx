@@ -4,6 +4,7 @@ import React from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { SesionAgenda } from "@/entities/sesion/model/tipos-agenda";
 
 export function DroppableSlot({
   id,
@@ -30,7 +31,7 @@ export function DraggableSession({
   session,
   onClick,
 }: {
-  session: any;
+  session: SesionAgenda;
   onClick: () => void;
 }) {
   const {
@@ -78,7 +79,7 @@ export function DraggableSession({
       }`}
     >
       <div
-        className={`w-1 h-4 rounded-full shrink-0 ${getTypeColor(session.type)}`}
+        className={`w-1 h-4 rounded-full shrink-0 ${getTypeColor(session.type ?? "")}`}
       />
       <div className="flex-1 min-w-0">
         <p

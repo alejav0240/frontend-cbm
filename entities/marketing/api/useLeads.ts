@@ -1,6 +1,5 @@
 import { useQuery } from "@apollo/client/react";
 import { OBTENER_LEADS } from "./consultas";
-import { Lead } from "../model/tipos";
 import { useMemo } from "react";
 import { ObtenerLeadsQuery } from "@/shared/api/generated/graphql";
 
@@ -28,17 +27,18 @@ export const useLeads = (params: UseLeadsParams = {}) => {
   );
 
   const leads = useMemo(() => {
-    return ((data?.leads?.results || []).filter(Boolean) as any[]).map(
-      (l) => ({
-        id: l!.id,
-        nombre: l!.nombre,
-        telefono: l!.telefono,
-        email: l!.email,
-        estado: l!.estado,
-        fechaCreacion: l!.fechaCreacion,
-        campana: l!.campana,
-      }),
-    ) as Lead[];
+    const results = (data?.leads?.results ?? []).filter(
+      (l): l is NonNullable<typeof l> => l !== null,
+    );
+    return results.map((l) => ({
+      id: l.id,
+      nombre: l.nombre,
+      telefono: l.telefono ?? "",
+      email: l.email ?? "",
+      estado: l.estado,
+      fechaCreacion: l.fechaCreacion as Date,
+      campana: l.campana ?? undefined,
+    }));
   }, [data]);
 
   return {

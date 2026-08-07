@@ -3,9 +3,10 @@
 import React from "react";
 import { Modal } from "@/shared/ui/components/Modal";
 import { Music, Video, FileText, PenTool, Download, Mail } from "lucide-react";
+import type { SesionFila } from "./SessionsTable";
 
 interface SessionDetailsModalProps {
-  session: any;
+  session: SesionFila;
   isOpen: boolean;
   onClose: () => void;
   isEditingNotes: boolean;
@@ -13,8 +14,8 @@ interface SessionDetailsModalProps {
   editedNotes: string;
   setEditedNotes: (notes: string) => void;
   onSaveNotes: () => void;
-  onExportSession: (session: any) => void;
-  onSendReminder: (session: any) => void;
+  onExportSession: (session: SesionFila) => void;
+  onSendReminder: (session: SesionFila) => void;
 }
 
 export function SessionDetailsModal({

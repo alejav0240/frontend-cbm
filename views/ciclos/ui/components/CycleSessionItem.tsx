@@ -3,8 +3,17 @@
 import React from "react";
 import { CheckCircle, Clock, CreditCard } from "lucide-react";
 
+export interface SesionCicloItem {
+  id: string;
+  date: string;
+  time?: string;
+  status: string;
+  payment: string;
+  sessionNum?: number;
+}
+
 interface CycleSessionItemProps {
-  session: any;
+  session: SesionCicloItem;
   sessionIdx: number;
   onTogglePayment: () => void;
   onComplete: () => void;

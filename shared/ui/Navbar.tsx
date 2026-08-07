@@ -21,6 +21,8 @@ const NAV_LINKS = [
 
 const SECTIONS = ["inicio", "historia", "servicios", "galeria"] as const;
 
+type NavLinkItem = { name: string; href: string; section: string };
+
 // ===== COMPONENTES REUTILIZABLES =====
 
 const NavLink = ({
@@ -138,7 +140,7 @@ export default function Navbar() {
 
   // Detectar si un link está activo
   const isLinkActive = useCallback(
-    (link: (typeof navLinks)[0]) => {
+    (link: NavLinkItem) => {
       if (link.section === "blog") return !!pathname?.startsWith("/blog");
       if (link.section === "equipo") return !!pathname?.startsWith("/equipo");
       return isHome && activeSection === link.section;
@@ -170,15 +172,20 @@ export default function Navbar() {
 
   // Efectos
   useEffect(() => {
-    setMounted(true);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
+  if (!mounted) {
+    setMounted(true);
+  }
+
   // Cerrar menú al cambiar de ruta
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setIsMenuOpen(false);
-  }, [pathname]);
+  }
 
   // Classes del navbar según scroll
   const navbarClasses = `fixed top-0 w-full z-50 transition-all duration-500 ${
@@ -248,8 +255,8 @@ const DesktopNav = ({
   navLinks,
   isLinkActive,
 }: {
-  navLinks: Array<{ name: string; href: string; section: string }>;
-  isLinkActive: (link: any) => boolean;
+  navLinks: NavLinkItem[];
+  isLinkActive: (link: NavLinkItem) => boolean;
 }) => (
   <div className="hidden lg:flex items-center gap-1 bg-gray-100/50 dark:bg-white/5 p-1.5 rounded-2xl backdrop-blur-sm border border-black/5 dark:border-white/5">
     {navLinks.map((link) => (
@@ -328,8 +335,8 @@ const MobileMenu = ({
   ctaHref,
 }: {
   isOpen: boolean;
-  navLinks: Array<{ name: string; href: string; section: string }>;
-  isLinkActive: (link: any) => boolean;
+  navLinks: NavLinkItem[];
+  isLinkActive: (link: NavLinkItem) => boolean;
   onClose: () => void;
   ctaHref: string;
 }) => (

@@ -548,10 +548,15 @@ export type EnrollInCourseMutationVariables = Exact<{
 
 export type EnrollInCourseMutation = { enrollInCourse: { enrollment: { id: string } | null } | null };
 
-export type ObtenerEscalasQueryVariables = Exact<{ [key: string]: never; }>;
+export type ObtenerEscalasQueryVariables = Exact<{
+  scaleType?: string | null | undefined;
+  search?: string | null | undefined;
+  page?: number | null | undefined;
+  pageSize?: number | null | undefined;
+}>;
 
 
-export type ObtenerEscalasQuery = { scales: { results: Array<{ id: string, nombre: string, descripcion: string | null, tipoEscala: EvaluationsScaleScaleTypeChoices, subescalas: Array<{ id: string, nombre: string, valorMaximo: number }>, valores: Array<{ id: string, etiqueta: string, valor: number }> } | null> | null } | null };
+export type ObtenerEscalasQuery = { scales: { totalCount: number | null, totalPages: number | null, currentPage: number | null, results: Array<{ id: string, nombre: string, descripcion: string | null, tipoEscala: EvaluationsScaleScaleTypeChoices, subescalas: Array<{ id: string, nombre: string, valorMaximo: number }>, valores: Array<{ id: string, etiqueta: string, valor: number }> } | null> | null } | null };
 
 export type ObtenerEvaluacionesQueryVariables = Exact<{
   patientId?: string | number | null | undefined;
@@ -1213,6 +1218,7 @@ export type DeleteDigitalResourceMutation = { deleteDigitalResource: { success: 
 export type ObtenerRolesQueryVariables = Exact<{
   page?: number | null | undefined;
   pageSize?: number | null | undefined;
+  search?: string | null | undefined;
 }>;
 
 
@@ -1248,6 +1254,8 @@ export type ObtenerSesionesQueryVariables = Exact<{
   sessionType?: string | null | undefined;
   sessionStatus?: string | null | undefined;
   therapistId?: string | number | null | undefined;
+  dateFrom?: unknown | null | undefined;
+  dateTo?: unknown | null | undefined;
   page?: number | null | undefined;
   pageSize?: number | null | undefined;
   byCycles?: boolean | null | undefined;
@@ -1263,6 +1271,8 @@ export type ObtenerCiclosQueryVariables = Exact<{
   sessionStatus?: string | null | undefined;
   sessionType?: string | null | undefined;
   therapistId?: string | number | null | undefined;
+  dateFrom?: unknown | null | undefined;
+  dateTo?: unknown | null | undefined;
   page?: number | null | undefined;
   pageSize?: number | null | undefined;
 }>;

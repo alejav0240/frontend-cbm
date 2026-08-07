@@ -2,6 +2,7 @@
 
 import { useMutation } from "@apollo/client/react";
 import { CREATE_THERAPY_REPORT } from "./mutaciones";
+import { CreateTherapyReportMutation } from "@/shared/api/generated/graphql";
 import { toast } from "sonner";
 
 interface CrearInformeInput {
@@ -23,9 +24,11 @@ export function useCrearInforme() {
         },
       });
       toast.success("Informe enviado correctamente");
-      return (data as any)?.createTherapyReport?.report;
-    } catch (err: any) {
-      toast.error(err?.message || "Error al enviar el informe");
+      return (data as CreateTherapyReportMutation)?.createTherapyReport?.report;
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al enviar el informe",
+      );
       throw err;
     }
   };

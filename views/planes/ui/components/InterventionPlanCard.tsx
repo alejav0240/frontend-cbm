@@ -4,18 +4,19 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Target, Download, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { InterventionPlanDetails } from "./InterventionPlanDetails";
+import type { PasoTarjeta, PlanTarjeta } from "../tipos";
 
 interface InterventionPlanCardProps {
-  plan: any;
+  plan: PlanTarjeta;
   idx: number;
   isExpanded: boolean;
   onToggleExpand: () => void;
   onExport: () => void;
   onDelete: () => void;
   onAddStep: () => void;
-  onEditStep: (step: any) => void;
-  onDeleteStep: (stepId: number) => void;
-  onToggleStepCompletion: (stepId: number) => void;
+  onEditStep: (step: PasoTarjeta) => void;
+  onDeleteStep: (stepId: string | number) => void;
+  onToggleStepCompletion: (stepId: string | number) => void;
 }
 
 export function InterventionPlanCard({

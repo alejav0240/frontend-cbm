@@ -126,6 +126,7 @@ export function CalendarPicker({
           role="combobox"
           aria-expanded={isOpen}
           aria-haspopup="dialog"
+          aria-controls="calendario-popup"
           aria-label={label || "Seleccionar fecha"}
           onClick={() => setIsOpen(!isOpen)}
           className={`w-full px-6 py-3 bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-white/5 cursor-pointer flex items-center gap-3 transition-all hover:shadow-md ${isOpen ? "border-[#008080] ring-2 ring-[#008080]/10" : ""}`}
@@ -151,6 +152,7 @@ export function CalendarPicker({
                 onClick={() => setIsOpen(false)}
               />
               <motion.div
+                id="calendario-popup"
                 initial={{ opacity: 0, y: openUpwards ? -10 : 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: openUpwards ? -10 : 10, scale: 0.95 }}

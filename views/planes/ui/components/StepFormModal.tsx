@@ -16,7 +16,7 @@ interface StepFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
-  editingStepId: number | null;
+  editingStepId: string | number | null;
   momento: string;
   setMomento: (val: string) => void;
   duracion: string;

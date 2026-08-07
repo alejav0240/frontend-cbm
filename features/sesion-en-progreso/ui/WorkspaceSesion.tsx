@@ -7,6 +7,13 @@ import { PlanTab } from "@/features/sesion-en-progreso/ui/PanTab";
 import { NotesTab } from "@/features/sesion-en-progreso/ui/NotesTab";
 import { ResourcesTab } from "@/features/sesion-en-progreso/ui/RecursosTab";
 import { EvaluationTab } from "@/features/sesion-en-progreso/ui/EvaluacionTab";
+import type {
+  MappedResource,
+  MappedScale,
+  MappedFormTemplate,
+  PlanTratamientoActivo,
+  FormResponseValue,
+} from "@/features/sesion-en-progreso/model/tipos";
 
 interface WorkspaceSesionProps {
   tabActiva: "plan" | "notas" | "recursos" | "escalas";
@@ -15,21 +22,21 @@ interface WorkspaceSesionProps {
   alCambiarNotas: (notas: string) => void;
   timer: number;
   formatTime: (seconds: number) => string;
-  planTratamiento: any;
+  planTratamiento: PlanTratamientoActivo | null;
   completedSteps: string[];
   totalSteps: number;
   toggleStep: (id: string) => void;
-  recursos: any[];
+  recursos: MappedResource[];
   selectedResources: string[];
   toggleResource: (id: string) => void;
-  evaluationScales: any[];
+  evaluationScales: MappedScale[];
   selectedScales: string[];
   toggleScale: (id: string) => void;
-  formTemplates: any[];
+  formTemplates: MappedFormTemplate[];
   selectedForms: string[];
   toggleForm: (id: string) => void;
-  formResponses: Record<string, any>;
-  updateForm: (key: string, value: any) => void;
+  formResponses: Record<string, FormResponseValue>;
+  updateForm: (key: string, value: FormResponseValue) => void;
 }
 
 interface TabBadge {

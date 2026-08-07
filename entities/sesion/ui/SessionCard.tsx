@@ -38,16 +38,16 @@ interface ScaleEvaluationValueResponseType {
 }
 
 interface ScaleEvaluationSubscaleResponseType {
-  subscale?: {
+  subscale: {
     name: string;
   };
-  value: number | string;
+  score: number;
 }
 
 interface ScaleEvaluationType {
   id: string;
-  evaluatedAt: string;
-  totalScore: number;
+  evaluatedAt: unknown;
+  totalScore: number | null;
   scale: ScaleType;
   subscaleResponses: ScaleEvaluationSubscaleResponseType[];
   valueResponses: ScaleEvaluationValueResponseType[];
@@ -77,17 +77,17 @@ interface Therapist {
   fullname: string;
 }
 
-interface SessionType {
+export interface SessionType {
   __typename?: string;
-  databaseId: number;
+  databaseId: number | null;
   durationMinutes: number | null;
-  cycleNumber: number;
-  createdAt: string;
+  cycleNumber: number | null;
+  createdAt: unknown;
   notes: string | null;
   videoUrl: string | null;
-  sessionTypeDisplay: string;
-  paymentStatusDisplay: string;
-  sessionDate: string;
+  sessionTypeDisplay: string | null;
+  paymentStatusDisplay: string | null;
+  sessionDate: unknown;
   sessionNumber: number;
   sessionStatus: string;
   sessionResources: SessionResourceType[];
@@ -124,17 +124,17 @@ const SessionCard: React.FC<SessionCardProps> = ({
   /**
    * Formatea una fecha en formato local español
    */
-  const formatDate = (dateString: string | null): string => {
+  const formatDate = (dateString: unknown): string => {
     if (!dateString) return "No disponible";
     try {
-      return new Date(dateString).toLocaleDateString("es-ES", {
+      return new Date(String(dateString)).toLocaleDateString("es-ES", {
         day: "2-digit",
         month: "short",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
       });
-    } catch (error) {
+    } catch (_error) {
       return "Fecha inválida";
     }
   };
@@ -294,7 +294,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
           )}
           <button
             onClick={() =>
-              onViewAIAnalysis(session.id || session.databaseId, "list")
+              onViewAIAnalysis(session.id || session.databaseId || 0, "list")
             }
             className="p-3 bg-purple-50 dark:bg-purple-500/10 rounded-2xl text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest flex-1 sm:flex-none"
             title="Ver Análisis de IA"
@@ -304,7 +304,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
           </button>
           <button
             onClick={() =>
-              onViewAIAnalysis(session.id || session.databaseId, "charts")
+              onViewAIAnalysis(session.id || session.databaseId || 0, "charts")
             }
             className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-2xl text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest flex-1 sm:flex-none"
             title="Ver Gráficos de IA"
@@ -320,7 +320,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
             <PenTool size={20} />
           </button>
           <button
-            onClick={() => onDeleteSession(session.databaseId)}
+            onClick={() => onDeleteSession(session.databaseId ?? 0)}
             className="p-3 bg-gray-50 dark:bg-white/5 rounded-2xl text-gray-400 hover:text-red-500 transition-all"
             title="Eliminar Sesión"
           >
@@ -513,7 +513,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
                               />
                               <span>
                                 {response.subscale?.name || "Subescala"}:{" "}
-                                {response.value}
+                                {response.score}
                               </span>
                             </li>
                           ))}

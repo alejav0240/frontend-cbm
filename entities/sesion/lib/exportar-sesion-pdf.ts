@@ -6,7 +6,9 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
     import("jspdf-autotable"),
   ]);
 
-  const doc = new jsPDF();
+  const doc = new jsPDF() as InstanceType<typeof jsPDF> & {
+    lastAutoTable: { finalY: number };
+  };
   const pagX = 14;
   let y = 22;
 
@@ -82,7 +84,7 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
       3: { textColor: [50, 50, 50], cellWidth: 60 },
     },
   });
-  y = (doc as any).lastAutoTable.finalY + 12;
+  y = doc.lastAutoTable.finalY + 12;
 
   // Notes
   header("Notas Clínicas");
@@ -135,7 +137,7 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
       styles: { fontSize: 8, cellPadding: 2.5 },
       margin: { left: pagX, right: 14 },
     });
-    y = (doc as any).lastAutoTable.finalY + 12;
+    y = doc.lastAutoTable.finalY + 12;
   }
 
   // Scale evaluations
@@ -178,7 +180,7 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
           styles: { fontSize: 8.5, cellPadding: 2 },
           margin: { left: pagX + 6, right: 20 },
         });
-        y = (doc as any).lastAutoTable.finalY + 8;
+        y = doc.lastAutoTable.finalY + 8;
       } else {
         y += 4;
       }
@@ -213,7 +215,7 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
           styles: { fontSize: 8.5, cellPadding: 3 },
           margin: { left: pagX + 6, right: 20 },
         });
-        y = (doc as any).lastAutoTable.finalY + 10;
+        y = doc.lastAutoTable.finalY + 10;
       } else {
         y += 4;
       }

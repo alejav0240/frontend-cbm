@@ -12,7 +12,6 @@ import {
 } from "@/entities/paciente";
 import { FormularioCrearPaciente } from "./FormularioCrearPaciente";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
-import { toast } from "sonner";
 import { FormularioClinico } from "@/features/gestion-paciente/ui/FormularioClinico";
 import { FormularioClinicoDataSchema } from "@/features/gestion-paciente/model/FormularioClinicoData.schema";
 
@@ -30,7 +29,7 @@ interface ModalesPacienteProps {
   mostrarFormularioClinico: boolean;
   alCerrarFormularioClinico: () => void;
   alEnviarFormularioClinico: (datos: FormularioClinicoDataSchema) => void;
-  pacienteSeleccionado: any;
+  pacienteSeleccionado: PacienteNormalizado | null;
 }
 
 export const ModalesPaciente = ({
@@ -55,7 +54,10 @@ export const ModalesPaciente = ({
       nombre: p.nombre,
       cedula: p.cedula,
       diagnostico: p.diagnosis,
-      tutor: (p.tutor as any)?.fullName ?? p.tutor?.firstName ?? "Sin Tutor",
+      tutor:
+        (p.tutor as { fullName?: string } | null)?.fullName ??
+        p.tutor?.firstName ??
+        "Sin Tutor",
       telefonoTutor: p.tutor?.celular ?? "Sin Telefono Tutor",
       emailTutor: p.tutor?.email ?? "Sin Email",
       fechaRegistro: p?.createdAt
@@ -71,30 +73,36 @@ export const ModalesPaciente = ({
     }));
   }, [listaPacientes]);
 
-  const pacientePDFExporter: Exporter<PacienteExportarFila> = {
-    id: "pdf",
-    label: "Exportar PDF",
-    async execute(data, columns, fileName) {
-      const doc = await generarPacientesPDF(data);
-      doc.save(`${fileName}_${Date.now()}.pdf`);
-    },
-    async preview(data) {
-      const doc = await generarPacientesPDF(data);
-      return doc.output("blob");
-    },
-  };
+  const pacientePDFExporter = useMemo(
+    (): Exporter<PacienteExportarFila> => ({
+      id: "pdf",
+      label: "Exportar PDF",
+      async execute(data, columns, fileName) {
+        const doc = await generarPacientesPDF(data);
+        doc.save(`${fileName}_${Date.now()}.pdf`);
+      },
+      async preview(data) {
+        const doc = await generarPacientesPDF(data);
+        return doc.output("blob");
+      },
+    }),
+    [],
+  );
 
-  const pacienteExcelExporter: Exporter<PacienteExportarFila> = {
-    id: "excel",
-    label: "Exportar Excel",
-    async execute(data) {
-      await generarPacientesExcel(data);
-    },
-  };
+  const pacienteExcelExporter = useMemo(
+    (): Exporter<PacienteExportarFila> => ({
+      id: "excel",
+      label: "Exportar Excel",
+      async execute(data) {
+        await generarPacientesExcel(data);
+      },
+    }),
+    [],
+  );
 
   const exporters = useMemo(
     () => [pacientePDFExporter, pacienteExcelExporter],
-    [],
+    [pacientePDFExporter, pacienteExcelExporter],
   );
 
   return (

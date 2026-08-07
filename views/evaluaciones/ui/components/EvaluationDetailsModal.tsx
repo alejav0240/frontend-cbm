@@ -4,12 +4,13 @@ import React from "react";
 import { motion } from "motion/react";
 import { FileText, Download } from "lucide-react";
 import { Modal } from "@/shared/ui/components/Modal";
+import { EscalaEvaluacion, EvaluacionDetallada } from "../tipos";
 
 interface EvaluationDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  evaluation: any;
-  evaluationScales: any[];
+  evaluation: EvaluacionDetallada | null;
+  evaluationScales: EscalaEvaluacion[];
   onExport: () => void;
 }
 
@@ -57,9 +58,9 @@ export function EvaluationDetailsModal({
             </h4>
             {currentScale.scaleType?.toLowerCase() === "subscale" ? (
               <div className="grid gap-4">
-                {currentScale.subscales?.map((sub: any) => {
+                {currentScale.subscales?.map((sub) => {
                   const response = realData?.subscaleResponses?.find(
-                    (r: any) => r.subscale.id === sub.id,
+                    (r) => r.subscale.id === sub.id,
                   );
                   const score = response
                     ? response.score
@@ -82,7 +83,7 @@ export function EvaluationDetailsModal({
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{
-                            width: `${(score / sub.maxValue) * 100}%`,
+                            width: `${(score / (sub.maxValue ?? 1)) * 100}%`,
                           }}
                           className="h-full bg-[#008080]"
                         />
@@ -99,7 +100,7 @@ export function EvaluationDetailsModal({
                   </p>
                   <p className="text-xs text-gray-500">
                     {currentScale?.values?.find(
-                      (v: any) => v.value === parseInt(evaluation.score),
+                      (v) => v.value === parseInt(String(evaluation.score)),
                     )?.label || "N/A"}
                   </p>
                 </div>

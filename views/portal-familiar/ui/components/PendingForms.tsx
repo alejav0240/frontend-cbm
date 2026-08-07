@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { ClipboardList, ChevronRight, CheckCircle2 } from 'lucide-react';
+import type { FormularioPendiente } from '@/views/portal-familiar/api/usePortalData';
 
 interface PendingFormsProps {
-  forms: any[];
-  onSelectForm: (form: any) => void;
+  forms: FormularioPendiente[];
+  onSelectForm: (form: FormularioPendiente) => void;
 }
 
 export function PendingForms({ forms, onSelectForm }: PendingFormsProps) {
@@ -24,7 +25,7 @@ export function PendingForms({ forms, onSelectForm }: PendingFormsProps) {
           {forms.map((form) => (
             <button
               key={form.id}
-              onClick={() => onSelectForm({ template: form.template, assignmentId: form.id })}
+              onClick={() => onSelectForm(form)}
               className="w-full flex items-center justify-between p-4 bg-white dark:bg-white/5 rounded-2xl hover:scale-[1.02] transition-all group border border-transparent hover:border-[#008080]/30 shadow-sm"
             >
               <div className="flex items-center gap-3">

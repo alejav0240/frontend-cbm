@@ -3,22 +3,10 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Target, CheckCircle2, Music, Layers } from "lucide-react";
+import type { PlanTratamientoActivo } from "../model/tipos";
 
 interface PlanTabProps {
-  patientPlan: {
-    mainObjective: string;
-    progressPercent: number;
-    steps: Array<{
-      id: string;
-      moment: number;
-      durationMinutes: number;
-      objective: string;
-      focus: string;
-      musicalResources: string;
-      musicalEmphasis: string;
-      mltMethod: string;
-    }> | null;
-  } | null;
+  patientPlan: PlanTratamientoActivo | null;
   completedSteps: string[];
   toggleStep: (id: string) => void;
 }

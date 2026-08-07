@@ -19,7 +19,6 @@ export async function generarInformeClinicoWord(
     HeadingLevel,
     AlignmentType,
     WidthType,
-    BorderStyle,
     ImageRun,
   } = await import("docx");
 
@@ -27,8 +26,6 @@ export async function generarInformeClinicoWord(
 
   const bold = (text: string) =>
     new TextRun({ text, bold: true, size: 22, font: "Calibri" });
-  const normal = (text: string) =>
-    new TextRun({ text: text || "—", size: 22, font: "Calibri" });
   const labelValue = (label: string, value: string) =>
     new Paragraph({
       spacing: { after: 80 },
@@ -83,7 +80,9 @@ export async function generarInformeClinicoWord(
   const emptyLine = () =>
     new Paragraph({ spacing: { after: 80 }, children: [] });
 
-  const children: any[] = [];
+  const children: Array<
+    InstanceType<typeof Paragraph> | InstanceType<typeof Table>
+  > = [];
 
   // ── Title ──
   children.push(

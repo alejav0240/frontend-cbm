@@ -2,13 +2,6 @@ import { useQuery } from "@apollo/client/react";
 import { OBTENER_SESIONES } from "./consultas";
 import type { ObtenerSesionesQuery } from "@/shared/api/generated/graphql";
 
-const STATUS_QUERIES = [
-  { key: "total", variables: {} },
-  { key: "completadas", variables: { sessionStatus: "COMPLETA" } },
-  { key: "pendientes", variables: { sessionStatus: "AGENDADA" } },
-  { key: "canceladas", variables: { sessionStatus: "CANCELADA" } },
-] as const;
-
 export function useSesionesStats() {
   const total = useQuery<ObtenerSesionesQuery>(OBTENER_SESIONES, {
     variables: { page: 1, pageSize: 1 },

@@ -24,8 +24,10 @@ import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
 import { Pagination } from "@/shared/ui/Pagination";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
+import { useUrlFiltros } from "@/shared/lib/hooks/useUrlFiltros";
+import { FilterBar } from "@/shared/ui/components/FilterBar";
+import { SearchInput } from "@/shared/ui/components/SearchInput";
 import {
-  Search,
   GraduationCap,
   Users,
   DollarSign,
@@ -35,11 +37,24 @@ import {
   UserPlus,
 } from "lucide-react";
 
+const ESTADO_OPCIONES = [
+  { label: "Todos los estados", value: "all" },
+  { label: "Activo", value: "ACTIVE", color: "bg-green-500" },
+  { label: "Borrador", value: "DRAFT", color: "bg-gray-400" },
+  { label: "Archivado", value: "ARCHIVED", color: "bg-red-500" },
+];
+
 export const CursosPage = () => {
   const router = useRouter();
-  const [terminoBusqueda, setTerminoBusqueda] = useState("");
+  const { filtros, setFiltros } = useUrlFiltros(["page", "q", "estado"] as const);
+  const paginaActual = Number(filtros.page || "1");
+  const filtroEstado = filtros.estado || "all";
+  const [terminoBusqueda, setTerminoBusqueda] = useState(filtros.q);
   const busquedaDebounced = useDebounce(terminoBusqueda, 500);
-  const [paginaActual, setPaginaActual] = useState(1);
+
+  if (terminoBusqueda !== filtros.q) {
+    setTerminoBusqueda(filtros.q);
+  }
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
@@ -53,6 +68,7 @@ export const CursosPage = () => {
     page: paginaActual,
     pageSize: 9,
     busqueda: busquedaDebounced || undefined,
+    estado: filtroEstado === "all" ? undefined : filtroEstado,
   });
 
   const { crearCurso } = useCrearCurso();
@@ -186,17 +202,29 @@ export const CursosPage = () => {
         activeCourses={activeCourses}
       />
 
-      <div className="relative group max-w-md">
-        <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#008080] transition-colors"
-          size={18}
-        />
-        <input
-          type="text"
-          placeholder="Buscar cursos..."
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <SearchInput
+          id="search-cursos"
           value={terminoBusqueda}
-          onChange={(e) => setTerminoBusqueda(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-white/5 focus-visible:border-[#008080] outline-none transition-all text-sm shadow-sm"
+          onChange={(v) => {
+            setTerminoBusqueda(v);
+            setFiltros({ q: v, page: "1" });
+          }}
+          placeholder="Buscar cursos..."
+          variant="compact"
+          className="sm:max-w-md"
+        />
+        <FilterBar
+          filtros={[
+            {
+              clave: "estado",
+              etiqueta: "Estado",
+              opciones: ESTADO_OPCIONES,
+              valor: filtroEstado,
+              alCambiar: (v) => setFiltros({ estado: v, page: "1" }),
+            },
+          ]}
+          onLimpiar={() => setFiltros({ estado: "", page: "1" })}
         />
       </div>
 
@@ -295,7 +323,7 @@ export const CursosPage = () => {
       <Pagination
         currentPage={paginaActual}
         totalPages={paginas}
-        onPageChange={setPaginaActual}
+        onPageChange={(p) => setFiltros({ page: String(p) })}
       />
 
       <EnrollStudentModal
@@ -358,7 +386,12 @@ export const CursosPage = () => {
           {
             key: "estado",
             label: "Estado",
-            formatter: (v) => (v === "ACTIVE" ? "Activo" : "Cerrado"),
+            formatter: (v) =>
+              v === "ACTIVE"
+                ? "Activo"
+                : v === "DRAFT"
+                  ? "Borrador"
+                  : "Archivado",
           },
         ]}
         filters={[

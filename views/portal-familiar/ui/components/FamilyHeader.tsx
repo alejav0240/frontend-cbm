@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { MessageSquare } from 'lucide-react';
 
 interface FamilyHeaderProps {
-  patient: any;
+  patient: { name: string };
 }
 
 export function FamilyHeader({ patient }: FamilyHeaderProps) {

@@ -3,13 +3,14 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Plus, Music, CheckCircle2, Edit2, Trash2 } from "lucide-react";
+import type { PasoTarjeta } from "../tipos";
 
 interface InterventionPlanDetailsProps {
-  steps: any[];
+  steps: PasoTarjeta[];
   onAddStep: () => void;
-  onEditStep: (step: any) => void;
-  onDeleteStep: (stepId: number) => void;
-  onToggleStepCompletion: (stepId: number) => void;
+  onEditStep: (step: PasoTarjeta) => void;
+  onDeleteStep: (stepId: string | number) => void;
+  onToggleStepCompletion: (stepId: string | number) => void;
 }
 
 export function InterventionPlanDetails({

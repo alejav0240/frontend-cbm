@@ -24,8 +24,10 @@ export function useEliminarSesion() {
           data?.deleteSession?.message || "Error al eliminar la sesión",
         );
       }
-    } catch (err: any) {
-      toast.error(err?.message || "Error al eliminar la sesión");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al eliminar la sesión",
+      );
       throw err;
     }
   };

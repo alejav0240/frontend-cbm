@@ -4,13 +4,18 @@ import { Rol } from "../model/tipos";
 import { useMemo } from "react";
 import { ObtenerRolesQuery } from "@/shared/api/generated/graphql";
 
-export const useRoles = (filtros?: { page?: number; pageSize?: number }) => {
+export const useRoles = (filtros?: {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}) => {
   const { data, loading, error, refetch } = useQuery<ObtenerRolesQuery>(
     OBTENER_ROLES,
     {
       variables: {
         page: filtros?.page,
         pageSize: filtros?.pageSize,
+        search: filtros?.search || undefined,
       },
       notifyOnNetworkStatusChange: true,
     },

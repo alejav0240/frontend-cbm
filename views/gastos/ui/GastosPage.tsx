@@ -18,7 +18,9 @@ import { Modal } from "@/shared/ui/components/Modal";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
+import { useUrlFiltros } from "@/shared/lib/hooks/useUrlFiltros";
 import { Pagination } from "@/shared/ui/Pagination";
+import { FilterBar } from "@/shared/ui/components/FilterBar";
 
 interface GastoFormData {
   descripcion: string;
@@ -38,10 +40,28 @@ const INITIAL_FORM_DATA: GastoFormData = {
 
 const PAGE_SIZE = 10;
 
+const ESTADO_OPCIONES = [
+  { label: "Todos los estados", value: "all" },
+  { label: "Pagado", value: "PAID", color: "bg-green-500" },
+  { label: "Pendiente", value: "PENDING", color: "bg-amber-500" },
+];
+
 export const GastosPage = () => {
-  const [terminoBusqueda, setTerminoBusqueda] = useState("");
+  const { filtros, setFiltros } = useUrlFiltros([
+    "page",
+    "q",
+    "estado",
+    "categoria",
+  ] as const);
+  const paginaActual = Number(filtros.page || "1");
+  const filtroEstado = filtros.estado || "all";
+  const filtroCategoria = filtros.categoria || "all";
+  const [terminoBusqueda, setTerminoBusqueda] = useState(filtros.q);
   const busquedaDebounced = useDebounce(terminoBusqueda, 500);
-  const [paginaActual, setPaginaActual] = useState(1);
+
+  if (terminoBusqueda !== filtros.q) {
+    setTerminoBusqueda(filtros.q);
+  }
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
@@ -54,16 +74,19 @@ export const GastosPage = () => {
     pagina: paginaActual,
     pageSize: PAGE_SIZE,
     busqueda: busquedaDebounced || undefined,
+    estado: filtroEstado === "all" ? undefined : filtroEstado,
+    categoria: filtroCategoria === "all" ? undefined : filtroCategoria,
   });
 
-  const { crearGasto, creando } = useCrearGasto();
+  const { crearGasto } = useCrearGasto();
   const { actualizarEstado } = useActualizarEstadoGasto();
-  const { eliminarGasto, eliminando } = useEliminarGasto();
+  const { eliminarGasto } = useEliminarGasto();
 
   const categorias = useMemo(() => {
     const cats = new Set(gastos.map((g) => g.categoria).filter(Boolean));
+    if (filtroCategoria !== "all") cats.add(filtroCategoria);
     return Array.from(cats);
-  }, [gastos]);
+  }, [gastos, filtroCategoria]);
 
   const totalGastos = useMemo(
     () => gastos.reduce((sum, g) => sum + Number(g.monto), 0),
@@ -184,12 +207,35 @@ export const GastosPage = () => {
         pendingExpenses={gastosPendientes}
       />
 
+      <FilterBar
+        filtros={[
+          {
+            clave: "estado",
+            etiqueta: "Estado",
+            opciones: ESTADO_OPCIONES,
+            valor: filtroEstado,
+            alCambiar: (v) => setFiltros({ estado: v, page: "1" }),
+          },
+          {
+            clave: "categoria",
+            etiqueta: "Categoría",
+            opciones: [
+              { label: "Todas las categorías", value: "all" },
+              ...categorias.map((c) => ({ label: c, value: c })),
+            ],
+            valor: filtroCategoria,
+            alCambiar: (v) => setFiltros({ categoria: v, page: "1" }),
+          },
+        ]}
+        onLimpiar={() => setFiltros({ estado: "", categoria: "", page: "1" })}
+      />
+
       <ExpensesTable
         expenses={gastos}
         searchTerm={terminoBusqueda}
         setSearchTerm={(value) => {
           setTerminoBusqueda(value);
-          setPaginaActual(1);
+          setFiltros({ q: value, page: "1" });
         }}
         onToggleStatus={handleToggleStatus}
         onDeleteRequest={(id) => {
@@ -201,7 +247,7 @@ export const GastosPage = () => {
       <Pagination
         currentPage={paginaActual}
         totalPages={paginas}
-        onPageChange={setPaginaActual}
+        onPageChange={(p) => setFiltros({ page: String(p) })}
       />
 
       <Modal

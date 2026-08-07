@@ -87,10 +87,10 @@ export function useAgendaSessions({
         const fechaStr = s.fechaSesion as string;
         return {
           id: s.id,
-          databaseId: (s as any).databaseId ?? undefined,
+          databaseId: (s as { databaseId?: number }).databaseId ?? undefined,
           patientId: s.paciente?.id || undefined,
           patientName: s.paciente?.fullName || "Sin paciente",
-          therapistId: (s.terapeuta as any)?.id || undefined,
+          therapistId: s.terapeuta?.id || undefined,
           time: formatTime(fechaStr),
           status: mapStatus(s.estadoSesion),
           therapist: s.terapeuta?.fullName || "Sin terapeuta",

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Loader2,
   RefreshCw,
@@ -33,13 +33,16 @@ export const CiclosPage = () => {
   });
 
   const [expandedCycleId, setExpandedCycleId] = useState<string | null>(null);
-  const [cycleToDelete, setCycleToDelete] = useState<string | null>(null);
+  const [, setCycleToDelete] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
+  const claveFiltros = `${paginaActual}|${busquedaDebounced}|${therapistFilter}`;
+  const [prevClaveFiltros, setPrevClaveFiltros] = useState(claveFiltros);
+  if (claveFiltros !== prevClaveFiltros) {
+    setPrevClaveFiltros(claveFiltros);
     setExpandedCycleId(null);
-  }, [paginaActual, busquedaDebounced, therapistFilter]);
+  }
 
   const { usuarios: terapeutas } = useUsuarios({
     pagina: 1,

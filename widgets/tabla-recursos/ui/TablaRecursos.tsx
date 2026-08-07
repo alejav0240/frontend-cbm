@@ -6,7 +6,7 @@ import {
   FileText,
   Video,
   Music,
-  Image,
+  Image as ImageIcon,
   FileSpreadsheet,
   Globe,
   Pencil,
@@ -34,7 +34,7 @@ const getTipoIcon = (tipo: string) => {
     case "AUDIO":
       return <Music size={18} />;
     case "IMAGE":
-      return <Image size={18} />;
+      return <ImageIcon size={18} />;
     case "SHEET_MUSIC":
       return <FileSpreadsheet size={18} />;
     case "WEB_LINK":

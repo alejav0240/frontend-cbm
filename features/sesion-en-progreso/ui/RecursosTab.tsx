@@ -3,9 +3,10 @@
 import React, { useState, useMemo } from "react";
 import { motion } from "motion/react";
 import { Music, CheckCircle2, Search } from "lucide-react";
+import type { MappedResource } from "@/features/sesion-en-progreso/model/tipos";
 
 interface ResourcesTabProps {
-  resources: any[];
+  resources: MappedResource[];
   selectedResources: string[];
   toggleResource: (id: string) => void;
 }

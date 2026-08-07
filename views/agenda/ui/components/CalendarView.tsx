@@ -3,14 +3,15 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Play } from "lucide-react";
+import { SesionAgenda } from "@/entities/sesion/model/tipos-agenda";
 
 interface CalendarViewProps {
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;
   setViewMode: (mode: "calendar" | "hourly" | "therapist") => void;
-  getSessionsForDay: (day: number) => any[];
-  onSessionClick: (session: any) => void;
-  onStartSession: (session: any) => void;
+  getSessionsForDay: (day: number) => SesionAgenda[];
+  onSessionClick: (session: SesionAgenda) => void;
+  onStartSession: (session: SesionAgenda) => void;
 }
 
 export function CalendarView({

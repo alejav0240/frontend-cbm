@@ -4,13 +4,19 @@ import React from "react";
 import Modal from "@/shared/ui/components/Modal";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 
+export interface NuevoInforme {
+  patientId: string;
+  reportUrl: string;
+  type: string;
+}
+
 interface ReportFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   patientOptions: { label: string; value: string }[];
   onSearchPatient: (term: string) => void;
-  newReport: any;
-  setNewReport: (val: any) => void;
+  newReport: NuevoInforme;
+  setNewReport: (val: NuevoInforme) => void;
   onSend: () => void;
 }
 

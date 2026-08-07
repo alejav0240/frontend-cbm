@@ -11,7 +11,7 @@ import {
   User,
   ArrowLeft,
 } from "lucide-react";
-import { DetalleGrupo, SesionGrupo } from "@/entities/institucion";
+import { DetalleGrupo } from "@/entities/institucion";
 
 interface GroupDetailProps {
   group: DetalleGrupo;

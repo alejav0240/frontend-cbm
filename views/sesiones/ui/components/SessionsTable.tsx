@@ -15,16 +15,33 @@ import { Pagination } from "@/shared/ui/Pagination";
 import { toast } from "sonner";
 
 interface SessionsTableProps {
-  sessions: any[];
+  sessions: SesionFila[];
   totalFilteredCount: number;
   currentPage: number;
   onPageChange: (page: number) => void;
   totalPages: number;
-  onExportSession: (session: any) => void;
-  onViewDetails: (session: any) => void;
-  onStartSession: (session: any) => void;
-  onCompleteSession: (session: any) => void;
-  onDeleteSession: (id: number) => void;
+  onExportSession: (session: SesionFila) => void;
+  onViewDetails: (session: SesionFila) => void;
+  onStartSession: (session: SesionFila) => void;
+  onCompleteSession: (session: SesionFila) => void;
+  onDeleteSession: (id: string | number) => void;
+}
+
+export interface SesionFila {
+  id: string | number;
+  sessionNum: number;
+  patientName: string;
+  institutionName?: string;
+  recordingUrl?: string;
+  date: string;
+  time: string;
+  status: string;
+  statusDisplay?: string;
+  payment: string;
+  paymentDisplay?: string;
+  therapist: string;
+  duration: string;
+  notes?: string;
 }
 
 export function SessionsTable({

@@ -12,10 +12,11 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { CycleSessionItem } from "./CycleSessionItem";
+import { CycleSessionItem, type SesionCicloItem } from "./CycleSessionItem";
+import type { CicloPaciente } from "@/entities/sesion/api/useCiclosPacientes";
 
 interface CycleCardProps {
-  cycle: any;
+  cycle: CicloPaciente;
   isExpanded: boolean;
   onToggleExpand: () => void;
   onDelete: () => void;
@@ -176,27 +177,30 @@ export function CycleCard({
             className="mt-10 pt-10 border-t border-gray-100 dark:border-white/5"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {cycleSessions.map((session: any, sidx: number) => (
-                <CycleSessionItem
-                  key={session.id}
-                  session={{
-                    ...session,
-                    date: new Date(session.sessionDate).toLocaleDateString(),
-                    status:
-                      session.sessionStatus === "completa"
-                        ? "Completada"
-                        : "Pendiente",
-                    payment:
-                      session.paymentStatusDisplay?.toLowerCase() === "paid"
-                        ? "Pagado"
-                        : "Pendiente",
-                    sessionNum: session.sessionNumber ?? sidx + 1,
-                  }}
-                  sessionIdx={sidx}
-                  onTogglePayment={() => {}} // Se implementará con mutación real
-                  onComplete={() => {}} // Se implementará con mutación real
-                />
-              ))}
+              {cycleSessions.map((session, sidx) => {
+                const sesion: SesionCicloItem = {
+                  ...session,
+                  date: new Date(String(session.sessionDate)).toLocaleDateString(),
+                  status:
+                    session.sessionStatus === "completa"
+                      ? "Completada"
+                      : "Pendiente",
+                  payment:
+                    session.paymentStatusDisplay?.toLowerCase() === "paid"
+                      ? "Pagado"
+                      : "Pendiente",
+                  sessionNum: session.sessionNumber ?? sidx + 1,
+                };
+                return (
+                  <CycleSessionItem
+                    key={session.id}
+                    session={sesion}
+                    sessionIdx={sidx}
+                    onTogglePayment={() => {}}
+                    onComplete={() => {}}
+                  />
+                );
+              })}
             </div>
           </motion.div>
         )}

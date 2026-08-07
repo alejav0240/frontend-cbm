@@ -4,18 +4,26 @@ import React from "react";
 import { motion } from "motion/react";
 import { DragOverlay } from "@dnd-kit/react";
 import { DroppableSlot, DraggableSession } from "./DnDHelpers";
-import { closestCenter, DndContext } from "@dnd-kit/core";
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  type DragStartEvent,
+  type SensorDescriptor,
+  type SensorOptions,
+} from "@dnd-kit/core";
+import { SesionAgenda } from "@/entities/sesion/model/tipos-agenda";
 
 interface TherapistViewProps {
   therapists: string[];
   hours: number[];
-  getSessionsForSelectedDate: () => any[];
-  onSessionClick: (session: any) => void;
-  sensors: any;
-  handleDragStart: (event: any) => void;
-  handleDragEnd: (event: any) => void;
-  activeId: number | null;
-  sessions: any[];
+  getSessionsForSelectedDate: () => SesionAgenda[];
+  onSessionClick: (session: SesionAgenda) => void;
+  sensors: SensorDescriptor<SensorOptions>[];
+  handleDragStart: (event: DragStartEvent) => void;
+  handleDragEnd: (event: DragEndEvent) => void;
+  activeId: string | null;
+  sessions: SesionAgenda[];
 }
 
 export function TherapistView({

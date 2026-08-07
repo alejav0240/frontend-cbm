@@ -46,7 +46,7 @@ import {
 import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import { toast } from "sonner";
-import { motion } from "motion/react";
+import { motion, type TargetAndTransition } from "motion/react";
 import { useSesionConfigStore } from "@/shared/model/useSesionConfigStore";
 import { alertarFinSesion } from "@/shared/lib/utils/alarmaDuracion";
 import { useMutation } from "@apollo/client/react";
@@ -58,7 +58,8 @@ import type {
   MappedScaleValue,
   MappedFormTemplate,
   MappedFormField,
-} from "@/views/sesion-en-progreso/model/tipos";
+  FormResponseValue,
+} from "@/features/sesion-en-progreso/model/tipos";
 
 const QUESTION_TYPE_MAP: Record<string, string> = {
   TEXT: "text",
@@ -127,7 +128,9 @@ export const SesionEnProgresoPage = () => {
   const [selectedResources, setSelectedResources] = useState<string[]>([]);
   const [selectedScales, setSelectedScales] = useState<string[]>([]);
   const [selectedForms, setSelectedForms] = useState<string[]>([]);
-  const [formResponses, setFormResponses] = useState<Record<string, any>>({});
+  const [formResponses, setFormResponses] = useState<
+    Record<string, FormResponseValue>
+  >({});
   const [tabActiva, setTabActiva] = useState<TabId>("plan");
   const [camaraAbierta, setCamaraAbierta] = useState(true);
   const [mobileCameraOpen, setMobileCameraOpen] = useState(true);
@@ -243,7 +246,7 @@ export const SesionEnProgresoPage = () => {
     return {
       mainObjective: planActivo.objetivoPrincipal,
       progressPercent: planActivo.porcentajeProgreso,
-      steps: (planActivo.pasos || []).map((paso: any) => ({
+      steps: (planActivo.pasos || []).map((paso) => ({
         id: paso.id,
         moment: paso.momento,
         objective: paso.objetivo,
@@ -259,13 +262,13 @@ export const SesionEnProgresoPage = () => {
   const totalSteps = patientPlan?.steps?.length ?? 0;
 
   const recursos = useMemo((): MappedResource[] => {
-    const digitales: MappedResource[] = (recursosRaw || []).map((r: any) => ({
+    const digitales: MappedResource[] = (recursosRaw || []).map((r) => ({
       id: `digital-${r.id}`,
       title: r.titulo,
       type: r.tipo,
       category: r.categoria,
     }));
-    const inventario: MappedResource[] = (articulosRaw || []).map((a: any) => ({
+    const inventario: MappedResource[] = (articulosRaw || []).map((a) => ({
       id: `inv-${a.id}`,
       title: a.nombre,
       type: a.tipo,
@@ -275,35 +278,37 @@ export const SesionEnProgresoPage = () => {
   }, [recursosRaw, articulosRaw]);
 
   const evaluationScales = useMemo((): MappedScale[] => {
-    return (escalasRaw || []).map((s: any) => ({
-      id: s.id,
-      name: s.nombre,
-      description: s.descripcion,
-      type: MAPA_TIPO_ESCALA[s.tipoEscala] ?? s.tipoEscala,
-      subscales: (s.subescalas || []).map(
-        (sub: any): MappedSubscale => ({
-          id: sub.id,
-          name: sub.nombre,
-          maxScore: sub.valorMaximo,
-        }),
-      ),
-      values: (s.valores || []).map(
-        (v: any): MappedScaleValue => ({
-          id: v.id,
-          label: v.etiqueta,
-          value: v.valor,
-        }),
-      ),
-    }));
+    return (escalasRaw || [])
+      .filter((s): s is NonNullable<typeof s> => s !== null)
+      .map((s) => ({
+        id: s.id,
+        name: s.nombre,
+        description: s.descripcion,
+        type: MAPA_TIPO_ESCALA[s.tipoEscala] ?? s.tipoEscala,
+        subscales: (s.subescalas || []).map(
+          (sub): MappedSubscale => ({
+            id: sub.id,
+            name: sub.nombre,
+            maxScore: sub.valorMaximo,
+          }),
+        ),
+        values: (s.valores || []).map(
+          (v): MappedScaleValue => ({
+            id: v.id,
+            label: v.etiqueta,
+            value: v.valor,
+          }),
+        ),
+      }));
   }, [escalasRaw]);
 
   const formTemplates = useMemo((): MappedFormTemplate[] => {
-    return (formulariosRaw || []).map((f: any) => ({
+    return (formulariosRaw || []).map((f) => ({
       id: f.id,
       name: f.name,
       description: f.description,
       fields: (f.questions || []).map(
-        (q: any): MappedFormField => ({
+        (q): MappedFormField => ({
           id: q.id,
           label: q.question,
           type: normalizarTipoCampo(q.questionType),
@@ -350,7 +355,7 @@ export const SesionEnProgresoPage = () => {
     );
   }, []);
 
-  const updateForm = useCallback((key: string, value: any) => {
+  const updateForm = useCallback((key: string, value: FormResponseValue) => {
     setFormResponses((prev) => ({ ...prev, [key]: value }));
   }, []);
 
@@ -540,7 +545,7 @@ export const SesionEnProgresoPage = () => {
           sessionId,
         });
 
-        const assignmentId = (assignData as any)?.assignForm?.assignment?.id;
+        const assignmentId = assignData?.assignForm?.assignment?.id;
         if (assignmentId) {
           const responses = Object.entries(formResponses)
             .filter(([k]) => k.startsWith(`form_${formId}_field_`))
@@ -977,8 +982,8 @@ export const SesionEnProgresoPage = () => {
           animate={{
             width: {
               lg: camaraAbierta ? "50%" : "56px",
-            } as any,
-          }}
+            },
+          } as unknown as TargetAndTransition}
           className="
         relative
         border-b lg:border-b-0 lg:border-r

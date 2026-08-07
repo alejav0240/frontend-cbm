@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Loader2, ClipboardList, AlertCircle } from "lucide-react";
+import { Loader2, ClipboardList } from "lucide-react";
 import { EvaluationsHeader } from "./components/EvaluationsHeader";
 import { EvaluationCard } from "./components/EvaluationCard";
 import { EvaluationDetailsModal } from "./components/EvaluationDetailsModal";
@@ -13,12 +13,17 @@ import {
   useEvaluaciones,
   useEscalas,
   useAgregarEscalaSesion,
+  type Evaluacion,
 } from "@/entities/escalas";
 import { useBuscarPacientes } from "@/entities/paciente";
 import { useAuthStore } from "@/shared/model/useAuthStore";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { Pagination } from "@/shared/ui/Pagination";
 import Modal from "@/shared/ui/components/Modal";
+import {
+  EvaluacionDetallada,
+  NuevaEvaluacion,
+} from "./tipos";
 
 export const EvaluacionesPage = () => {
   const [search, setSearch] = useState("");
@@ -36,6 +41,9 @@ export const EvaluacionesPage = () => {
     });
 
   const { escalas } = useEscalas();
+  const escalasValidas = escalas.filter(
+    (e): e is NonNullable<typeof e> => e != null,
+  );
   const { usuario } = useAuthStore();
   const {
     options: patientOptions,
@@ -45,15 +53,17 @@ export const EvaluacionesPage = () => {
   const { agregarEscalaSesion, agregando } = useAgregarEscalaSesion();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedEval, setSelectedEval] = useState<any>(null);
+  const [selectedEval, setSelectedEval] = useState<EvaluacionDetallada | null>(
+    null,
+  );
 
-  const handleViewDetails = useCallback((ev: any) => {
+  const handleViewDetails = useCallback((ev: Evaluacion) => {
     setSelectedEval({
       ...ev,
       patient: ev.patientName,
       originalData: {
         scale: { id: ev.scaleId },
-        subscaleResponses: ev.subscaleResponses.map((r: any) => ({
+        subscaleResponses: ev.subscaleResponses.map((r) => ({
           subscale: { id: r.subscaleId },
           score: r.score,
         })),
@@ -61,14 +71,14 @@ export const EvaluacionesPage = () => {
     });
   }, []);
 
-  const [newEval, setNewEval] = useState<any>({
+  const [newEval, setNewEval] = useState<NuevaEvaluacion>({
     patientId: "",
     type: "Inicial",
     date: new Date().toISOString().split("T")[0],
     score: 0,
   });
   const [selectedScaleId, setSelectedScaleId] = useState<number | null>(null);
-  const [subscaleScores, setSubscaleScores] = useState<Record<number, number>>(
+  const [subscaleScores, setSubscaleScores] = useState<Record<string, number>>(
     {},
   );
 
@@ -76,18 +86,29 @@ export const EvaluacionesPage = () => {
     const id = parseInt(scaleId, 10);
     setSelectedScaleId(isNaN(id) ? null : id);
     setSubscaleScores({});
-    setNewEval((prev: any) => ({ ...prev, score: 0 }));
+    setNewEval((prev) => ({ ...prev, score: 0 }));
   }, []);
 
   const handleSubscaleScoreChange = useCallback(
-    (subId: number, score: number) => {
+    (subId: string, score: number) => {
       const updated = { ...subscaleScores, [subId]: score };
       setSubscaleScores(updated);
       const total = Object.values(updated).reduce((a, b) => a + b, 0);
-      setNewEval((prev: any) => ({ ...prev, score: total }));
+      setNewEval((prev) => ({ ...prev, score: total }));
     },
     [subscaleScores],
   );
+
+  const resetForm = useCallback(() => {
+    setNewEval({
+      patientId: "",
+      type: "Inicial",
+      date: new Date().toISOString().split("T")[0],
+      score: 0,
+    });
+    setSelectedScaleId(null);
+    setSubscaleScores({});
+  }, []);
 
   const handleCreateSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -97,13 +118,13 @@ export const EvaluacionesPage = () => {
         return;
       }
 
-      const currentScale = (escalas as any[]).find(
-        (s: any) => s.id == selectedScaleId,
+      const currentScale = escalasValidas.find(
+        (s) => s.id === String(selectedScaleId),
       );
       const isSubscale = currentScale?.tipoEscala?.toLowerCase() === "subscale";
       const subscales = isSubscale
         ? Object.entries(subscaleScores)
-            .filter(([_, score]) => score > 0)
+            .filter((entry) => entry[1] > 0)
             .map(([subId, score]) => ({
               subscaleId: subId,
               score,
@@ -111,7 +132,7 @@ export const EvaluacionesPage = () => {
         : undefined;
 
       const valueId = !isSubscale
-        ? currentScale?.valores?.find((v: any) => v.valor === newEval.score)?.id
+        ? currentScale?.valores?.find((v) => v.valor === newEval.score)?.id
         : undefined;
 
       try {
@@ -127,46 +148,30 @@ export const EvaluacionesPage = () => {
         resetForm();
         toast.success("Evaluación registrada correctamente");
         refetch();
-      } catch (err: any) {
-        toast.error(err?.message || "Error al registrar la evaluación");
+      } catch (err: unknown) {
+        toast.error(
+          err instanceof Error ? err.message : "Error al registrar la evaluación",
+        );
       }
     },
     [
       newEval,
       selectedScaleId,
       usuario,
-      escalas,
+      escalasValidas,
       subscaleScores,
       agregarEscalaSesion,
       refetch,
+      resetForm,
     ],
   );
 
-  const resetForm = useCallback(() => {
-    setNewEval({
-      patientId: "",
-      type: "Inicial",
-      date: new Date().toISOString().split("T")[0],
-      score: 0,
-    });
-    setSelectedScaleId(null);
-    setSubscaleScores({});
-  }, []);
-
   const handleExport = useCallback(
-    (evaluation: any) => (e: React.MouseEvent) => {
+    (_evaluation: Evaluacion) => (e: React.MouseEvent) => {
       e.stopPropagation();
       toast.success("Exportación iniciada");
     },
     [],
-  );
-
-  const currentScale = useMemo(
-    () =>
-      selectedScaleId
-        ? (escalas as any[]).find((s: any) => s.id == selectedScaleId)
-        : null,
-    [selectedScaleId, escalas],
   );
 
   const handleSearchChange = useCallback((value: string) => {
@@ -202,7 +207,7 @@ export const EvaluacionesPage = () => {
         onSearchChange={handleSearchChange}
         scaleId={scaleFilter}
         onScaleChange={handleScaleFilterChange}
-        scales={escalas as any[]}
+        scales={escalasValidas}
       />
 
       {evaluaciones.length === 0 ? (
@@ -264,7 +269,7 @@ export const EvaluacionesPage = () => {
         <EvaluationForm
           patientOptions={patientOptions}
           onSearchPatient={onSearchPatient}
-          evaluationScales={escalas as any[]}
+          evaluationScales={escalasValidas}
           newEval={newEval}
           setNewEval={setNewEval}
           selectedScaleId={selectedScaleId}
@@ -284,7 +289,7 @@ export const EvaluacionesPage = () => {
         isOpen={!!selectedEval}
         onClose={() => setSelectedEval(null)}
         evaluation={selectedEval}
-        evaluationScales={escalas as any[]}
+        evaluationScales={escalasValidas}
         onExport={() => {
           if (selectedEval) {
             toast.success("Exportando evaluación...");

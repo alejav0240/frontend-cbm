@@ -12,12 +12,18 @@ import {
   User,
   Calendar,
   Users,
-  ChevronDown,
   MoreVertical,
 } from "lucide-react";
 
+export interface ActiveSession {
+  patientName: string;
+  sessionNum: number;
+  therapist: string;
+  sessionType: string;
+}
+
 interface SessionHeaderProps {
-  activeSession: any;
+  activeSession: ActiveSession;
   timer: number;
   isActive: boolean;
   setIsActive: (active: boolean) => void;
@@ -76,14 +82,6 @@ export function SessionHeader({
     const code = name ? name.charCodeAt(0) : 0;
     const index = Number.isNaN(code) ? 0 : code % colors.length;
     return colors[index];
-  };
-
-  // Estado de la sesión para mostrar indicadores
-  const sessionStatus = {
-    isLive: true,
-    duration: formatTime(timer),
-    isPaused: !isActive,
-    isRecording: isRecording,
   };
 
   return (

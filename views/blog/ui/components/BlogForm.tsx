@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import Image from "next/image";
 import {
   Edit2,
   Eye,
@@ -14,7 +15,6 @@ import {
   List,
   Quote,
   Sigma,
-  Image as ImageIcon,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -320,10 +320,12 @@ export function BlogForm({
               />
               {imagePreviewUrl && (
                 <div className="relative w-full h-24 rounded-xl overflow-hidden bg-gray-100 dark:bg-white/5">
-                  <img
+                  <Image
                     src={imagePreviewUrl}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
+                    alt="Vista previa de la imagen"
+                    fill
+                    unoptimized
+                    className="object-cover"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
                     }}

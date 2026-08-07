@@ -2,17 +2,18 @@
 
 import React from "react";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
+import { EscalaEvaluacion, NuevaEvaluacion } from "../tipos";
 
 interface EvaluationFormProps {
   patientOptions: { label: string; value: string }[];
   onSearchPatient: (term: string) => void;
-  evaluationScales: any[];
-  newEval: any;
-  setNewEval: (val: any) => void;
+  evaluationScales: EscalaEvaluacion[];
+  newEval: NuevaEvaluacion;
+  setNewEval: React.Dispatch<React.SetStateAction<NuevaEvaluacion>>;
   selectedScaleId: number | null;
   handleScaleChange: (scaleId: string) => void;
-  subscaleScores: Record<number, number>;
-  handleSubscaleScoreChange: (subId: number, score: number) => void;
+  subscaleScores: Record<string, number>;
+  handleSubscaleScoreChange: (subId: string, score: number) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -30,9 +31,10 @@ export function EvaluationForm({
   handleSubscaleScoreChange,
   onSubmit,
   onCancel,
-  isLoading,
 }: EvaluationFormProps) {
-  const currentScale = evaluationScales.find((s) => s.id == selectedScaleId);
+  const currentScale = evaluationScales.find(
+    (s) => s.id === String(selectedScaleId),
+  );
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -67,7 +69,7 @@ export function EvaluationForm({
       <SearchableSelect
         label="Escala de Evaluación"
         options={evaluationScales.map((scale) => ({
-          label: scale.nombre ?? scale.name,
+          label: scale.nombre ?? scale.name ?? "",
           value: String(scale.id),
         }))}
         value={selectedScaleId?.toString() || ""}
@@ -85,8 +87,8 @@ export function EvaluationForm({
                 Puntuación por Subescalas
               </p>
               <div className="grid gap-4">
-                {(currentScale.subescalas ?? currentScale.subscales ?? [])?.map(
-                  (sub: any) => (
+                {(currentScale?.subescalas ?? currentScale?.subscales ?? [])?.map(
+                  (sub) => (
                     <div
                       key={sub.id}
                       className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5"
@@ -102,7 +104,7 @@ export function EvaluationForm({
                       <div className="flex items-center gap-3">
                         <input
                           type="number"
-                          max={sub.valorMaximo ?? sub.maxValue}
+                          max={sub.valorMaximo ?? sub.maxValue ?? undefined}
                           min={0}
                           value={subscaleScores[sub.id] || 0}
                           onChange={(e) =>
@@ -129,14 +131,14 @@ export function EvaluationForm({
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {(currentScale?.valores ?? currentScale?.values ?? [])?.map(
-                  (val: any) => (
+                  (val) => (
                     <button
                       key={val.id}
                       type="button"
                       onClick={() =>
-                        setNewEval((prev: any) => ({
+                        setNewEval((prev) => ({
                           ...prev,
-                          score: val.valor ?? val.value,
+                          score: val.valor ?? val.value ?? 0,
                         }))
                       }
                       className={`p-4 rounded-2xl border transition-all text-center ${

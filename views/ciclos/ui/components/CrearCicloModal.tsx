@@ -44,7 +44,7 @@ const ContenidoFormulario = ({
   const [numSessions, setNumSessions] = useState("4");
   const [therapist, setTherapist] = useState("");
 
-  const { pacientes, cargando: cargandoP } = usePacientes({
+  const { pacientes } = usePacientes({
     search: "",
     pageSize: 20,
   });

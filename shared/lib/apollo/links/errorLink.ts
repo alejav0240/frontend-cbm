@@ -33,7 +33,7 @@ const isAuthError = (error: unknown): boolean => {
   }
   // Network / HTTP errors
   if (error instanceof Error && "statusCode" in error) {
-    return (error as any).statusCode === 401;
+    return error.statusCode === 401;
   }
   return false;
 };
@@ -66,7 +66,9 @@ export const createErrorLink = () => {
         })
         .then((response) => {
           TokenManager.handleRefreshSuccess(
-            (response.data as any)?.refreshToken,
+            (response.data as {
+              refreshToken?: { payload?: string; refreshExpiresIn?: number };
+            } | null | undefined)?.refreshToken,
           );
           flushRefreshQueue(true);
           forward(operation).subscribe(observer);

@@ -11,8 +11,8 @@ export function useEliminarPasoPlan() {
     try {
       await mutation({ variables: { id } });
       toast.success("Paso eliminado correctamente");
-    } catch (err: any) {
-      toast.error(err?.message || "Error al eliminar el paso");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Error al eliminar el paso");
       throw err;
     }
   };

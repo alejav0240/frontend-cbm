@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, Clock, Loader2, User } from "lucide-react";
+import { CalendarIcon, Clock, Loader2 } from "lucide-react";
 import { esquemaCita, DatosCita } from "../../model/esquema-cita";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 import { usePacientes } from "@/entities/paciente";

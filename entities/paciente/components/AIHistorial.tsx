@@ -3,8 +3,16 @@
 import React from "react";
 import { ChevronRight } from "lucide-react";
 
+interface FilaHistorialIA {
+  sessionNum: string | number;
+  date: string;
+  restrictivos: number;
+  vocal: number;
+  social: number;
+}
+
 interface PatientAIHistoryTableProps {
-  data: any[];
+  data: FilaHistorialIA[];
 }
 
 export function AIHistorial({ data }: PatientAIHistoryTableProps) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Download, ExternalLink } from "lucide-react";
+import { FileText, ExternalLink } from "lucide-react";
 import Modal from "@/shared/ui/components/Modal";
 
 interface ReportDetailData {

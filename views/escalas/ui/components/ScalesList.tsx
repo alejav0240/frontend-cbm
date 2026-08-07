@@ -2,16 +2,21 @@
 
 import React, { useState } from "react";
 import { ScaleCard } from "./ScaleCard";
+import type { EscalaTarjeta } from "../tipos";
 
 interface ScalesListProps {
-  scales: any[];
-  onDelete: (id: number) => void;
+  scales: Array<EscalaTarjeta | null>;
+  onDelete: (id: string) => void;
 }
 
 export function ScalesList({ scales, onDelete }: ScalesListProps) {
-  const [expandedScaleId, setExpandedScaleId] = useState<number | null>(null);
+  const [expandedScaleId, setExpandedScaleId] = useState<string | null>(null);
 
-  if (scales.length === 0) {
+  const escalasValidas = scales.filter(
+    (s): s is EscalaTarjeta => s != null,
+  );
+
+  if (escalasValidas.length === 0) {
     return (
       <div className="text-center py-20 bg-gray-50 dark:bg-white/2 rounded-[48px] border border-dashed border-gray-200 dark:border-white/10">
         <p className="text-gray-400 italic">
@@ -23,7 +28,7 @@ export function ScalesList({ scales, onDelete }: ScalesListProps) {
 
   return (
     <div className="grid gap-6">
-      {scales.map((scale, idx) => (
+      {escalasValidas.map((scale, idx) => (
         <ScaleCard
           key={scale.id}
           scale={scale}

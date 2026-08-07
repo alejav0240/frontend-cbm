@@ -1,32 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   Music,
-  Heart,
-  Users,
-  Calendar,
   ChevronRight,
   Phone,
   Mail,
   MapPin,
-  Menu,
-  X,
   Play,
   Check,
   Sparkles,
   ArrowRight,
-  Sun,
-  Moon,
 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/shared/ui/Navbar";
 import MusicalNotes from "@/shared/ui/MusicalNotes";
 import LoadingScreen from "@/shared/ui/LoadingScreen";
 import { useForm } from "react-hook-form";
+import type {
+  UseFormRegister,
+  FieldErrors,
+  UseFormRegisterReturn,
+} from "react-hook-form";
+import type { LucideIcon } from "lucide-react";
 import { services } from "@/shared/data/services";
 import { staff } from "@/shared/data/staff";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -137,7 +136,7 @@ const ContactInfo = ({
   label,
   value,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: string;
 }) => (
@@ -246,14 +245,13 @@ export default function Home() {
 
   const {
     register,
-    handleSubmit,
     reset,
     formState: { errors },
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
   });
 
-  const onSubmit = async (data: ContactFormData) => {
+  const onSubmit = async () => {
     try {
       setIsSubmitting(true);
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -655,7 +653,17 @@ const PricingSection = ({
   </section>
 );
 
-const ContactSection = ({ register, errors, isSubmitting, onSubmit }: any) => (
+const ContactSection = ({
+  register,
+  errors,
+  isSubmitting,
+  onSubmit,
+}: {
+  register: UseFormRegister<ContactFormData>;
+  errors: FieldErrors<ContactFormData>;
+  isSubmitting: boolean;
+  onSubmit: () => void;
+}) => (
   <section
     id="contacto"
     className="py-24 bg-white dark:bg-background relative z-10 transition-colors duration-300"
@@ -749,7 +757,15 @@ const FormField = ({
   type = "text",
   isTextarea = false,
   disabled,
-}: any) => (
+}: {
+  label: string;
+  register: UseFormRegisterReturn;
+  error?: { message?: string };
+  placeholder?: string;
+  type?: string;
+  isTextarea?: boolean;
+  disabled?: boolean;
+}) => (
   <div className="space-y-2">
     <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
       {label}

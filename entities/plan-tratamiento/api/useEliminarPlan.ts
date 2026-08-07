@@ -11,8 +11,8 @@ export function useEliminarPlan() {
     try {
       await mutation({ variables: { id } });
       toast.success("Plan eliminado correctamente");
-    } catch (err: any) {
-      toast.error(err?.message || "Error al eliminar el plan");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Error al eliminar el plan");
       throw err;
     }
   };

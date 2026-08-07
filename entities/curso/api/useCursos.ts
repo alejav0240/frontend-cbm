@@ -16,7 +16,7 @@ export const useCursos = (params: UseCursosParams = {}) => {
     OBTENER_CURSOS,
     {
       variables: {
-        state: params.estado,
+        state: params.estado ? params.estado.toLowerCase() : undefined,
         page: params.page,
         pageSize: params.pageSize,
         search: params.busqueda || "",
@@ -39,7 +39,7 @@ export const useCursos = (params: UseCursosParams = {}) => {
         // SOLUCIÓN: Convertimos el string ("450.00") a un número real de JS
         precio: Number(c.precio) || 0,
 
-        estado: c.estado,
+        estado: c.estado?.toUpperCase(),
         conteoEstudiantes: c.conteoEstudiantes ?? 0,
         ingresosTotales: c.ingresosTotales ?? 0,
       }));

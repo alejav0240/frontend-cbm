@@ -112,7 +112,8 @@ jobs:
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash -s << 'DEPLOY_EOF'
             set -ex
             cd ~/cbm-frontend
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             pnpm install --frozen-lockfile
             pnpm build
             cp -r .next/static .next/standalone/.next/

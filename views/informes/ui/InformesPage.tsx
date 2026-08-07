@@ -2,13 +2,15 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { Loader2, ClipboardList, AlertCircle } from "lucide-react";
+import { Loader2, ClipboardList } from "lucide-react";
 import { ReportsHeader } from "./components/ReportsHeader";
 import { ReportsStats } from "./components/ReportsStats";
 import { ReportCard } from "./components/ReportCard";
 import { ReportDetailsModal } from "./components/ReportDetailsModal";
 import { ReportFormModal } from "./components/ReportFormModal";
 import { useInformes, useCrearInforme } from "@/entities/informes";
+import type { TherapyReport } from "@/entities/informes/model/tipos";
+import { NuevoInforme } from "./components/ReportFormModal";
 import { useBuscarPacientes } from "@/entities/paciente";
 import { useAuthStore } from "@/shared/model/useAuthStore";
 import { Pagination } from "@/shared/ui/Pagination";
@@ -19,13 +21,15 @@ export default function InformesPage() {
   const { usuario } = useAuthStore();
   const { options: patientOptions, onSearch: onSearchPatient } =
     useBuscarPacientes();
-  const { crearInforme, creando } = useCrearInforme();
+  const { crearInforme } = useCrearInforme();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [selectedReport, setSelectedReport] = useState<TherapyReport | null>(
+    null,
+  );
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
-  const [newReport, setNewReport] = useState({
+  const [newReport, setNewReport] = useState<NuevoInforme>({
     patientId: "",
     reportUrl: "",
     type: "Mensual",
@@ -38,7 +42,7 @@ export default function InformesPage() {
     return { total, read, rate };
   }, [informes, readIds]);
 
-  const handleViewReport = useCallback((report: any) => {
+  const handleViewReport = useCallback((report: TherapyReport) => {
     setReadIds((prev) => new Set(prev).add(report.id));
     setSelectedReport({
       ...report,

@@ -10,13 +10,24 @@ import { RolesHeader } from "./components/RolesHeader";
 import { SkeletonRoles } from "./components/SkeletonRoles";
 import { useRolesStore } from "@/shared/model/useRolesStore";
 import { Pagination } from "@/shared/ui/Pagination";
+import { SearchInput } from "@/shared/ui/components/SearchInput";
+import { useDebounce } from "@/shared/lib/hooks/useDebounce";
+import { useUrlFiltros } from "@/shared/lib/hooks/useUrlFiltros";
 import { ShieldAlert, Shield, Trash2, X } from "lucide-react";
 
 export const RolesPage = () => {
-  const [paginaActual, setPaginaActual] = useState(1);
+  const { filtros, setFiltros } = useUrlFiltros(["page", "q"] as const);
+  const paginaActual = Number(filtros.page || "1");
+  const [terminoBusqueda, setTerminoBusqueda] = useState(filtros.q);
+  const busquedaDebounced = useDebounce(terminoBusqueda, 400);
+
+  if (terminoBusqueda !== filtros.q) {
+    setTerminoBusqueda(filtros.q);
+  }
   const { roles, paginas, cargando } = useRoles({
     page: paginaActual,
     pageSize: 10,
+    search: busquedaDebounced || undefined,
   });
   const { rolesSeleccionadas, acciones } = useRolesStore();
 
@@ -48,9 +59,20 @@ export const RolesPage = () => {
       </div>
 
       <div>
-        <h2 className="text-lg font-bold dark:text-white mb-4">
-          Roles Existentes
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <h2 className="text-lg font-bold dark:text-white">Roles Existentes</h2>
+          <SearchInput
+            id="search-roles"
+            value={terminoBusqueda}
+            onChange={(v) => {
+              setTerminoBusqueda(v);
+              setFiltros({ q: v, page: "1" });
+            }}
+            placeholder="Buscar rol por nombre..."
+            variant="compact"
+            className="sm:max-w-xs"
+          />
+        </div>
         <TablaRoles
           roles={roles}
           rolesSeleccionadas={rolesSeleccionadas}
@@ -65,7 +87,7 @@ export const RolesPage = () => {
         <Pagination
           currentPage={paginaActual}
           totalPages={paginas}
-          onPageChange={setPaginaActual}
+          onPageChange={(p) => setFiltros({ page: String(p) })}
         />
       </div>
 

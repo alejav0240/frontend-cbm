@@ -1,5 +1,6 @@
 import { useQuery } from "@apollo/client/react";
 import { OBTENER_CURSO } from "./consultas";
+import { ObtenerCursoQuery } from "@/shared/api/generated/graphql";
 import { useMemo } from "react";
 
 export interface CursoDetalle {
@@ -25,21 +26,21 @@ export function useCurso(id: string) {
   });
 
   const curso = useMemo((): CursoDetalle | null => {
-    const c = (data as any)?.course;
+    const c = (data as ObtenerCursoQuery)?.course;
     if (!c) return null;
     return {
       id: c.id,
       nombre: c.name ?? "",
       descripcion: c.description ?? "",
       precio: Number(c.price) || 0,
-      estado: c.state ?? "ACTIVE",
+      estado: (c.state ?? "active").toUpperCase(),
       conteoEstudiantes: c.studentsCount ?? 0,
       ingresosTotales: c.totalIncome ?? 0,
-      inscripciones: (c.enrollments ?? []).map((e: any) => ({
+      inscripciones: (c.enrollments ?? []).map((e) => ({
         id: e.id,
         nombreCompleto: e.fullName ?? "",
         carnet: e.carnet ?? "",
-        fechaInscripcion: new Date(e.enrolledAt),
+        fechaInscripcion: new Date(String(e.enrolledAt ?? "")),
       })),
     };
   }, [data]);

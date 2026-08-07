@@ -75,7 +75,7 @@ export function StatCard({
               className={`relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:rotate-6 ${iconColors[color] || iconColors.teal}`}
             >
               {React.isValidElement(icon)
-                ? React.cloneElement(icon as React.ReactElement<any>, {
+                ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, {
                     size: 24,
                   })
                 : icon}

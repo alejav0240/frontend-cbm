@@ -3,13 +3,14 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Trash2, ChevronDown, ChevronUp, ListChecks } from "lucide-react";
+import type { EscalaTarjeta } from "../tipos";
 
 interface ScaleCardProps {
-  scale: any;
+  scale: EscalaTarjeta;
   index: number;
   isExpanded: boolean;
   onToggleExpand: () => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
 }
 
 export function ScaleCard({
@@ -78,7 +79,7 @@ export function ScaleCard({
           >
             {scale.tipoEscala.toLowerCase() === "subscale" ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {scale.subescalas?.map((sub: any) => (
+                {scale.subescalas?.map((sub) => (
                   <div
                     key={sub.id}
                     className="p-6 bg-gray-50 dark:bg-white/2 rounded-3xl border border-gray-100 dark:border-white/5 space-y-3"
@@ -99,7 +100,7 @@ export function ScaleCard({
               </div>
             ) : (
               <div className="flex flex-wrap gap-4">
-                {scale.valores?.map((val: any) => (
+                {scale.valores?.map((val) => (
                   <div
                     key={val.id}
                     className="px-6 py-3 bg-gray-50 dark:bg-white/2 rounded-2xl border border-gray-100 dark:border-white/5 flex items-center gap-3"

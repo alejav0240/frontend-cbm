@@ -31,6 +31,7 @@ export interface MappedFormField {
   label: string;
   type: string;
   required: boolean;
+  options?: string[];
 }
 
 export interface MappedFormTemplate {
@@ -39,3 +40,22 @@ export interface MappedFormTemplate {
   description: string | null;
   fields: MappedFormField[];
 }
+
+export interface PasoPlanActivo {
+  id: string;
+  moment: string;
+  durationMinutes: number;
+  objective: string;
+  focus: string;
+  musicalResources: string;
+  musicalEmphasis: string;
+  mltMethod: string;
+}
+
+export interface PlanTratamientoActivo {
+  mainObjective: string;
+  progressPercent: number;
+  steps: PasoPlanActivo[] | null;
+}
+
+export type FormResponseValue = string | number | boolean;

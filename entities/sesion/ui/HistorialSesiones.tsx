@@ -1,25 +1,23 @@
 "use client";
 
 import React from "react";
-import { motion } from "motion/react";
-import { Search, BarChart3, PenTool, Trash2, Music, Video } from "lucide-react";
 import { Pagination } from "@/shared/ui/Pagination";
-import SessionCard from "@/entities/sesion/ui/SessionCard";
+import SessionCard, { type SessionType } from "@/entities/sesion/ui/SessionCard";
 
 interface SessionHistoryProps {
-  patientSessions: any[];
+  patientSessions: SessionType[];
   onViewAIAnalysis: (
     sessionId: string | number,
     mode: "list" | "charts",
   ) => void;
-  onEditSession: (session: any) => void;
+  onEditSession: (session: SessionType) => void;
   onDeleteSession: (sessionId: string | number) => void;
   currentPage: number;
   totalPages: number;
   cicloNumber: number;
   onPageChange: (page: number) => void;
-  onViewDetails?: (session: any) => void;
-  onExport?: (session: any) => void;
+  onViewDetails?: (session: SessionType) => void;
+  onExport?: (session: SessionType) => void;
 }
 
 export function HistorialSesiones({
@@ -36,20 +34,6 @@ export function HistorialSesiones({
 }: SessionHistoryProps) {
   console.log("Historial sesiones");
   console.log(patientSessions);
-  const handleViewAIAnalysis = (
-    id: string | number,
-    type: "list" | "charts",
-  ) => {
-    // Implementación
-  };
-
-  const handleEditSession = (session: any) => {
-    // Implementación
-  };
-
-  const handleDeleteSession = (id: string | number) => {
-    // Implementación
-  };
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold dark:text-white serif">

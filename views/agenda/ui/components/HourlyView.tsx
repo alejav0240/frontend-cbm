@@ -3,13 +3,14 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Play, Plus } from "lucide-react";
+import { SesionAgenda } from "@/entities/sesion/model/tipos-agenda";
 
 interface HourlyViewProps {
   selectedDate: Date;
   hours: number[];
-  getSessionsForSelectedDate: () => any[];
-  onSessionClick: (session: any) => void;
-  onStartSession: (session: any) => void;
+  getSessionsForSelectedDate: () => SesionAgenda[];
+  onSessionClick: (session: SesionAgenda) => void;
+  onStartSession: (session: SesionAgenda) => void;
   onSlotClick: (hour: number) => void;
 }
 

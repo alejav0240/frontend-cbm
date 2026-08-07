@@ -30,6 +30,10 @@ export interface FormResponse {
   patientName: string | undefined;
   submittedAt: string;
   status: "Revisado";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  answers: any[];
+  answers: Array<{
+    id: string;
+    response: string;
+    respondedAt: unknown;
+    question?: { id: string; question: string };
+  }>;
 }

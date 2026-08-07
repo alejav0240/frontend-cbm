@@ -8,6 +8,8 @@
 - [graphql.md](./graphql.md) — Capa GraphQL y Apollo
 - [shared.md](./shared.md) — Componentes y utilidades compartidas
 - [auth.md](./auth.md) — Autenticación y permisos
+- [DEPLOY_BACKEND.md](./DEPLOY_BACKEND.md) — Despliegue del backend en VPS
+- [DEPLOY_FRONTEND.md](./DEPLOY_FRONTEND.md) — Despliegue del frontend en VPS
 
 ## Stack
 
