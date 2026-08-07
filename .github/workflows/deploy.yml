@@ -116,6 +116,7 @@ jobs:
             git reset --hard origin/main
             pnpm install --frozen-lockfile
             pnpm build
+            test -d .next/standalone || { echo "ERROR: el build no genero .next/standalone (falta output: 'standalone' en next.config.ts)"; exit 1; }
             cp -r .next/static .next/standalone/.next/
             cp -r public .next/standalone/
             pm2 restart cbm-frontend
