@@ -52,7 +52,9 @@ export function InventoryTable({
     <div className="bg-white dark:bg-[#111] rounded-[32px] border border-gray-200 dark:border-white/5 overflow-hidden shadow-sm">
       <div className="p-6 border-b border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
-          <label htmlFor="search-inventario" className="sr-only">Buscar inventario</label>
+          <label htmlFor="search-inventario" className="sr-only">
+            Buscar inventario
+          </label>
           <Search
             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
             size={18}
@@ -136,7 +138,7 @@ export function InventoryTable({
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => onEdit(item)}
                       className="p-2 text-gray-400 hover:text-[#008080] hover:bg-[#008080]/10 rounded-lg transition-all"

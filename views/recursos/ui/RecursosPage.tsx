@@ -7,6 +7,7 @@ import {
   useActualizarRecurso,
   useEliminarRecurso,
   RecursoDigital,
+  DatosFormularioRecurso,
 } from "@/entities/recurso";
 import { TablaRecursos } from "@/widgets/tabla-recursos";
 import { FiltrarRecursos } from "@/features/filtrar-recursos";
@@ -40,24 +41,19 @@ export const RecursosPage = () => {
     null,
   );
 
-  const handleCrearRecurso = async (data: {
-    title: string;
-    type: string;
-    url: string;
-    category: string;
-  }) => {
+  const handleCrearRecurso = async (data: DatosFormularioRecurso) => {
     try {
       if (recursoAEditar) {
         await actualizarRecurso({
           id: recursoAEditar.id,
           title: data.title,
           type: data.type,
-          url: data.url,
+          url: data.url ?? "#",
           category: data.category,
         });
         toast.success("Recurso actualizado correctamente");
       } else {
-        await crearRecurso(data);
+        await crearRecurso({ ...data, url: data.url ?? "#" });
         toast.success("Recurso creado correctamente");
       }
       setMostrarFormulario(false);

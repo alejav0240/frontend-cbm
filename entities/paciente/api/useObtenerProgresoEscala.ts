@@ -11,6 +11,21 @@ export interface ProgresoEscala {
   totalScore: number;
   inSession: boolean;
   id: string;
+  scale?: { id: string; name: string; scaleType?: string | null } | null;
+  subscaleResponses?: Array<{
+    id: string;
+    score: number;
+    subscale?: {
+      id?: string;
+      name: string;
+      category?: string | null;
+      maxValue?: number | null;
+    } | null;
+  } | null> | null;
+  valueResponses?: Array<{
+    id: string;
+    scaleValue?: { id: string; label: string; value: number } | null;
+  } | null> | null;
 }
 
 interface ResponseProgresoEscala {

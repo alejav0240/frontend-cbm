@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@/shared/ui/components/Modal";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
+import {
+  esquemaSesionPrueba,
+  type DatosFormularioSesionPrueba,
+} from "@/entities/sesion";
 
 // Interfaz para los datos limpios que se enviarán al Backend / Mutación
-export interface FormSesionPruebaData {
-  testPatientName: string;
-  testFatherPhone: string;
-  testDate: string;
-  testTime: string;
-  testType: string;
-  testTherapist: string;
-}
+export type FormSesionPruebaData = DatosFormularioSesionPrueba;
 
 interface FormSesionPruebaProps {
   isOpen: boolean;
@@ -26,7 +25,7 @@ interface FormSesionPruebaProps {
 // Función auxiliar para obtener los valores limpios por defecto
 const obtenerValoresIniciales = (
   defaultTherapistId = "",
-): FormSesionPruebaData => ({
+): DatosFormularioSesionPrueba => ({
   testPatientName: "",
   testFatherPhone: "",
   testDate: new Date().toISOString().split("T")[0],
@@ -43,49 +42,36 @@ export function FormSesionPrueba({
   onSearchTherapist,
   isLoadingTherapists,
 }: FormSesionPruebaProps) {
-  // Estado unificado en un solo objeto para optimizar renders
-  const [formValues, setFormValues] = useState<FormSesionPruebaData>(() =>
-    obtenerValoresIniciales(therapists[0]?.value),
-  );
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<DatosFormularioSesionPrueba>({
+    resolver: zodResolver(esquemaSesionPrueba),
+    defaultValues: obtenerValoresIniciales(therapists[0]?.value),
+  });
 
-  // SOLUCIÓN AL SETSTATE-IN-EFFECT:
-  // Solo reseteamos cuando 'isOpen' pasa a true de forma controlada y aislada
-  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
-  if (isOpen !== prevIsOpen) {
-    setPrevIsOpen(isOpen);
-    if (isOpen) {
-      setFormValues(obtenerValoresIniciales(therapists[0]?.value || ""));
+  // Reset del formulario cada vez que se abre el modal
+  const prevIsOpen = useRef(isOpen);
+  useEffect(() => {
+    if (isOpen !== prevIsOpen.current) {
+      prevIsOpen.current = isOpen;
+      if (isOpen) {
+        reset(obtenerValoresIniciales(therapists[0]?.value || ""));
+      }
     }
-  }
+  }, [isOpen, reset, therapists]);
 
-  // Manejador genérico para inputs tradicionales (Texto, Tel, Date, Time)
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormValues((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Manejador para los componentes controlados de tipo Select
-  const handleSelectChange = (
-    name: keyof FormSesionPruebaData,
-    value: string,
-  ) => {
-    setFormValues((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formValues);
+  const handleSubmitForm = (data: DatosFormularioSesionPrueba) => {
+    onSubmit(data);
+    reset();
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Agendar Sesión de Prueba">
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-6" onSubmit={handleSubmit(handleSubmitForm)}>
         <div className="grid sm:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -93,13 +79,15 @@ export function FormSesionPrueba({
             </label>
             <input
               type="text"
-              name="testPatientName"
-              required
-              value={formValues.testPatientName}
-              onChange={handleInputChange}
+              {...register("testPatientName")}
               placeholder="Ej. Juanito Pérez"
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
+            {errors.testPatientName && (
+              <p className="text-xs text-red-500">
+                {errors.testPatientName.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -108,13 +96,15 @@ export function FormSesionPrueba({
             </label>
             <input
               type="tel"
-              name="testFatherPhone"
-              required
-              value={formValues.testFatherPhone}
-              onChange={handleInputChange}
+              {...register("testFatherPhone")}
               placeholder="Ej. 70000000"
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
+            {errors.testFatherPhone && (
+              <p className="text-xs text-red-500">
+                {errors.testFatherPhone.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -125,12 +115,12 @@ export function FormSesionPrueba({
             </label>
             <input
               type="date"
-              name="testDate"
-              required
-              value={formValues.testDate}
-              onChange={handleInputChange}
+              {...register("testDate")}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
+            {errors.testDate && (
+              <p className="text-xs text-red-500">{errors.testDate.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -139,29 +129,41 @@ export function FormSesionPrueba({
             </label>
             <input
               type="time"
-              name="testTime"
-              required
-              value={formValues.testTime}
-              onChange={handleInputChange}
+              {...register("testTime")}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
+            {errors.testTime && (
+              <p className="text-xs text-red-500">{errors.testTime.message}</p>
+            )}
           </div>
 
-          <SearchableSelect
-            label="Tipo de Sesión"
-            options={["Individual", "Grupal"]}
-            value={formValues.testType}
-            onChange={(val) => handleSelectChange("testType", val)}
+          <Controller
+            name="testType"
+            control={control}
+            render={({ field }) => (
+              <SearchableSelect
+                label="Tipo de Sesión"
+                options={["Individual", "Grupal"]}
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
           />
 
-          <SearchableSelect
-            className="col-span-3"
-            label="Terapeuta"
-            options={therapists}
-            value={formValues.testTherapist}
-            onChange={(val) => handleSelectChange("testTherapist", val)}
-            onSearch={onSearchTherapist}
-            isLoading={isLoadingTherapists}
+          <Controller
+            name="testTherapist"
+            control={control}
+            render={({ field }) => (
+              <SearchableSelect
+                className="col-span-3"
+                label="Terapeuta"
+                options={therapists}
+                value={field.value}
+                onChange={field.onChange}
+                onSearch={onSearchTherapist}
+                isLoading={isLoadingTherapists}
+              />
+            )}
           />
         </div>
 

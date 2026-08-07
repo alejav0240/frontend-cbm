@@ -138,7 +138,7 @@ export const TablaPacientes = ({
                   </span>
                 </td>
                 <td className="px-8 py-5">
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                  <div className="flex gap-2">
                     {paciente.registrationComplete === false && (
                       <button
                         onClick={() => alCompletarClinico(paciente)}

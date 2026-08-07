@@ -9,12 +9,17 @@ interface PropsEscala {
 type subEscalaResponse = {
   id: string;
   score: number;
-  subscale: { name: string; category: string };
+  subscale: {
+    id?: string;
+    name: string;
+    category?: string | null;
+    maxValue?: number | null;
+  };
 };
 
 export interface ProgresoSubEscala {
-  evaluatedAt: string;
-  totalScore: number;
+  evaluatedAt?: string;
+  totalScore?: number;
   inSession: boolean;
   id: string;
   subscaleResponses: subEscalaResponse[];

@@ -1,8 +1,14 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@/shared/ui/components/Modal";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
+import {
+  esquemaRecurso,
+  type DatosFormularioRecurso,
+} from "@/entities/recurso";
 
 const TYPE_OPTIONS = [
   { label: "Audio", value: "AUDIO" },
@@ -16,12 +22,7 @@ const TYPE_OPTIONS = [
 interface ResourceFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: {
-    title: string;
-    type: string;
-    url: string;
-    category: string;
-  }) => void;
+  onSubmit: (data: DatosFormularioRecurso) => void;
   initialData?: {
     title?: string;
     type?: string;
@@ -42,37 +43,53 @@ function FormularioRecurso({
   initialData?: ResourceFormModalProps["initialData"];
   estaCreando: boolean;
 }) {
-  const [title, setTitle] = useState(initialData?.title ?? "");
-  const [type, setType] = useState(initialData?.type ?? "DOCUMENT");
-  const [category, setCategory] = useState(initialData?.category ?? "");
-  const [url, setUrl] = useState(initialData?.url ?? "");
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<DatosFormularioRecurso>({
+    resolver: zodResolver(esquemaRecurso),
+    defaultValues: {
+      title: initialData?.title ?? "",
+      type: initialData?.type ?? "DOCUMENT",
+      category: initialData?.category ?? "",
+      url: initialData?.url ?? "",
+    },
+  });
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({ title, type, url: url || "#", category });
+  const handleFormSubmit = (data: DatosFormularioRecurso) => {
+    onSubmit({ ...data, url: data.url || "#" });
   };
 
   return (
-    <form className="space-y-6" onSubmit={handleFormSubmit}>
+    <form className="space-y-6" onSubmit={handleSubmit(handleFormSubmit)}>
       <div className="space-y-2">
         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
           Título del Recurso
         </label>
         <input
           type="text"
-          required
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          {...register("title")}
           className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
           placeholder="Ej. Guía de Musicoterapia"
         />
+        {errors.title && (
+          <p className="text-xs text-red-500">{errors.title.message}</p>
+        )}
       </div>
       <div className="grid sm:grid-cols-2 gap-6">
-        <SearchableSelect
-          label="Tipo"
-          options={TYPE_OPTIONS}
-          value={type}
-          onChange={(val) => setType(val)}
+        <Controller
+          name="type"
+          control={control}
+          render={({ field }) => (
+            <SearchableSelect
+              label="Tipo"
+              options={TYPE_OPTIONS}
+              value={field.value}
+              onChange={field.onChange}
+            />
+          )}
         />
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -80,12 +97,13 @@ function FormularioRecurso({
           </label>
           <input
             type="text"
-            required
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            {...register("category")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             placeholder="Ej. Infantil"
           />
+          {errors.category && (
+            <p className="text-xs text-red-500">{errors.category.message}</p>
+          )}
         </div>
       </div>
       <div className="space-y-2">
@@ -94,8 +112,7 @@ function FormularioRecurso({
         </label>
         <input
           type="text"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          {...register("url")}
           className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
           placeholder="https://..."
         />

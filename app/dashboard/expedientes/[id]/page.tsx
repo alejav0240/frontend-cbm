@@ -18,6 +18,7 @@ import type { SessionType } from "@/entities/sesion/ui/SessionCard";
 import { useObtenerProgresoSubEscala } from "@/entities/paciente/api/useObtenerProgresoSubEscala";
 import {
   useCiclos,
+  useCiclosCompletos,
   useSesionDetalles,
   useActualizarSesion,
   useEliminarSesion,
@@ -29,20 +30,6 @@ import type { FormularioClinicoDataSchema } from "@/features/gestion-paciente/mo
 
 type SessionData = SessionType;
 
-type SesionCiclo = NonNullable<
-  NonNullable<
-    NonNullable<NonNullable<ObtenerCiclosQuery["sessions"]>["cycles"]>[number]
-  >["sessions"]
->[number];
-
-type SesionInforme = NonNullable<SesionCiclo> & {
-  numeroSesion?: number | null;
-  fecha?: string | null;
-  therapist?: { fullname?: string | null } | null;
-  terapeuta?: string | null;
-  estado?: string | null;
-};
-
 type SesionDetallada = NonNullable<VerSesionQuery["session"]>;
 
 type ResourceSesion = SesionDetallada["sessionResources"][number];
@@ -51,11 +38,11 @@ type PlanStepSesion = SesionDetallada["sessionPlanSteps"][number];
 type ScaleEvalSesion = SesionDetallada["scaleEvaluations"][number] & {
   scale?: { name?: string | null } | null;
 };
-type SubscaleRespSesion =
-  ScaleEvalSesion["subscaleResponses"][number] & {
-    subscale?: { name?: string | null } | null;
-  };
-type ValueRespSesion = SesionDetallada["scaleEvaluations"][number]["valueResponses"][number];
+type SubscaleRespSesion = ScaleEvalSesion["subscaleResponses"][number] & {
+  subscale?: { name?: string | null } | null;
+};
+type ValueRespSesion =
+  SesionDetallada["scaleEvaluations"][number]["valueResponses"][number];
 type FormAssignSesion = NonNullable<
   NonNullable<SesionDetallada["formAssignments"]>[number]
 >;
@@ -73,16 +60,16 @@ import {
 } from "@/entities/formulario";
 import ViewForm from "@/entities/formulario/ui/viewForm";
 import { useObtenerRespuestaFormulario } from "@/entities/formulario/api/useObtenerRespuestaFormulario";
-import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
+import GenericExportModal, {
+  type Exporter,
+  type ExportFilter,
+} from "@/shared/ui/GenericExportModal";
 import {
   generarInformeClinicoPDF,
   generarInformeClinicoWord,
 } from "@/entities/informe-clinico";
 import type { InformeClinicoDTO } from "@/entities/informe-clinico";
-import type {
-  ObtenerCiclosQuery,
-  VerSesionQuery,
-} from "@/shared/api/generated/graphql";
+import type { VerSesionQuery } from "@/shared/api/generated/graphql";
 
 interface RouteParams {
   id: string;
@@ -145,6 +132,8 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     pacienteId: idPaciente,
     page: sessionsPage,
   });
+
+  const { sesiones: sesionesCompletas } = useCiclosCompletos(idPaciente);
 
   const { paciente, refetch } = usePacienteDetalles(idPaciente);
   const router = useRouter();
@@ -315,37 +304,118 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     const eriResults = dataEri?.scaleEvaluations?.results ?? [];
     const cimResults = dataCIM?.scaleEvaluations?.results ?? [];
 
+    const detalleEscala = (
+      evals: Array<{
+        evaluatedAt?: string;
+        totalScore?: number | null;
+        subscaleResponses?: Array<{
+          score: number;
+          subscale?: { name?: string | null; category?: string | null } | null;
+        } | null> | null;
+        valueResponses?: Array<{
+          scaleValue?: { label?: string | null; value?: number | null } | null;
+        } | null> | null;
+      }>,
+    ): InformeClinicoDTO["escalas"][number]["detalle"] =>
+      evals.map((e) => ({
+        fecha: e.evaluatedAt
+          ? new Date(e.evaluatedAt).toLocaleDateString("es-ES")
+          : "",
+        total: e.totalScore ?? null,
+        subescalas: (e.subscaleResponses ?? []).map((sr) => ({
+          nombre: sr?.subscale?.name || "",
+          categoria: sr?.subscale?.category || "",
+          puntuacion: sr?.score ?? 0,
+        })),
+        valores: (e.valueResponses ?? []).map((vr) => ({
+          label: vr?.scaleValue?.label || "",
+          value: vr?.scaleValue?.value ?? 0,
+        })),
+      }));
+
     const escalas: InformeClinicoDTO["escalas"] = [];
     if (eriResults.length) {
       escalas.push({
+        id: "eri",
         nombre: "ERI",
         etiqueta: "Escala de Regulación Emocional",
+        color: "#008080",
         puntuaciones: eriResults.map((e) => ({
           sesion: new Date(e.evaluatedAt).toLocaleDateString("es-ES"),
           valor: e.totalScore,
         })),
+        detalle: detalleEscala(eriResults),
       });
     }
     if (cimResults.length) {
       escalas.push({
+        id: "cim",
         nombre: "CIM",
         etiqueta: "Cambio en la Identidad Musical",
+        color: "#3b82f6",
         puntuaciones: cimResults.map((e) => ({
           sesion: new Date(e.evaluatedAt).toLocaleDateString("es-ES"),
           valor: e.totalScore,
         })),
+        detalle: detalleEscala(cimResults),
       });
     }
     if (dataDemuca?.length) {
       escalas.push({
+        id: "demuca",
         nombre: "DEMUCA",
         etiqueta: "Detección de Musicoterapia",
+        color: "#8b5cf6",
         puntuaciones: dataDemuca.map((e) => ({
-          sesion: new Date(e.evaluatedAt).toLocaleDateString("es-ES"),
-          valor: e.totalScore,
+          sesion: e.evaluatedAt
+            ? new Date(e.evaluatedAt).toLocaleDateString("es-ES")
+            : "",
+          valor: e.totalScore ?? null,
         })),
+        detalle: detalleEscala(dataDemuca),
       });
     }
+
+    const sesionesReporte = (sesionesCompletas ?? [])
+      .map((s) => ({
+        numero: s.sessionNumber || 0,
+        fecha: s.sessionDate
+          ? new Date(s.sessionDate as string).toLocaleDateString("es-ES")
+          : "",
+        terapeuta: s.therapist?.fullName || "",
+        duracion: s.durationMinutes ? `${s.durationMinutes} min` : "",
+        estado: s.sessionStatus || "",
+        ciclo: s.cycleNumber || 0,
+        notas: s.notes || "",
+        recursos: (s.sessionResources ?? [])
+          .map((r) => r.resource?.title || "")
+          .filter(Boolean),
+        materiales: (s.sessionInventory ?? [])
+          .map((i) => i.item?.name || "")
+          .filter(Boolean),
+        evaluaciones: (s.scaleEvaluations ?? []).map((e) => ({
+          escala: e.scale?.name || "",
+          puntuacion: e.totalScore,
+          subescalas: (e.subscaleResponses ?? []).map((sr) => ({
+            nombre: sr.subscale?.name || "",
+            categoria: sr.subscale?.category || "",
+            puntuacion: sr.score,
+          })),
+          valores: (e.valueResponses ?? []).map((vr) => ({
+            label: vr.scaleValue?.label || "",
+            value: vr.scaleValue?.value ?? 0,
+          })),
+        })),
+      }))
+      .sort(
+        (a, b) =>
+          (a.fecha
+            ? new Date(a.fecha.split("/").reverse().join("-")).getTime()
+            : 0) -
+          (b.fecha
+            ? new Date(b.fecha.split("/").reverse().join("-")).getTime()
+            : 0),
+      );
 
     return [
       {
@@ -365,18 +435,58 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
           metodosAUsar: paciente.metodosAUsar || "",
           notas: paciente.notas || paciente.notes || "",
         },
-        sesiones: (sesiones ?? []).map((s: SesionInforme) => ({
-          numero: s.sessionNumber ?? s.numeroSesion ?? 0,
-          fecha: String(s.sessionDate ?? s.fecha ?? ""),
-          terapeuta: s.therapist?.fullname ?? s.terapeuta ?? "",
-          duracion: s.durationMinutes ? `${s.durationMinutes} min` : "",
-          estado: s.sessionStatus ?? s.estado ?? "",
-          notas: s.notes ?? "",
-        })),
+        sesiones: sesionesReporte,
         escalas,
       },
     ];
-  }, [paciente, dataEri, dataCIM, dataDemuca, sesiones]);
+  }, [paciente, dataEri, dataCIM, dataDemuca, sesionesCompletas]);
+
+  const informeFilters = useMemo((): ExportFilter<InformeClinicoDTO>[] => {
+    const sesionesInforme = informeClinicoData[0]?.sesiones ?? [];
+
+    const etiquetasEstado: Record<string, string> = {
+      AGENDADA: "Agendada",
+      CONFIRMA: "Confirmada",
+      COMPLETA: "Completa",
+      CANCELADA: "Cancelada",
+      REPROGRAMA: "Reprogramada",
+    };
+
+    const estados = Array.from(
+      new Set(sesionesInforme.map((s) => s.estado).filter(Boolean)),
+    ).sort();
+
+    return [
+      {
+        key: "sesiones",
+        label: "Ciclo",
+        type: "select",
+        itemKey: "ciclo",
+        options: Array.from(new Set(sesionesInforme.map((s) => s.ciclo)))
+          .sort((a, b) => a - b)
+          .map((ciclo) => ({
+            value: String(ciclo),
+            label: `Ciclo ${ciclo}`,
+          })),
+      },
+      {
+        key: "sesiones",
+        label: "Rango de Fechas",
+        type: "date-range",
+        itemKey: "fecha",
+      },
+      {
+        key: "sesiones",
+        label: "Estado",
+        type: "select",
+        itemKey: "estado",
+        options: estados.map((estado) => ({
+          value: estado,
+          label: etiquetasEstado[estado] ?? estado,
+        })),
+      },
+    ];
+  }, [informeClinicoData]);
 
   const informePdfExporter = useMemo(
     (): Exporter<InformeClinicoDTO> => ({
@@ -545,6 +655,10 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
             formatter: (v) => String((v as { length?: number })?.length || 0),
           },
         ]}
+        filters={informeFilters}
+        summaryCount={(rows) =>
+          rows.reduce((total, row) => total + row.sesiones.length, 0)
+        }
         exporters={exporters}
       />
 
@@ -670,8 +784,11 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                   Terapeuta
                 </span>
                 <span className="text-sm font-semibold dark:text-white font-sans">
-                  {(sesionDetallada as { therapist?: { fullname?: string | null } | null })
-                    .therapist?.fullname || "No asignado"}
+                  {(
+                    sesionDetallada as {
+                      therapist?: { fullname?: string | null } | null;
+                    }
+                  ).therapist?.fullname || "No asignado"}
                 </span>
               </div>
             </div>
@@ -762,37 +879,39 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                         </tr>
                       </thead>
                       <tbody>
-                        {sesionDetallada.sessionPlanSteps.map((s: PlanStepSesion) => (
-                          <tr
-                            key={s.id}
-                            className="border-b last:border-0 border-slate-200/60 dark:border-zinc-800/60 hover:bg-slate-50/50 dark:hover:bg-zinc-800/20"
-                          >
-                            <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300">
-                              {s.planStep?.moment || "—"}
-                            </td>
-                            <td className="p-3 text-gray-500 dark:text-zinc-400">
-                              {s.planStep?.objective || "—"}
-                            </td>
-                            <td className="p-3 text-gray-500 dark:text-zinc-400">
-                              {s.planStep?.mltMethod || "—"}
-                            </td>
-                            <td className="p-3 text-center text-gray-500 dark:text-zinc-400">
-                              {s.actualDuration || 0} /{" "}
-                              {s.planStep?.durationMinutes || 0} min
-                            </td>
-                            <td className="p-3 text-center">
-                              {s.isCompleted ? (
-                                <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full font-sans">
-                                  Sí
-                                </span>
-                              ) : (
-                                <span className="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full font-sans">
-                                  No
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
+                        {sesionDetallada.sessionPlanSteps.map(
+                          (s: PlanStepSesion) => (
+                            <tr
+                              key={s.id}
+                              className="border-b last:border-0 border-slate-200/60 dark:border-zinc-800/60 hover:bg-slate-50/50 dark:hover:bg-zinc-800/20"
+                            >
+                              <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300">
+                                {s.planStep?.moment || "—"}
+                              </td>
+                              <td className="p-3 text-gray-500 dark:text-zinc-400">
+                                {s.planStep?.objective || "—"}
+                              </td>
+                              <td className="p-3 text-gray-500 dark:text-zinc-400">
+                                {s.planStep?.mltMethod || "—"}
+                              </td>
+                              <td className="p-3 text-center text-gray-500 dark:text-zinc-400">
+                                {s.actualDuration || 0} /{" "}
+                                {s.planStep?.durationMinutes || 0} min
+                              </td>
+                              <td className="p-3 text-center">
+                                {s.isCompleted ? (
+                                  <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full font-sans">
+                                    Sí
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full font-sans">
+                                    No
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ),
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -809,54 +928,57 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                   <div className="grid md:grid-cols-2 gap-4">
                     {sesionDetallada.scaleEvaluations.map(
                       (evalData: ScaleEvalSesion) => (
-                      <div
-                        key={evalData.id}
-                        className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 space-y-2"
-                      >
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800/60 pb-2">
-                          <span className="text-sm font-bold dark:text-white font-sans">
-                            {evalData.scale?.name || "Escala"}
-                          </span>
-                          <span className="text-xs font-extrabold text-[#008080] bg-teal-500/10 px-2 py-1 rounded-full font-sans">
-                            Puntuación: {evalData.totalScore}/10
-                          </span>
-                        </div>
+                        <div
+                          key={evalData.id}
+                          className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 space-y-2"
+                        >
+                          <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800/60 pb-2">
+                            <span className="text-sm font-bold dark:text-white font-sans">
+                              {evalData.scale?.name || "Escala"}
+                            </span>
+                            <span className="text-xs font-extrabold text-[#008080] bg-teal-500/10 px-2 py-1 rounded-full font-sans">
+                              Puntuación: {evalData.totalScore}/10
+                            </span>
+                          </div>
 
-                        <div className="space-y-1 pt-1">
-                          {evalData.subscaleResponses &&
-                            evalData.subscaleResponses.map(
-                              (r: SubscaleRespSesion, idx: number) => (
-                                <div
-                                  key={idx}
-                                  className="flex justify-between text-xs text-gray-500 font-sans"
-                                >
-                                  <span>{r.subscale?.name || "Subescala"}</span>
-                                  <span className="font-semibold">
-                                    {r.score} (máx: {r.subscale?.maxValue || 10}
-                                    )
-                                  </span>
-                                </div>
-                              ),
-                            )}
-                          {evalData.valueResponses &&
-                            evalData.valueResponses.map(
-                              (v: ValueRespSesion, idx: number) => (
-                                <div
-                                  key={idx}
-                                  className="flex justify-between text-xs text-gray-500 font-sans"
-                                >
-                                  <span>
-                                    {v.scaleValue?.label || "Indicador"}
-                                  </span>
-                                  <span className="font-semibold">
-                                    {v.scaleValue?.value || "—"}
-                                  </span>
-                                </div>
-                              ),
-                            )}
+                          <div className="space-y-1 pt-1">
+                            {evalData.subscaleResponses &&
+                              evalData.subscaleResponses.map(
+                                (r: SubscaleRespSesion, idx: number) => (
+                                  <div
+                                    key={idx}
+                                    className="flex justify-between text-xs text-gray-500 font-sans"
+                                  >
+                                    <span>
+                                      {r.subscale?.name || "Subescala"}
+                                    </span>
+                                    <span className="font-semibold">
+                                      {r.score} (máx:{" "}
+                                      {r.subscale?.maxValue || 10})
+                                    </span>
+                                  </div>
+                                ),
+                              )}
+                            {evalData.valueResponses &&
+                              evalData.valueResponses.map(
+                                (v: ValueRespSesion, idx: number) => (
+                                  <div
+                                    key={idx}
+                                    className="flex justify-between text-xs text-gray-500 font-sans"
+                                  >
+                                    <span>
+                                      {v.scaleValue?.label || "Indicador"}
+                                    </span>
+                                    <span className="font-semibold">
+                                      {v.scaleValue?.value || "—"}
+                                    </span>
+                                  </div>
+                                ),
+                              )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </div>
               )}
@@ -873,36 +995,41 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                       (formAssign, assignIdx: number) => {
                         if (formAssign == null) return null;
                         return (
-                        <div
-                          key={assignIdx}
-                          className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 space-y-3"
-                        >
-                          <div className="border-b border-slate-200 dark:border-zinc-800/60 pb-2 flex justify-between items-center">
-                            <span className="text-xs font-bold text-gray-400 font-sans">
-                              Respuestas del Cuestionario
-                            </span>
-                            <span className="text-[10px] font-bold text-[#008080] bg-teal-500/10 px-2 py-0.5 rounded-full font-sans">
-                              {Math.round(Number(formAssign.completionRatio ?? 0) * 100)}%
-                              Completado
-                            </span>
-                          </div>
+                          <div
+                            key={assignIdx}
+                            className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 space-y-3"
+                          >
+                            <div className="border-b border-slate-200 dark:border-zinc-800/60 pb-2 flex justify-between items-center">
+                              <span className="text-xs font-bold text-gray-400 font-sans">
+                                Respuestas del Cuestionario
+                              </span>
+                              <span className="text-[10px] font-bold text-[#008080] bg-teal-500/10 px-2 py-0.5 rounded-full font-sans">
+                                {Math.round(
+                                  Number(formAssign.completionRatio ?? 0) * 100,
+                                )}
+                                % Completado
+                              </span>
+                            </div>
 
-                          <div className="space-y-3">
-                            {formAssign.responses &&
-                              formAssign.responses.map(
-                                (r: FormAssignSesion["responses"][number], idx: number) => (
-                                  <div key={idx} className="space-y-1">
-                                    <p className="text-xs font-bold text-slate-700 dark:text-zinc-300 font-sans">
-                                      Q: {r.question?.question}
-                                    </p>
-                                    <p className="text-xs text-slate-500 dark:text-zinc-400 pl-3 border-l-2 border-slate-200 dark:border-zinc-800 italic font-sans">
-                                      R: {r.response || "—"}
-                                    </p>
-                                  </div>
-                                ),
-                              )}
+                            <div className="space-y-3">
+                              {formAssign.responses &&
+                                formAssign.responses.map(
+                                  (
+                                    r: FormAssignSesion["responses"][number],
+                                    idx: number,
+                                  ) => (
+                                    <div key={idx} className="space-y-1">
+                                      <p className="text-xs font-bold text-slate-700 dark:text-zinc-300 font-sans">
+                                        Q: {r.question?.question}
+                                      </p>
+                                      <p className="text-xs text-slate-500 dark:text-zinc-400 pl-3 border-l-2 border-slate-200 dark:border-zinc-800 italic font-sans">
+                                        R: {r.response || "—"}
+                                      </p>
+                                    </div>
+                                  ),
+                                )}
+                            </div>
                           </div>
-                        </div>
                         );
                       },
                     )}

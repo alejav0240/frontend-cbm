@@ -218,7 +218,7 @@ export function TablaSesiones({
                             menuAbierto === sesion.id ? null : sesion.id,
                           )
                         }
-                        className="p-2 rounded-xl text-gray-400 hover:text-[#008080] hover:bg-[#008080]/10 transition-all md:opacity-0 md:group-hover:opacity-100"
+                        className="p-2 rounded-xl text-gray-400 hover:text-[#008080] hover:bg-[#008080]/10 transition-all"
                       >
                         <MoreVertical size={18} />
                       </button>

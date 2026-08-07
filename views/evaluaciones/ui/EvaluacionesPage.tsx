@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Loader2, ClipboardList } from "lucide-react";
 import { EvaluationsHeader } from "./components/EvaluationsHeader";
@@ -14,16 +14,20 @@ import {
   useEscalas,
   useAgregarEscalaSesion,
   type Evaluacion,
+  type EvaluacionExportarFila,
+  type EvaluacionDetalleDTO,
+  generarEvaluacionesPDF,
+  generarEvaluacionesPDFPreview,
+  generarEvaluacionPDF,
+  generarEvaluacionesExcel,
 } from "@/entities/escalas";
 import { useBuscarPacientes } from "@/entities/paciente";
 import { useAuthStore } from "@/shared/model/useAuthStore";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { Pagination } from "@/shared/ui/Pagination";
 import Modal from "@/shared/ui/components/Modal";
-import {
-  EvaluacionDetallada,
-  NuevaEvaluacion,
-} from "./tipos";
+import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
+import { EvaluacionDetallada, NuevaEvaluacion } from "./tipos";
 
 export const EvaluacionesPage = () => {
   const [search, setSearch] = useState("");
@@ -53,11 +57,16 @@ export const EvaluacionesPage = () => {
   const { agregarEscalaSesion, agregando } = useAgregarEscalaSesion();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [selectedEval, setSelectedEval] = useState<EvaluacionDetallada | null>(
+    null,
+  );
+  const [selectedEvalRaw, setSelectedEvalRaw] = useState<Evaluacion | null>(
     null,
   );
 
   const handleViewDetails = useCallback((ev: Evaluacion) => {
+    setSelectedEvalRaw(ev);
     setSelectedEval({
       ...ev,
       patient: ev.patientName,
@@ -150,7 +159,9 @@ export const EvaluacionesPage = () => {
         refetch();
       } catch (err: unknown) {
         toast.error(
-          err instanceof Error ? err.message : "Error al registrar la evaluación",
+          err instanceof Error
+            ? err.message
+            : "Error al registrar la evaluación",
         );
       }
     },
@@ -166,11 +177,79 @@ export const EvaluacionesPage = () => {
     ],
   );
 
-  const handleExport = useCallback(
-    (_evaluation: Evaluacion) => (e: React.MouseEvent) => {
-      e.stopPropagation();
-      toast.success("Exportación iniciada");
+  const construirDetalleDTO = useCallback(
+    (ev: Evaluacion): EvaluacionDetalleDTO => {
+      const scale = escalasValidas.find((s) => s.id === ev.scaleId);
+      const subescalas = ev.subscaleResponses.map((r) => {
+        const sub = scale?.subescalas?.find((s) => s.id === r.subscaleId);
+        return {
+          nombre: r.subscaleName || sub?.nombre || "Subescala",
+          puntaje: r.score,
+          maximo: sub?.valorMaximo ?? null,
+        };
+      });
+      const valor = scale?.valores?.find((v) => v.valor === ev.score);
+      return {
+        paciente: ev.patientName,
+        escala: ev.scaleName,
+        fecha: ev.date,
+        tipo: ev.type,
+        puntaje: ev.score,
+        subescalas,
+        valorSeleccionado: valor?.etiqueta ?? null,
+      };
     },
+    [escalasValidas],
+  );
+
+  const handleExport = useCallback(
+    (ev: Evaluacion) => {
+      generarEvaluacionPDF(construirDetalleDTO(ev)).then((doc) =>
+        doc.save(
+          `evaluacion_${ev.patientName.replace(/\s+/g, "_")}_${ev.date}.pdf`,
+        ),
+      );
+    },
+    [construirDetalleDTO],
+  );
+
+  const filasExportacion = useMemo<EvaluacionExportarFila[]>(
+    () =>
+      evaluaciones.map((ev) => ({
+        id: ev.id,
+        paciente: ev.patientName,
+        escala: ev.scaleName,
+        fecha: ev.date,
+        tipo: ev.type,
+        puntaje: ev.score,
+        dimensiones: ev.subscaleResponses
+          .map((r) => `${r.subscaleName}: ${r.score}`)
+          .join(", "),
+      })),
+    [evaluaciones],
+  );
+
+  const exporters = useMemo<Exporter<EvaluacionExportarFila>[]>(
+    () => [
+      {
+        id: "pdf",
+        label: "Exportar PDF",
+        async execute(data, _columns, fileName) {
+          const doc = await generarEvaluacionesPDF(data);
+          doc.save(`${fileName}_${Date.now()}.pdf`);
+        },
+        async preview(data) {
+          return generarEvaluacionesPDFPreview(data);
+        },
+      },
+      {
+        id: "excel",
+        label: "Exportar Excel",
+        async execute(data) {
+          await generarEvaluacionesExcel(data);
+        },
+      },
+    ],
     [],
   );
 
@@ -197,7 +276,10 @@ export const EvaluacionesPage = () => {
 
   return (
     <div className="space-y-8">
-      <EvaluationsHeader onCreateClick={() => setShowCreateModal(true)} />
+      <EvaluationsHeader
+        onCreateClick={() => setShowCreateModal(true)}
+        onExportClick={() => setShowExportModal(true)}
+      />
 
       <EvaluationsStats evaluaciones={evaluaciones} total={total} />
 
@@ -241,7 +323,7 @@ export const EvaluacionesPage = () => {
                   score: ev.score ?? 0,
                 }}
                 onView={() => handleViewDetails(ev)}
-                onExport={handleExport(ev)}
+                onExport={() => handleExport(ev)}
                 idx={idx}
               />
             ))}
@@ -285,15 +367,49 @@ export const EvaluacionesPage = () => {
         />
       </Modal>
 
+      <GenericExportModal<EvaluacionExportarFila>
+        title="Exportar Evaluaciones"
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        data={filasExportacion}
+        fileName="evaluaciones"
+        columns={[
+          { key: "paciente", label: "Paciente" },
+          { key: "escala", label: "Escala" },
+          { key: "fecha", label: "Fecha" },
+          { key: "tipo", label: "Tipo" },
+          { key: "puntaje", label: "Puntaje" },
+          { key: "dimensiones", label: "Dimensiones" },
+        ]}
+        filters={[
+          {
+            key: "escala",
+            label: "Escala",
+            type: "select",
+            options: escalasValidas.map((s) => ({
+              value: s.nombre ?? "",
+              label: s.nombre ?? "",
+            })),
+          },
+          {
+            key: "paciente",
+            label: "Buscar por paciente",
+            type: "text",
+          },
+        ]}
+        exporters={exporters}
+      />
+
       <EvaluationDetailsModal
         isOpen={!!selectedEval}
-        onClose={() => setSelectedEval(null)}
+        onClose={() => {
+          setSelectedEval(null);
+          setSelectedEvalRaw(null);
+        }}
         evaluation={selectedEval}
         evaluationScales={escalasValidas}
         onExport={() => {
-          if (selectedEval) {
-            toast.success("Exportando evaluación...");
-          }
+          if (selectedEvalRaw) handleExport(selectedEvalRaw);
         }}
       />
     </div>

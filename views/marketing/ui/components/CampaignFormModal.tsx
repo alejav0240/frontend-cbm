@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Modal } from "@/shared/ui/components/Modal";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 import { MarketingCampaign } from "@/entities/marketing";
+import {
+  esquemaCampana,
+  type DatosFormularioCampana,
+} from "@/entities/marketing";
 
 interface CampaignFormModalProps {
   isOpen: boolean;
@@ -12,7 +18,7 @@ interface CampaignFormModalProps {
   initialData?: Partial<MarketingCampaign> | null;
 }
 
-const DEFAULT_FORM: Partial<MarketingCampaign> = {
+const DEFAULT_FORM: DatosFormularioCampana = {
   name: "",
   platform: "Facebook",
   budget: 0,
@@ -27,12 +33,32 @@ export function CampaignFormModal({
   onSave,
   initialData,
 }: CampaignFormModalProps) {
-  const [formData, setFormData] = useState<Partial<MarketingCampaign>>(
-    initialData || DEFAULT_FORM,
-  );
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<DatosFormularioCampana>({
+    resolver: zodResolver(esquemaCampana),
+    defaultValues: initialData
+      ? {
+          name: initialData.name ?? "",
+          platform: initialData.platform ?? "Facebook",
+          budget: initialData.budget ?? 0,
+          spent: initialData.spent ?? 0,
+          status: initialData.status ?? "Activo",
+          startDate: initialData.startDate ?? DEFAULT_FORM.startDate,
+        }
+      : DEFAULT_FORM,
+  });
 
-  const handleSubmit = () => {
-    onSave(formData);
+  const handleSubmitForm = (data: DatosFormularioCampana) => {
+    onSave({
+      ...data,
+      status: data.status as MarketingCampaign["status"],
+    });
+    reset();
   };
 
   return (
@@ -41,70 +67,80 @@ export function CampaignFormModal({
       onClose={onClose}
       title={initialData?.id ? "Editar Campaña" : "Crear Nueva Campaña"}
     >
-      <div className="space-y-6">
+      <form className="space-y-6" onSubmit={handleSubmit(handleSubmitForm)}>
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
             Nombre de la Campaña
           </label>
           <input
             type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            {...register("name")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             placeholder="Ej: Promo Verano 2026"
           />
+          {errors.name && (
+            <p className="text-xs text-red-500">{errors.name.message}</p>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Plataforma
             </label>
-            <SearchableSelect
-              value={formData.platform || ""}
-              onChange={(val) =>
-                setFormData({
-                  ...formData,
-                  platform: val as MarketingCampaign["platform"],
-                })
-              }
-              options={[
-                { label: "Facebook", value: "Facebook", color: "bg-blue-600" },
-                {
-                  label: "Instagram",
-                  value: "Instagram",
-                  color: "bg-pink-600",
-                },
-                { label: "WhatsApp", value: "WhatsApp", color: "bg-green-600" },
-                { label: "TikTok", value: "TikTok", color: "bg-black" },
-                { label: "Google", value: "Google", color: "bg-red-500" },
-                { label: "Otro", value: "Otro", color: "bg-gray-400" },
-              ]}
-              clearable={false}
+            <Controller
+              name="platform"
+              control={control}
+              render={({ field }) => (
+                <SearchableSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { label: "Facebook", value: "Facebook", color: "bg-blue-600" },
+                    {
+                      label: "Instagram",
+                      value: "Instagram",
+                      color: "bg-pink-600",
+                    },
+                    { label: "WhatsApp", value: "WhatsApp", color: "bg-green-600" },
+                    { label: "TikTok", value: "TikTok", color: "bg-black" },
+                    { label: "Google", value: "Google", color: "bg-red-500" },
+                    { label: "Otro", value: "Otro", color: "bg-gray-400" },
+                  ]}
+                  clearable={false}
+                />
+              )}
             />
+            {errors.platform && (
+              <p className="text-xs text-red-500">{errors.platform.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Estado
             </label>
-            <SearchableSelect
-              value={formData.status || ""}
-              onChange={(val) =>
-                setFormData({
-                  ...formData,
-                  status: val as MarketingCampaign["status"],
-                })
-              }
-              options={[
-                { label: "Activo", value: "Activo", color: "bg-green-500" },
-                { label: "Pausado", value: "Pausado", color: "bg-blue-500" },
-                {
-                  label: "Finalizado",
-                  value: "Finalizado",
-                  color: "bg-gray-500",
-                },
-              ]}
-              clearable={false}
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <SearchableSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { label: "Activo", value: "Activo", color: "bg-green-500" },
+                    { label: "Pausado", value: "Pausado", color: "bg-blue-500" },
+                    {
+                      label: "Finalizado",
+                      value: "Finalizado",
+                      color: "bg-gray-500",
+                    },
+                  ]}
+                  clearable={false}
+                />
+              )}
             />
+            {errors.status && (
+              <p className="text-xs text-red-500">{errors.status.message}</p>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-6">
@@ -114,12 +150,12 @@ export function CampaignFormModal({
             </label>
             <input
               type="number"
-              value={formData.budget}
-              onChange={(e) =>
-                setFormData({ ...formData, budget: Number(e.target.value) })
-              }
+              {...register("budget", { valueAsNumber: true })}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
+            {errors.budget && (
+              <p className="text-xs text-red-500">{errors.budget.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -127,13 +163,26 @@ export function CampaignFormModal({
             </label>
             <input
               type="number"
-              value={formData.spent}
-              onChange={(e) =>
-                setFormData({ ...formData, spent: Number(e.target.value) })
-              }
+              {...register("spent", { valueAsNumber: true })}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
+            {errors.spent && (
+              <p className="text-xs text-red-500">{errors.spent.message}</p>
+            )}
           </div>
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Fecha de Inicio
+          </label>
+          <input
+            type="date"
+            {...register("startDate")}
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
+          />
+          {errors.startDate && (
+            <p className="text-xs text-red-500">{errors.startDate.message}</p>
+          )}
         </div>
         <div className="flex justify-end gap-4 pt-4">
           <button
@@ -143,13 +192,13 @@ export function CampaignFormModal({
             Cancelar
           </button>
           <button
-            onClick={handleSubmit}
+            type="submit"
             className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg"
           >
             {initialData?.id ? "Guardar Cambios" : "Crear Campaña"}
           </button>
         </div>
-      </div>
+      </form>
     </Modal>
   );
 }

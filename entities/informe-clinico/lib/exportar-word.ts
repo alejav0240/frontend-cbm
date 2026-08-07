@@ -80,6 +80,51 @@ export async function generarInformeClinicoWord(
   const emptyLine = () =>
     new Paragraph({ spacing: { after: 80 }, children: [] });
 
+  const headerCell = (text: string, width: number) =>
+    new TableCell({
+      width: { size: width, type: WidthType.PERCENTAGE },
+      children: [
+        new Paragraph({
+          children: [
+            new TextRun({
+              text,
+              bold: true,
+              size: 20,
+              font: "Calibri",
+              color: "FFFFFF",
+            }),
+          ],
+        }),
+      ],
+      shading: { fill: "008080" },
+    });
+  const dataCell = (text: string, width: number) =>
+    new TableCell({
+      width: { size: width, type: WidthType.PERCENTAGE },
+      children: [
+        new Paragraph({
+          children: [
+            new TextRun({ text: text || "—", size: 20, font: "Calibri" }),
+          ],
+        }),
+      ],
+    });
+  const simpleTable = (head: string[], rows: string[][]) =>
+    new Table({
+      rows: [
+        new TableRow({
+          children: head.map((h) => headerCell(h, 100 / head.length)),
+        }),
+        ...rows.map(
+          (r) =>
+            new TableRow({
+              children: r.map((c) => dataCell(c, 100 / head.length)),
+            }),
+        ),
+      ],
+      width: { size: 100, type: WidthType.PERCENTAGE },
+    });
+
   const children: Array<
     InstanceType<typeof Paragraph> | InstanceType<typeof Table>
   > = [];
@@ -139,9 +184,12 @@ export async function generarInformeClinicoWord(
     ["Cognitivo", p.cognitivo],
     ["Social", p.social],
   ];
-  for (const [label, val] of perfiles) {
+  for (const [labelName, val] of perfiles) {
     children.push(
-      new Paragraph({ spacing: { after: 80 }, children: [bold(`${label}:`)] }),
+      new Paragraph({
+        spacing: { after: 80 },
+        children: [bold(`${labelName}:`)],
+      }),
     );
     children.push(bodyText(val));
   }
@@ -164,68 +212,21 @@ export async function generarInformeClinicoWord(
   // ── 3. Sesiones ──
   children.push(title("Historial de Sesiones"));
   if (informe.sesiones.length > 0) {
-    const sesionHeader = (text: string, width: number) =>
-      new TableCell({
-        width: { size: width, type: WidthType.PERCENTAGE },
-        children: [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text,
-                bold: true,
-                size: 20,
-                font: "Calibri",
-                color: "FFFFFF",
-              }),
-            ],
-          }),
-        ],
-        shading: { fill: "008080" },
-      });
-    const sesionCell = (text: string, width: number) =>
-      new TableCell({
-        width: { size: width, type: WidthType.PERCENTAGE },
-        children: [
-          new Paragraph({
-            children: [
-              new TextRun({ text: text || "—", size: 20, font: "Calibri" }),
-            ],
-          }),
-        ],
-      });
-
-    const headerRow = new TableRow({
-      children: [
-        sesionHeader("#", 10),
-        sesionHeader("Fecha", 25),
-        sesionHeader("Terapeuta", 25),
-        sesionHeader("Duración", 15),
-        sesionHeader("Estado", 25),
-      ],
-    });
-
-    const dataRows = informe.sesiones.map(
-      (s) =>
-        new TableRow({
-          children: [
-            sesionCell(String(s.numero), 10),
-            sesionCell(s.fecha, 25),
-            sesionCell(s.terapeuta, 25),
-            sesionCell(s.duracion, 15),
-            sesionCell(s.estado, 25),
-          ],
-        }),
-    );
-
     children.push(
-      new Table({
-        rows: [headerRow, ...dataRows],
-        width: { size: 100, type: WidthType.PERCENTAGE },
-      }),
+      simpleTable(
+        ["#", "Fecha", "Terapeuta", "Duración", "Estado", "Ciclo"],
+        informe.sesiones.map((s) => [
+          String(s.numero),
+          s.fecha,
+          s.terapeuta,
+          s.duracion,
+          s.estado,
+          String(s.ciclo || ""),
+        ]),
+      ),
       emptyLine(),
     );
 
-    // Session notes
     for (const s of informe.sesiones) {
       if (s.notas) {
         children.push(
@@ -235,6 +236,59 @@ export async function generarInformeClinicoWord(
           }),
           bodyText(s.notas),
         );
+      }
+      if (s.recursos.length > 0) {
+        children.push(
+          new Paragraph({
+            spacing: { after: 80 },
+            children: [bold(`Recursos - Sesión #${s.numero}:`)],
+          }),
+          bodyText(s.recursos.join(", ")),
+        );
+      }
+      if (s.materiales.length > 0) {
+        children.push(
+          new Paragraph({
+            spacing: { after: 80 },
+            children: [bold(`Materiales - Sesión #${s.numero}:`)],
+          }),
+          bodyText(s.materiales.join(", ")),
+        );
+      }
+      for (const ev of s.evaluaciones) {
+        children.push(
+          new Paragraph({
+            spacing: { before: 120, after: 80 },
+            children: [
+              bold(
+                `Evaluación (${ev.escala || "Escala"}) - Sesión #${s.numero}: ${
+                  ev.puntuacion !== null ? ev.puntuacion : "—"
+                }`,
+              ),
+            ],
+          }),
+        );
+        if (ev.subescalas.length > 0) {
+          children.push(
+            simpleTable(
+              ["Subescala", "Categoría", "Puntuación"],
+              ev.subescalas.map((sub) => [
+                sub.nombre,
+                sub.categoria,
+                String(sub.puntuacion),
+              ]),
+            ),
+          );
+        }
+        if (ev.valores.length > 0) {
+          children.push(
+            simpleTable(
+              ["Etiqueta", "Valor"],
+              ev.valores.map((v) => [v.label, String(v.value)]),
+            ),
+          );
+        }
+        children.push(emptyLine());
       }
     }
   } else {
@@ -249,57 +303,20 @@ export async function generarInformeClinicoWord(
       children.push(subTitle(`${escala.nombre} (${escala.etiqueta})`));
 
       if (escala.puntuaciones.length > 0) {
-        const cellH = (t: string) =>
-          new TableCell({
-            children: [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: t,
-                    bold: true,
-                    size: 20,
-                    font: "Calibri",
-                    color: "FFFFFF",
-                  }),
-                ],
-              }),
-            ],
-            shading: { fill: "008080" },
-          });
-        const cellD = (t: string) =>
-          new TableCell({
-            children: [
-              new Paragraph({
-                children: [
-                  new TextRun({ text: t || "—", size: 20, font: "Calibri" }),
-                ],
-              }),
-            ],
-          });
-
         children.push(
-          new Table({
-            rows: [
-              new TableRow({
-                children: [cellH("Sesión"), cellH("Puntuación")],
-              }),
-              ...escala.puntuaciones.map(
-                (p) =>
-                  new TableRow({
-                    children: [
-                      cellD(p.sesion),
-                      cellD(p.valor !== null ? String(p.valor) : "—"),
-                    ],
-                  }),
-              ),
-            ],
-          }),
+          simpleTable(
+            ["Sesión", "Puntuación"],
+            escala.puntuaciones.map((p) => [
+              p.sesion,
+              p.valor !== null ? String(p.valor) : "—",
+            ]),
+          ),
           emptyLine(),
         );
 
         // Chart
         if (escala.puntuaciones.length > 1) {
-          const color = escala.nombre === "ERI" ? "#008080" : "#3b82f6";
+          const color = escala.color || "#008080";
           const canvas = renderChartToCanvas(
             `Evolución ${escala.nombre}`,
             escala.puntuaciones,
@@ -324,6 +341,41 @@ export async function generarInformeClinicoWord(
               ],
             }),
           );
+        }
+      }
+
+      // Detalle por evaluación
+      if (escala.detalle?.length) {
+        for (const d of escala.detalle) {
+          children.push(
+            new Paragraph({
+              spacing: { before: 120, after: 80 },
+              children: [
+                bold(`Evaluación: ${d.fecha} — Total: ${d.total ?? "—"}`),
+              ],
+            }),
+          );
+          if (d.subescalas.length > 0) {
+            children.push(
+              simpleTable(
+                ["Subescala", "Categoría", "Puntuación"],
+                d.subescalas.map((sub) => [
+                  sub.nombre,
+                  sub.categoria,
+                  String(sub.puntuacion),
+                ]),
+              ),
+            );
+          }
+          if (d.valores.length > 0) {
+            children.push(
+              simpleTable(
+                ["Etiqueta", "Valor"],
+                d.valores.map((v) => [v.label, String(v.value)]),
+              ),
+            );
+          }
+          children.push(emptyLine());
         }
       }
     }

@@ -22,7 +22,15 @@ const MODULE_CATEGORIES = [
   {
     id: "atencion",
     nombre: "Atención",
-    moduloIds: ["pacientes", "sesiones", "agenda", "evaluaciones", "planes", "escalas", "informes"],
+    moduloIds: [
+      "pacientes",
+      "sesiones",
+      "agenda",
+      "evaluaciones",
+      "planes",
+      "escalas",
+      "informes",
+    ],
   },
   {
     id: "operaciones",
@@ -47,7 +55,8 @@ function getModulesForCategory(categoryId: string): PermissionModule[] {
   return PERMISSION_MODULES.filter((m) => cat.moduloIds.includes(m.id));
 }
 
-const totalPermisosPosibles = PERMISSION_MODULES.length * PERMISSION_ACTIONS.length;
+const totalPermisosPosibles =
+  PERMISSION_MODULES.length * PERMISSION_ACTIONS.length;
 
 interface PermissionsPickerProps {
   value: string[];
@@ -221,10 +230,17 @@ export function PermissionsPicker({
 
           return (
             <div key={categoria.id}>
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => toggleCategoriaAbierta(categoria.id)}
-                className="w-full flex items-center justify-between py-2 group"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    toggleCategoriaAbierta(categoria.id);
+                  }
+                }}
+                className="w-full flex items-center justify-between py-2 group cursor-pointer select-none"
               >
                 <div className="flex items-center gap-3">
                   <button
@@ -262,7 +278,7 @@ export function PermissionsPicker({
                 ) : (
                   <ChevronRight size={14} className="text-gray-400" />
                 )}
-              </button>
+              </div>
 
               <AnimatePresence>
                 {catAbierta && (
@@ -291,54 +307,47 @@ export function PermissionsPicker({
                                   : "bg-gray-50 dark:bg-white/[0.02] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10"
                             }`}
                           >
-                            <div
-                              role="button"
-                              tabIndex={0}
-                              onClick={() => !disabled && toggleModulo(modulo.id)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
-                                  if (!disabled) toggleModulo(modulo.id);
-                                }
-                              }}
-                              className="w-full flex items-center gap-3 p-4 text-left cursor-pointer select-none"
-                            >
-                              <div
-                                className={`w-5 h-5 rounded border flex items-center justify-center transition-all shrink-0 ${
-                                  isChecked
-                                    ? "bg-[#008080] border-[#008080] text-white"
-                                    : isIndeterminate
-                                      ? "bg-[#008080]/20 border-[#008080]"
-                                      : "bg-white dark:bg-black/20 border-gray-300 dark:border-white/20"
-                                }`}
+                            <div className="w-full flex items-center gap-3 p-4 select-none">
+                              <button
+                                type="button"
+                                disabled={disabled}
+                                onClick={() => toggleModulo(modulo.id)}
+                                className="flex flex-1 items-center gap-3 text-left cursor-pointer disabled:opacity-50"
                               >
-                                {isChecked && <Check size={12} />}
-                                {isIndeterminate && (
-                                  <div className="w-2 h-0.5 bg-[#008080] rounded" />
-                                )}
-                              </div>
+                                <div
+                                  className={`w-5 h-5 rounded border flex items-center justify-center transition-all shrink-0 ${
+                                    isChecked
+                                      ? "bg-[#008080] border-[#008080] text-white"
+                                      : isIndeterminate
+                                        ? "bg-[#008080]/20 border-[#008080]"
+                                        : "bg-white dark:bg-black/20 border-gray-300 dark:border-white/20"
+                                  }`}
+                                >
+                                  {isChecked && <Check size={12} />}
+                                  {isIndeterminate && (
+                                    <div className="w-2 h-0.5 bg-[#008080] rounded" />
+                                  )}
+                                </div>
 
-                              <span className="text-xl leading-none">
-                                {modulo.icon}
-                              </span>
+                                <span className="text-xl leading-none">
+                                  {modulo.icon}
+                                </span>
 
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold dark:text-white truncate">
-                                  {modulo.name}
-                                </p>
-                                <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">
-                                  {activo
-                                    ? `${activeCount} de ${PERMISSION_ACTIONS.length} permisos`
-                                    : modulo.description}
-                                </p>
-                              </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-bold dark:text-white truncate">
+                                    {modulo.name}
+                                  </p>
+                                  <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">
+                                    {activo
+                                      ? `${activeCount} de ${PERMISSION_ACTIONS.length} permisos`
+                                      : modulo.description}
+                                  </p>
+                                </div>
+                              </button>
 
                               <button
                                 type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleModuloExpandido(modulo.id);
-                                }}
+                                onClick={() => toggleModuloExpandido(modulo.id)}
                                 className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0 ${
                                   expandido
                                     ? "bg-[#008080]/10 text-[#008080]"

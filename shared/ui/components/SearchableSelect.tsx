@@ -1,8 +1,16 @@
 "use client";
 
 import React from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, ChevronDown, CheckCircle2 } from "lucide-react";
+
+interface DropdownPos {
+  left: number;
+  width: number;
+  top?: number;
+  bottom?: number;
+}
 
 type SelectOption = string | { label: string; value: string; color?: string };
 
@@ -43,18 +51,61 @@ export function SearchableSelect<T extends SelectOption>({
   const [isOpen, setIsOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [openUpwards, setOpenUpwards] = React.useState(false);
+  const [dropdownPos, setDropdownPos] = React.useState<DropdownPos | null>(
+    null,
+  );
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
     onSearch?.(searchTerm);
   }, [searchTerm, onSearch]);
 
-  React.useEffect(() => {
-    if (isOpen && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setOpenUpwards(window.innerHeight - rect.bottom < 300);
+  const updatePosition = React.useCallback(() => {
+    const el = triggerRef.current;
+    if (!el || typeof window === "undefined") return;
+    const rect = el.getBoundingClientRect();
+    const upwards = window.innerHeight - rect.bottom < 300;
+    const next: DropdownPos = {
+      left: Math.max(
+        8,
+        Math.min(rect.left, window.innerWidth - rect.width - 8),
+      ),
+      width: rect.width,
+      top: upwards ? undefined : rect.bottom + 8,
+      bottom: upwards ? window.innerHeight - rect.top + 8 : undefined,
+    };
+    setDropdownPos((prev) => {
+      if (
+        prev &&
+        prev.left === next.left &&
+        prev.width === next.width &&
+        prev.top === next.top &&
+        prev.bottom === next.bottom
+      ) {
+        return prev;
+      }
+      return next;
+    });
+    setOpenUpwards((prev) => (prev === upwards ? prev : upwards));
+  }, []);
+
+  React.useLayoutEffect(() => {
+    if (isOpen) {
+      updatePosition();
     }
-  }, [isOpen]);
+  }, [isOpen, updatePosition]);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const reposition = () => updatePosition();
+    document.addEventListener("scroll", reposition, true);
+    window.addEventListener("resize", reposition);
+    return () => {
+      document.removeEventListener("scroll", reposition, true);
+      window.removeEventListener("resize", reposition);
+    };
+  }, [isOpen, updatePosition]);
 
   const selectedOption = React.useMemo(
     () => (options || []).find((opt) => getValue(opt) === value),
@@ -97,6 +148,7 @@ export function SearchableSelect<T extends SelectOption>({
       <div className="relative">
         <button
           type="button"
+          ref={triggerRef}
           role="combobox"
           aria-expanded={isOpen}
           aria-haspopup="listbox"
@@ -144,108 +196,138 @@ export function SearchableSelect<T extends SelectOption>({
           </div>
         </button>
 
-        <AnimatePresence>
-          {isOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setIsOpen(false)}
-              />
-              <motion.div
-                initial={{ opacity: 0, y: openUpwards ? 10 : -10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: openUpwards ? 10 : -10, scale: 0.95 }}
-                className={`absolute z-50 w-full min-w-50 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden ${openUpwards ? "bottom-full mb-2" : "mt-2"}`}
-              >
-                <div className="p-3 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/2">
-                  <div className="relative">
-                    <Search
-                      size={14}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
-                    <label htmlFor={`search-${label || "select"}`} className="sr-only">
-                      Buscar opciones
-                    </label>
-                    <input
-                      id={`search-${label || "select"}`}
-                      autoFocus
-                      type="text"
-                      placeholder="Buscar..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 bg-white dark:bg-white/5 rounded-xl text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 border border-transparent focus-visible:border-[#008080] dark:text-white transition-all"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                </div>
-                <div id="select-listbox" role="listbox" className="max-h-60 overflow-y-auto p-2 custom-scrollbar">
-                  {isLoading ? (
-                    <div className="px-4 py-10 text-center">
-                      <div className="w-5 h-5 border-2 border-[#008080] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-                        Buscando...
-                      </p>
-                    </div>
-                  ) : filteredOptions.length > 0 ? (
-                    filteredOptions.map((option, idx) => {
-                      const optValue = getValue(option);
-                      const isSelected = value === optValue;
-                      return (
-                        <div
-                          key={`${optValue}-${idx}`}
-                          role="option"
-                          aria-selected={isSelected}
-                          tabIndex={0}
-                          onClick={() => {
-                            onChange(optValue);
-                            setIsOpen(false);
-                            setSearchTerm("");
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              onChange(optValue);
-                              setIsOpen(false);
-                              setSearchTerm("");
-                            }
-                          }}
-                          className={`px-4 py-3 text-sm cursor-pointer rounded-xl transition-all flex items-center justify-between group ${
-                            isSelected
-                              ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
-                              : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
-                          }`}
+        {typeof document !== "undefined" &&
+          createPortal(
+            <AnimatePresence>
+              {isOpen && dropdownPos && (
+                <>
+                  <div
+                    className="fixed inset-0 z-[9998]"
+                    onClick={() => setIsOpen(false)}
+                  />
+                  <motion.div
+                    initial={{
+                      opacity: 0,
+                      y: openUpwards ? 10 : -10,
+                      scale: 0.95,
+                    }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{
+                      opacity: 0,
+                      y: openUpwards ? 10 : -10,
+                      scale: 0.95,
+                    }}
+                    style={{
+                      position: "fixed",
+                      zIndex: 9999,
+                      left: dropdownPos.left,
+                      width: dropdownPos.width,
+                      top: dropdownPos.top,
+                      bottom: dropdownPos.bottom,
+                    }}
+                    className="min-w-50 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+                  >
+                    <div className="p-3 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/2">
+                      <div className="relative">
+                        <Search
+                          size={14}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        />
+                        <label
+                          htmlFor={`search-${label || "select"}`}
+                          className="sr-only"
                         >
-                          <div className="flex items-center gap-3">
-                            {getColor(option) && (
-                              <div
-                                className={`w-2 h-2 rounded-full ${getColor(option)}`}
-                              />
-                            )}
-                            <span className="font-medium">
-                              {getLabel(option)}
-                            </span>
-                          </div>
-                          {isSelected && (
-                            <CheckCircle2 size={14} className="text-white" />
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="px-4 py-10 text-center">
-                      <p className="text-xs text-gray-400 italic mb-1">
-                        No se encontraron resultados
-                      </p>
-                      <p className="text-[10px] text-gray-500">
-                        Intenta con otros términos
-                      </p>
+                          Buscar opciones
+                        </label>
+                        <input
+                          id={`search-${label || "select"}`}
+                          autoFocus
+                          type="text"
+                          placeholder="Buscar..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2 bg-white dark:bg-white/5 rounded-xl text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 border border-transparent focus-visible:border-[#008080] dark:text-white transition-all"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
                     </div>
-                  )}
-                </div>
-              </motion.div>
-            </>
+                    <div
+                      id="select-listbox"
+                      role="listbox"
+                      className="max-h-60 overflow-y-auto p-2 custom-scrollbar"
+                    >
+                      {isLoading ? (
+                        <div className="px-4 py-10 text-center">
+                          <div className="w-5 h-5 border-2 border-[#008080] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                          <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                            Buscando...
+                          </p>
+                        </div>
+                      ) : filteredOptions.length > 0 ? (
+                        filteredOptions.map((option, idx) => {
+                          const optValue = getValue(option);
+                          const isSelected = value === optValue;
+                          return (
+                            <div
+                              key={`${optValue}-${idx}`}
+                              role="option"
+                              aria-selected={isSelected}
+                              tabIndex={0}
+                              onClick={() => {
+                                onChange(optValue);
+                                setIsOpen(false);
+                                setSearchTerm("");
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  onChange(optValue);
+                                  setIsOpen(false);
+                                  setSearchTerm("");
+                                }
+                              }}
+                              className={`px-4 py-3 text-sm cursor-pointer rounded-xl transition-all flex items-center justify-between group ${
+                                isSelected
+                                  ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20"
+                                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                {getColor(option) && (
+                                  <div
+                                    className={`w-2 h-2 rounded-full ${getColor(option)}`}
+                                  />
+                                )}
+                                <span className="font-medium">
+                                  {getLabel(option)}
+                                </span>
+                              </div>
+                              {isSelected && (
+                                <CheckCircle2
+                                  size={14}
+                                  className="text-white"
+                                />
+                              )}
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="px-4 py-10 text-center">
+                          <p className="text-xs text-gray-400 italic mb-1">
+                            No se encontraron resultados
+                          </p>
+                          <p className="text-[10px] text-gray-500">
+                            Intenta con otros términos
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>,
+            document.body,
           )}
-        </AnimatePresence>
       </div>
     </div>
   );

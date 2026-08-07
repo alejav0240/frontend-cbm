@@ -41,7 +41,7 @@ function formatearDatosEvaluacion(evaluations: ProgresoSubEscala[]) {
     (resp) => ({
       item: resp.subscale.name,
       score: resp.score,
-      category: resp.subscale.category,
+      category: resp.subscale.category || "General",
     }),
   );
 
@@ -54,7 +54,7 @@ function formatearDatosEvaluacion(evaluations: ProgresoSubEscala[]) {
 
     // Sumamos los puntajes agrupándolos por su categoría madre
     evaluacion.subscaleResponses.forEach((resp) => {
-      const categoria = resp.subscale.category;
+      const categoria = resp.subscale.category || "General";
       if (!puntoEvolucion[categoria]) {
         puntoEvolucion[categoria] = 0;
       }

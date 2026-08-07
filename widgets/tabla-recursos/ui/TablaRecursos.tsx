@@ -131,7 +131,7 @@ export const TablaRecursos = ({
                   </a>
                 </td>
                 <td className="px-8 py-5">
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                  <div className="flex gap-2">
                     <button
                       onClick={() => alAbrirEnlace(recurso.url)}
                       className="p-2.5 bg-gray-100 dark:bg-white/5 rounded-xl text-gray-500 hover:text-[#008080] hover:bg-[#008080]/10 transition-all"

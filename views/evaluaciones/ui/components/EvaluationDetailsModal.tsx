@@ -23,14 +23,16 @@ export function EvaluationDetailsModal({
 }: EvaluationDetailsModalProps) {
   if (!evaluation) return null;
 
-  console.log("Evaluation Details Modal Data:", evaluation);
-
   const realData = evaluation.originalData;
   const currentScale = evaluationScales.find(
     (s) => s.id == (realData?.scale?.id || evaluation.scaleId),
   );
 
-  console.log("Current Scale:", currentScale);
+  const esEscalaPorSubescalas =
+    currentScale?.tipoEscala?.toLowerCase() === "subscale" ||
+    currentScale?.scaleType?.toLowerCase() === "subscale";
+  const subescalas = currentScale?.subescalas ?? currentScale?.subscales ?? [];
+  const valores = currentScale?.valores ?? currentScale?.values ?? [];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Detalle de Evaluación">
@@ -52,19 +54,20 @@ export function EvaluationDetailsModal({
         {currentScale && (
           <div className="space-y-4">
             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-              {currentScale.scaleType === "subscale"
+              {esEscalaPorSubescalas
                 ? "Resultados por Dimensión"
                 : "Resultado de la Escala"}
             </h4>
-            {currentScale.scaleType?.toLowerCase() === "subscale" ? (
+            {esEscalaPorSubescalas ? (
               <div className="grid gap-4">
-                {currentScale.subscales?.map((sub) => {
+                {subescalas.map((sub) => {
                   const response = realData?.subscaleResponses?.find(
                     (r) => r.subscale.id === sub.id,
                   );
                   const score = response
                     ? response.score
                     : evaluation.subscaleScores?.[sub.id] || 0;
+                  const maxValue = sub.valorMaximo ?? sub.maxValue ?? 1;
 
                   return (
                     <div
@@ -73,17 +76,17 @@ export function EvaluationDetailsModal({
                     >
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-bold dark:text-white">
-                          {sub.name}
+                          {sub.nombre ?? sub.name ?? "Subescala"}
                         </span>
                         <span className="text-sm font-bold text-[#008080]">
-                          {score} / {sub.maxValue}
+                          {score} / {maxValue}
                         </span>
                       </div>
                       <div className="w-full h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{
-                            width: `${(score / (sub.maxValue ?? 1)) * 100}%`,
+                            width: `${(score / maxValue) * 100}%`,
                           }}
                           className="h-full bg-[#008080]"
                         />
@@ -99,9 +102,17 @@ export function EvaluationDetailsModal({
                     Valor Seleccionado
                   </p>
                   <p className="text-xs text-gray-500">
-                    {currentScale?.values?.find(
-                      (v) => v.value === parseInt(String(evaluation.score)),
-                    )?.label || "N/A"}
+                    {valores.find(
+                      (v) =>
+                        v.valor === parseInt(String(evaluation.score)) ||
+                        v.value === parseInt(String(evaluation.score)),
+                    )?.etiqueta ||
+                      valores.find(
+                        (v) =>
+                          v.valor === parseInt(String(evaluation.score)) ||
+                          v.value === parseInt(String(evaluation.score)),
+                      )?.label ||
+                      "N/A"}
                   </p>
                 </div>
                 <span className="text-3xl font-bold text-[#008080]">

@@ -163,8 +163,20 @@ export const ModalesPaciente = ({
             type: "select",
             options: [
               {
-                value: "active",
+                value: "ACTIVE",
                 label: "Activo",
+              },
+              {
+                value: "INACTIVE",
+                label: "Inactivo",
+              },
+              {
+                value: "DISCHARGED",
+                label: "Alta",
+              },
+              {
+                value: "PENDING",
+                label: "Pendiente",
               },
             ],
           },

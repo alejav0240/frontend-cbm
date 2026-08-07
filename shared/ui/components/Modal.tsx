@@ -21,19 +21,24 @@ export function Modal({
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   const getFocusableElements = useCallback(() => {
     if (!modalRef.current) return [];
     return Array.from(
       modalRef.current.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      )
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
     );
   }, []);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     };
 
     const handleTab = (e: KeyboardEvent) => {
@@ -65,8 +70,15 @@ export function Modal({
 
       requestAnimationFrame(() => {
         const focusable = getFocusableElements();
-        if (focusable.length > 0) {
-          focusable[0].focus();
+        const firstInput =
+          focusable.find(
+            (el) =>
+              el instanceof HTMLInputElement ||
+              el instanceof HTMLSelectElement ||
+              el instanceof HTMLTextAreaElement,
+          ) ?? focusable[0];
+        if (firstInput) {
+          firstInput.focus();
         }
       });
     } else {
@@ -79,7 +91,7 @@ export function Modal({
       window.removeEventListener("keydown", handleEscape);
       window.removeEventListener("keydown", handleTab);
     };
-  }, [isOpen, onClose, getFocusableElements]);
+  }, [isOpen, getFocusableElements]);
 
   return (
     <AnimatePresence>

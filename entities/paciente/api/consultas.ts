@@ -114,6 +114,29 @@ export const OBTENER_PROGRESO_DE_ESCALA = gql`
         totalScore
         inSession
         id
+        scale {
+          id
+          name
+          scaleType
+        }
+        subscaleResponses {
+          id
+          score
+          subscale {
+            id
+            name
+            category
+            maxValue
+          }
+        }
+        valueResponses {
+          id
+          scaleValue {
+            id
+            label
+            value
+          }
+        }
       }
     }
   }
@@ -125,12 +148,16 @@ export const OBTENER_PROGRESO_SUBESCALA = gql`
       results {
         id
         inSession
+        evaluatedAt
+        totalScore
         subscaleResponses {
           id
           score
           subscale {
+            id
             name
             category
+            maxValue
           }
         }
       }

@@ -34,3 +34,5 @@ export const esquemaCrearDescuento = z.object({
   value: z.number().positive("El valor del descuento debe ser mayor a 0"),
   description: z.string().optional().nullable(),
 });
+
+export type DatosFormularioDescuento = z.infer<typeof esquemaCrearDescuento>;

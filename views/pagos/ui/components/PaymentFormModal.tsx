@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Modal } from "@/shared/ui/components/Modal";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
+import {
+  esquemaCrearPago,
+  type DatosFormularioPago,
+} from "@/entities/pago";
 import { Descuento } from "@/entities/pago";
-import { toast } from "sonner";
 
-export interface PaymentFormData {
-  patientId: string;
-  sessionsCount: number;
-  pricePerSession: number;
-  amountPaid: number;
-  paymentMethod: string;
-  discountId?: string | null;
-}
+export type PaymentFormData = DatosFormularioPago;
 
 interface PaymentFormModalProps {
   isOpen: boolean;
@@ -34,19 +32,33 @@ export function PaymentFormModal({
   discounts,
   onAdd,
 }: PaymentFormModalProps) {
-  const [newPayment, setNewPayment] = useState({
-    patientId: "",
-    sessionsCount: 4,
-    pricePerSession: 150,
-    amountPaid: 600,
-    method: "efectivo",
-    discountId: undefined as string | undefined,
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<DatosFormularioPago>({
+    resolver: zodResolver(esquemaCrearPago),
+    defaultValues: {
+      patientId: "",
+      sessionsCount: 4,
+      pricePerSession: 150,
+      amountPaid: 600,
+      paymentMethod: "efectivo",
+      discountId: undefined,
+    },
   });
+
+  const sessionsCount = watch("sessionsCount");
+  const pricePerSession = watch("pricePerSession");
+  const discountId = watch("discountId");
 
   const calculateTotal = (
     count: number,
     price: number,
-    discountId?: string,
+    discountId?: string | null,
   ) => {
     const base = count * price;
     if (!discountId) return base;
@@ -61,41 +73,43 @@ export function PaymentFormModal({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPayment.patientId) {
-      toast.error("Selecciona un paciente");
-      return;
-    }
-
+  const handleSubmitForm = (data: DatosFormularioPago) => {
     onAdd({
-      patientId: newPayment.patientId,
-      sessionsCount: newPayment.sessionsCount,
-      pricePerSession: newPayment.pricePerSession,
-      amountPaid: newPayment.amountPaid,
-      paymentMethod: newPayment.method,
-      discountId: newPayment.discountId,
+      ...data,
+      discountId: data.discountId || null,
     });
+    reset();
   };
 
+  const amountPaid = watch("amountPaid");
   const totalToPay = calculateTotal(
-    newPayment.sessionsCount,
-    newPayment.pricePerSession,
-    newPayment.discountId,
+    sessionsCount,
+    pricePerSession,
+    discountId,
   );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Registrar Pago">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <SearchableSelect
-          label="Paciente"
-          options={patientOptions}
-          value={newPayment.patientId}
-          onChange={(val) => setNewPayment({ ...newPayment, patientId: val })}
-          onSearch={onSearchPatient}
-          isLoading={isLoadingPatients}
-          placeholder="Buscar paciente..."
+      <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-6">
+        <Controller
+          name="patientId"
+          control={control}
+          render={({ field }) => (
+            <SearchableSelect
+              label="Paciente"
+              options={patientOptions}
+              value={field.value}
+              onChange={field.onChange}
+              onSearch={onSearchPatient}
+              isLoading={isLoadingPatients}
+              placeholder="Buscar paciente..."
+              className={errors.patientId ? "border-red-500" : ""}
+            />
+          )}
         />
+        {errors.patientId && (
+          <p className="text-xs text-red-500">{errors.patientId.message}</p>
+        )}
 
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
@@ -104,15 +118,14 @@ export function PaymentFormModal({
             </label>
             <input
               type="number"
-              value={newPayment.sessionsCount}
-              onChange={(e) =>
-                setNewPayment({
-                  ...newPayment,
-                  sessionsCount: parseInt(e.target.value) || 0,
-                })
-              }
+              {...register("sessionsCount", { valueAsNumber: true })}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
+            {errors.sessionsCount && (
+              <p className="text-xs text-red-500">
+                {errors.sessionsCount.message}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -120,29 +133,32 @@ export function PaymentFormModal({
             </label>
             <input
               type="number"
-              value={newPayment.pricePerSession}
-              onChange={(e) =>
-                setNewPayment({
-                  ...newPayment,
-                  pricePerSession: parseInt(e.target.value) || 0,
-                })
-              }
+              {...register("pricePerSession", { valueAsNumber: true })}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
+            {errors.pricePerSession && (
+              <p className="text-xs text-red-500">
+                {errors.pricePerSession.message}
+              </p>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-6">
-          <SearchableSelect
-            label="Descuento Aplicado"
-            options={[
-              { label: "Ninguno", value: "" },
-              ...discounts.map((d) => ({ label: d.nombre, value: d.id })),
-            ]}
-            value={newPayment.discountId || ""}
-            onChange={(val) =>
-              setNewPayment({ ...newPayment, discountId: val || undefined })
-            }
+          <Controller
+            name="discountId"
+            control={control}
+            render={({ field }) => (
+              <SearchableSelect
+                label="Descuento Aplicado"
+                options={[
+                  { label: "Ninguno", value: "" },
+                  ...discounts.map((d) => ({ label: d.nombre, value: d.id })),
+                ]}
+                value={field.value || ""}
+                onChange={(val) => field.onChange(val || null)}
+              />
+            )}
           />
           <div className="space-y-2">
             <label className="text-xs font-bold text-[#008080] uppercase tracking-widest">
@@ -161,31 +177,36 @@ export function PaymentFormModal({
             </label>
             <input
               type="number"
-              value={newPayment.amountPaid}
-              onChange={(e) =>
-                setNewPayment({
-                  ...newPayment,
-                  amountPaid: parseInt(e.target.value) || 0,
-                })
-              }
+              {...register("amountPaid", { valueAsNumber: true })}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
-            {newPayment.amountPaid < totalToPay && (
+            {errors.amountPaid && (
+              <p className="text-xs text-red-500">
+                {errors.amountPaid.message}
+              </p>
+            )}
+            {amountPaid < totalToPay && (
               <p className="text-[10px] text-orange-500 font-bold uppercase tracking-widest">
-                Deuda Restante: Bs. {totalToPay - newPayment.amountPaid}
+                Deuda Restante: Bs. {totalToPay - amountPaid}
               </p>
             )}
           </div>
-          <SearchableSelect
-            label="Método de Pago"
-            options={[
-              { label: "Efectivo", value: "efectivo" },
-              { label: "Transferencia", value: "transferencia" },
-              { label: "QR", value: "qr" },
-              { label: "Tarjeta", value: "tarjeta" },
-            ]}
-            value={newPayment.method}
-            onChange={(val) => setNewPayment({ ...newPayment, method: val })}
+          <Controller
+            name="paymentMethod"
+            control={control}
+            render={({ field }) => (
+              <SearchableSelect
+                label="Método de Pago"
+                options={[
+                  { label: "Efectivo", value: "efectivo" },
+                  { label: "Transferencia", value: "transferencia" },
+                  { label: "QR", value: "qr" },
+                  { label: "Tarjeta", value: "tarjeta" },
+                ]}
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
           />
         </div>
 

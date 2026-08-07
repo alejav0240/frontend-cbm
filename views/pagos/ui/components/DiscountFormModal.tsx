@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Modal } from "@/shared/ui/components/Modal";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
+import {
+  esquemaCrearDescuento,
+  type DatosFormularioDescuento,
+} from "@/entities/pago";
 
-export interface DiscountFormData {
-  name: string;
-  type: "PERCENTAGE" | "FIXED";
-  value: number;
-  description?: string | null;
-}
+export type DiscountFormData = DatosFormularioDescuento;
 
 interface DiscountFormModalProps {
   isOpen: boolean;
@@ -22,49 +23,61 @@ export function DiscountFormModal({
   onClose,
   onAdd,
 }: DiscountFormModalProps) {
-  const [newDiscount, setNewDiscount] = useState({
-    name: "",
-    type: "PERCENTAGE" as "PERCENTAGE" | "FIXED",
-    value: 0,
-    description: "",
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<DatosFormularioDescuento>({
+    resolver: zodResolver(esquemaCrearDescuento),
+    defaultValues: {
+      name: "",
+      type: "percentage",
+      value: 0,
+      description: "",
+    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onAdd(newDiscount);
+  const handleSubmitForm = (data: DatosFormularioDescuento) => {
+    onAdd({
+      ...data,
+      description: data.description || null,
+    });
+    reset();
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Nuevo Descuento">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-6">
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
             Nombre del Descuento
           </label>
           <input
             type="text"
-            required
-            value={newDiscount.name}
-            onChange={(e) =>
-              setNewDiscount({ ...newDiscount, name: e.target.value })
-            }
+            {...register("name")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             placeholder="Ej. Beca Estudiantil"
           />
+          {errors.name && (
+            <p className="text-xs text-red-500">{errors.name.message}</p>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-6">
-          <SearchableSelect
-            label="Tipo"
-            options={["Porcentaje", "Monto Fijo"]}
-            value={
-              newDiscount.type === "PERCENTAGE" ? "Porcentaje" : "Monto Fijo"
-            }
-            onChange={(val) =>
-              setNewDiscount({
-                ...newDiscount,
-                type: val === "Porcentaje" ? "PERCENTAGE" : "FIXED",
-              })
-            }
+          <Controller
+            name="type"
+            control={control}
+            render={({ field }) => (
+              <SearchableSelect
+                label="Tipo"
+                options={["Porcentaje", "Monto Fijo"]}
+                value={field.value === "percentage" ? "Porcentaje" : "Monto Fijo"}
+                onChange={(val) =>
+                  field.onChange(val === "Porcentaje" ? "percentage" : "fixed")
+                }
+              />
+            )}
           />
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -72,16 +85,12 @@ export function DiscountFormModal({
             </label>
             <input
               type="number"
-              required
-              value={newDiscount.value}
-              onChange={(e) =>
-                setNewDiscount({
-                  ...newDiscount,
-                  value: parseInt(e.target.value) || 0,
-                })
-              }
+              {...register("value", { valueAsNumber: true })}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             />
+            {errors.value && (
+              <p className="text-xs text-red-500">{errors.value.message}</p>
+            )}
           </div>
         </div>
         <div className="space-y-2">
@@ -89,10 +98,7 @@ export function DiscountFormModal({
             Descripción
           </label>
           <textarea
-            value={newDiscount.description}
-            onChange={(e) =>
-              setNewDiscount({ ...newDiscount, description: e.target.value })
-            }
+            {...register("description")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white h-24 resize-none"
             placeholder="Detalles adicionales sobre el descuento..."
           />

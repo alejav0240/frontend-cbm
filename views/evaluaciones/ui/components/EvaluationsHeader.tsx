@@ -2,13 +2,17 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 
 interface EvaluationsHeaderProps {
   onCreateClick: () => void;
+  onExportClick: () => void;
 }
 
-export function EvaluationsHeader({ onCreateClick }: EvaluationsHeaderProps) {
+export function EvaluationsHeader({
+  onCreateClick,
+  onExportClick,
+}: EvaluationsHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
       <motion.div
@@ -22,13 +26,22 @@ export function EvaluationsHeader({ onCreateClick }: EvaluationsHeaderProps) {
           Registro de evaluaciones iniciales, de seguimiento y finales.
         </p>
       </motion.div>
-      <button
-        onClick={onCreateClick}
-        className="bg-[#008080] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#006666] transition-all flex items-center justify-center gap-2 shadow-lg"
-      >
-        <Plus size={20} />
-        Nueva Evaluación
-      </button>
+      <div className="flex items-center gap-4">
+        <button
+          onClick={onExportClick}
+          className="px-6 py-4 rounded-2xl font-bold text-[#008080] bg-[#008080]/10 hover:bg-[#008080]/20 transition-all flex items-center justify-center gap-2 shrink-0"
+        >
+          <Download size={20} />
+          Exportar
+        </button>
+        <button
+          onClick={onCreateClick}
+          className="bg-[#008080] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#006666] transition-all flex items-center justify-center gap-2 shadow-lg"
+        >
+          <Plus size={20} />
+          Nueva Evaluación
+        </button>
+      </div>
     </div>
   );
 }

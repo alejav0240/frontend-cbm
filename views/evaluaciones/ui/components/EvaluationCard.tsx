@@ -15,7 +15,7 @@ interface EvaluationCardProps {
     scaleName?: string;
   };
   onView: () => void;
-  onExport: (e: React.MouseEvent) => void;
+  onExport: () => void;
   idx: number;
 }
 
@@ -65,21 +65,13 @@ export function EvaluationCard({
             {evaluation.patient}
           </h3>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-              {evaluation.type}
+            <span className="text-xs text-[#008080] font-bold uppercase tracking-widest">
+              {evaluation.scaleName || "Escala"}
             </span>
             <span className="text-xs text-gray-400">•</span>
             <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
               {evaluation.date}
             </span>
-            {evaluation.scaleName && (
-              <>
-                <span className="text-xs text-gray-400">•</span>
-                <span className="text-xs text-[#008080] font-bold uppercase tracking-widest">
-                  {evaluation.scaleName}
-                </span>
-              </>
-            )}
           </div>
         </div>
       </div>
@@ -107,7 +99,12 @@ export function EvaluationCard({
             {evaluation.status}
           </span>
           <button
-            onClick={onExport}
+            type="button"
+            title="Exportar PDF"
+            onClick={(e) => {
+              e.stopPropagation();
+              onExport();
+            }}
             className="p-3 bg-gray-50 dark:bg-white/5 rounded-2xl text-gray-400 hover:text-[#008080] transition-all"
           >
             <Download size={20} />

@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Modal } from "@/shared/ui/components/Modal";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 import { MarketingLead } from "@/entities/marketing";
+import {
+  esquemaLead,
+  type DatosFormularioLead,
+} from "@/entities/marketing";
 
 interface LeadFormModalProps {
   isOpen: boolean;
@@ -13,7 +19,7 @@ interface LeadFormModalProps {
   openCampaigns: { label: string; value: string; color: string }[];
 }
 
-const DEFAULT_FORM: Partial<MarketingLead> = {
+const DEFAULT_FORM: DatosFormularioLead = {
   name: "",
   phone: "",
   email: "",
@@ -29,12 +35,32 @@ export function LeadFormModal({
   initialData,
   openCampaigns,
 }: LeadFormModalProps) {
-  const [formData, setFormData] = useState<Partial<MarketingLead>>(
-    initialData || DEFAULT_FORM,
-  );
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<DatosFormularioLead>({
+    resolver: zodResolver(esquemaLead),
+    defaultValues: initialData
+      ? {
+          name: initialData.name ?? "",
+          phone: initialData.phone ?? "",
+          email: initialData.email ?? "",
+          source: initialData.source ?? "",
+          status: initialData.status ?? "Nuevo",
+          notes: initialData.notes ?? "",
+        }
+      : DEFAULT_FORM,
+  });
 
-  const handleSubmit = () => {
-    onSave(formData);
+  const handleSubmitForm = (data: DatosFormularioLead) => {
+    onSave({
+      ...data,
+      status: data.status as MarketingLead["status"],
+    });
+    reset();
   };
 
   return (
@@ -43,18 +69,20 @@ export function LeadFormModal({
       onClose={onClose}
       title={initialData?.id ? "Editar Lead" : "Registrar Nuevo Lead"}
     >
-      <div className="space-y-6">
+      <form className="space-y-6" onSubmit={handleSubmit(handleSubmitForm)}>
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
             Nombre Completo
           </label>
           <input
             type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            {...register("name")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
             placeholder="Nombre del prospecto"
           />
+          {errors.name && (
+            <p className="text-xs text-red-500">{errors.name.message}</p>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
@@ -63,13 +91,13 @@ export function LeadFormModal({
             </label>
             <input
               type="text"
-              value={formData.phone}
-              onChange={(e) =>
-                setFormData({ ...formData, phone: e.target.value })
-              }
+              {...register("phone")}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
               placeholder="Ej: +591 70000000"
             />
+            {errors.phone && (
+              <p className="text-xs text-red-500">{errors.phone.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -77,13 +105,13 @@ export function LeadFormModal({
             </label>
             <input
               type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              {...register("email")}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
               placeholder="correo@ejemplo.com"
             />
+            {errors.email && (
+              <p className="text-xs text-red-500">{errors.email.message}</p>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-6">
@@ -91,50 +119,63 @@ export function LeadFormModal({
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Origen / Campaña
             </label>
-            <SearchableSelect
-              value={formData.source || ""}
-              onChange={(val) => setFormData({ ...formData, source: val })}
-              options={[
-                { label: "Directo / Orgánico", value: "Directo" },
-                ...openCampaigns,
-              ]}
-              placeholder="Seleccionar campaña..."
-              clearable={false}
+            <Controller
+              name="source"
+              control={control}
+              render={({ field }) => (
+                <SearchableSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { label: "Directo / Orgánico", value: "Directo" },
+                    ...openCampaigns,
+                  ]}
+                  placeholder="Seleccionar campaña..."
+                  clearable={false}
+                />
+              )}
             />
+            {errors.source && (
+              <p className="text-xs text-red-500">{errors.source.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Estado
             </label>
-            <SearchableSelect
-              value={formData.status || ""}
-              onChange={(val) =>
-                setFormData({
-                  ...formData,
-                  status: val as MarketingLead["status"],
-                })
-              }
-              options={[
-                { label: "Nuevo", value: "Nuevo", color: "bg-purple-500" },
-                {
-                  label: "Contactado",
-                  value: "Contactado",
-                  color: "bg-blue-500",
-                },
-                {
-                  label: "Interesado",
-                  value: "Interesado",
-                  color: "bg-blue-500",
-                },
-                {
-                  label: "Convertido",
-                  value: "Convertido",
-                  color: "bg-green-500",
-                },
-                { label: "Perdido", value: "Perdido", color: "bg-gray-500" },
-              ]}
-              clearable={false}
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <SearchableSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { label: "Nuevo", value: "Nuevo", color: "bg-purple-500" },
+                    {
+                      label: "Contactado",
+                      value: "Contactado",
+                      color: "bg-blue-500",
+                    },
+                    {
+                      label: "Interesado",
+                      value: "Interesado",
+                      color: "bg-blue-500",
+                    },
+                    {
+                      label: "Convertido",
+                      value: "Convertido",
+                      color: "bg-green-500",
+                    },
+                    { label: "Perdido", value: "Perdido", color: "bg-gray-500" },
+                  ]}
+                  clearable={false}
+                />
+              )}
             />
+            {errors.status && (
+              <p className="text-xs text-red-500">{errors.status.message}</p>
+            )}
           </div>
         </div>
         <div className="space-y-2">
@@ -142,10 +183,7 @@ export function LeadFormModal({
             Notas
           </label>
           <textarea
-            value={formData.notes}
-            onChange={(e) =>
-              setFormData({ ...formData, notes: e.target.value })
-            }
+            {...register("notes")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
             rows={3}
             placeholder="Información adicional..."
@@ -159,13 +197,13 @@ export function LeadFormModal({
             Cancelar
           </button>
           <button
-            onClick={handleSubmit}
+            type="submit"
             className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg"
           >
             {initialData?.id ? "Guardar Cambios" : "Registrar Lead"}
           </button>
         </div>
-      </div>
+      </form>
     </Modal>
   );
 }

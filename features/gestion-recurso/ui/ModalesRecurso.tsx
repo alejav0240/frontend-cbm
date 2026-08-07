@@ -6,6 +6,7 @@ import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
 import {
   RecursoDigital,
   RecursoExportarFila,
+  DatosFormularioRecurso,
   generarRecursosExcel,
   generarRecursosPDF,
 } from "@/entities/recurso";
@@ -14,12 +15,7 @@ import { ResourceFormModal } from "./ResourceFormModal";
 interface ModalesRecursoProps {
   mostrarFormulario: boolean;
   alCerrarFormulario: () => void;
-  alEnviarFormulario: (data: {
-    title: string;
-    type: string;
-    url: string;
-    category: string;
-  }) => void;
+  alEnviarFormulario: (data: DatosFormularioRecurso) => void;
   estaCreando: boolean;
 
   mostrarConfirmarEliminar: boolean;

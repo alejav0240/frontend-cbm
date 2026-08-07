@@ -28,6 +28,11 @@ export interface ExportFilter<T> {
   key: keyof T;
   label: string;
   type: FilterType;
+  /**
+   * Cuando `key` apunta a un array (p. ej. `sesiones`), el filtro se aplica a
+   * cada elemento usando la propiedad indicada en `itemKey` (p. ej. `ciclo`).
+   */
+  itemKey?: string;
   options?: {
     value: string;
     label: string;
@@ -49,6 +54,84 @@ export interface Exporter<T> {
 }
 
 // ==========================
+// HELPERS
+// ==========================
+
+/**
+ * Clave estable para guardar el valor de cada filtro en `filterValues`.
+ * Con `itemKey` varios filtros pueden apuntar a la misma columna (p. ej.
+ * ciclo/fecha/estado sobre `sesiones`), así que se incluyen itemKey y tipo.
+ */
+function filterId(filter: {
+  key: string | number | symbol;
+  itemKey?: string;
+  type: FilterType;
+}): string {
+  return filter.itemKey
+    ? `${String(filter.key)}::${filter.itemKey}::${filter.type}`
+    : String(filter.key);
+}
+
+function parseFecha(value: string): Date | null {
+  if (!value) return null;
+  const direct = new Date(value);
+  if (!Number.isNaN(direct.getTime())) return direct;
+  const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (match) {
+    const date = new Date(
+      Number(match[3]),
+      Number(match[2]) - 1,
+      Number(match[1]),
+    );
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+  return null;
+}
+
+function matchValue(
+  raw: unknown,
+  filter: { type: FilterType },
+  filterValue: FilterValue,
+): boolean {
+  switch (filter.type) {
+    case "text":
+      if (raw !== null && typeof raw === "object") {
+        return true;
+      }
+      return String(raw ?? "")
+        .toLowerCase()
+        .includes(String(filterValue ?? "").toLowerCase());
+
+    case "select": {
+      if (!filterValue || filterValue === "all") return true;
+      return (
+        String(raw ?? "")
+          .trim()
+          .toLowerCase() === String(filterValue).trim().toLowerCase()
+      );
+    }
+
+    case "date-range": {
+      if (!filterValue || typeof filterValue !== "object") return true;
+      const date = parseFecha(String(raw ?? ""));
+      if (!date) return true;
+      if (filterValue.start) {
+        const start = parseFecha(filterValue.start);
+        if (start && date < start) return false;
+      }
+      if (filterValue.end) {
+        const end = parseFecha(filterValue.end);
+        if (end && date > end) return false;
+      }
+      return true;
+    }
+
+    default:
+      return true;
+  }
+}
+
+// ==========================
 // PROPS
 // ==========================
 
@@ -60,6 +143,8 @@ interface GenericExportModalProps<T> {
   columns: ExportColumn<T>[];
   fileName: string;
   filters?: ExportFilter<T>[];
+  /** Cantidad a mostrar en el resumen. Por defecto cuenta las filas. */
+  summaryCount?: (rows: T[]) => number;
   exporters: Exporter<T | void>[];
 }
 
@@ -75,6 +160,7 @@ export default function GenericExportModal<T>({
   columns,
   fileName,
   filters = [],
+  summaryCount = (rows) => rows.length,
   exporters,
 }: GenericExportModalProps<T>) {
   const [filterValues, setFilterValues] = useState<Record<string, FilterValue>>(
@@ -92,45 +178,51 @@ export default function GenericExportModal<T>({
       */
 
   const filteredData = useMemo(() => {
-    return data.filter((row) => {
-      return Object.entries(filterValues).every(([key, value]) => {
-        if (!value || value === "all") return true;
+    return data
+      .map((row) => {
+        let keep = true;
+        let next = row;
 
-        const filter = filters.find((f) => String(f.key) === key);
+        for (const [key, value] of Object.entries(filterValues)) {
+          if (!value || value === "all") continue;
 
-        if (!filter) return true;
+          const filter = filters.find((f) => filterId(f) === key);
+          if (!filter) continue;
 
-        const rowValue = row[filter.key];
+          const rowValue = (next as Record<string, unknown>)[
+            String(filter.key)
+          ];
 
-        switch (filter.type) {
-          case "text":
-            return String(rowValue)
-              .toLowerCase()
-              .includes(String(value).toLowerCase());
+          if (filter.itemKey) {
+            const items = Array.isArray(rowValue)
+              ? (rowValue as unknown[])
+              : [];
+            const keptItems = items.filter((item) =>
+              matchValue(
+                (item as Record<string, unknown>)?.[filter.itemKey!],
+                filter,
+                value,
+              ),
+            );
 
-          case "select":
-            return rowValue === value;
-
-          case "date-range":
-            const date = new Date(String(rowValue));
-
-            if (value && typeof value === "object") {
-              if (value.start) {
-                if (date < new Date(value.start)) return false;
-              }
-
-              if (value.end) {
-                if (date > new Date(value.end)) return false;
-              }
+            if (keptItems.length === 0) {
+              keep = false;
+              break;
             }
 
-            return true;
-
-          default:
-            return true;
+            next = {
+              ...(next as object),
+              [filter.key]: keptItems,
+            } as T;
+          } else if (!matchValue(rowValue, filter, value)) {
+            keep = false;
+            break;
+          }
         }
-      });
-    });
+
+        return keep ? next : null;
+      })
+      .filter((row): row is T => row !== null);
   }, [data, filters, filterValues]);
 
   /*
@@ -155,6 +247,7 @@ export default function GenericExportModal<T>({
     if (!isOpen) {
       setPdfUrl(null);
     } else {
+      setFilterValues({});
       setPreviewKey((k) => k + 1);
     }
   }
@@ -227,19 +320,19 @@ export default function GenericExportModal<T>({
           </div>
 
           {filters.map((filter) => (
-            <div key={String(filter.key)} className="space-y-2">
+            <div key={filterId(filter)} className="space-y-2">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 {filter.label}
               </label>
 
               {filter.type === "select" && (
                 <select
-                  value={(filterValues[String(filter.key)] as string) ?? "all"}
+                  value={(filterValues[filterId(filter)] as string) ?? "all"}
                   onChange={(e) =>
                     setFilterValues((prev) => ({
                       ...prev,
 
-                      [String(filter.key)]: e.target.value,
+                      [filterId(filter)]: e.target.value,
                     }))
                   }
                   className="w-full px-4 py-2 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
@@ -256,12 +349,12 @@ export default function GenericExportModal<T>({
 
               {filter.type === "text" && (
                 <input
-                  value={(filterValues[String(filter.key)] as string) ?? ""}
+                  value={(filterValues[filterId(filter)] as string) ?? ""}
                   onChange={(e) =>
                     setFilterValues((prev) => ({
                       ...prev,
 
-                      [String(filter.key)]: e.target.value,
+                      [filterId(filter)]: e.target.value,
                     }))
                   }
                   className="w-full px-4 py-2 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
@@ -277,8 +370,8 @@ export default function GenericExportModal<T>({
                       setFilterValues((prev) => ({
                         ...prev,
 
-                        [String(filter.key)]: {
-                          ...(prev[String(filter.key)] as {
+                        [filterId(filter)]: {
+                          ...(prev[filterId(filter)] as {
                             start?: string;
                             end?: string;
                           }),
@@ -296,8 +389,8 @@ export default function GenericExportModal<T>({
                       setFilterValues((prev) => ({
                         ...prev,
 
-                        [String(filter.key)]: {
-                          ...(prev[String(filter.key)] as {
+                        [filterId(filter)]: {
+                          ...(prev[filterId(filter)] as {
                             start?: string;
                             end?: string;
                           }),
@@ -323,7 +416,7 @@ export default function GenericExportModal<T>({
                   Registros a exportar:
                 </span>
                 <span className="text-lg font-bold text-[#008080]">
-                  {filteredData.length}
+                  {summaryCount(filteredData)}
                 </span>
               </div>
             </div>

@@ -1,4 +1,5 @@
 export * from "./model/tipos";
+export * from "./model/esquema";
 export * from "./api/consultas";
 export * from "./api/useCampanasMarketing";
 export * from "./api/useLeads";

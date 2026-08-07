@@ -201,6 +201,86 @@ export const OBTENER_CICLOS = gql`
   }
 `;
 
+export const OBTENER_CICLOS_PACIENTE = gql`
+  query ObtenerCiclosPaciente($patientId: ID!) {
+    patientCycles(patientId: $patientId) {
+      id
+      patientId
+      patientDbId
+      patientName
+      cycleNumber
+      sessionCount
+      completedCount
+      status
+      firstSessionDate
+      lastSessionDate
+      paymentSummary {
+        paid
+        pending
+        exempt
+      }
+      sessions {
+        id
+        databaseId
+        sessionNumber
+        sessionDate
+        cycleNumber
+        sessionStatus
+        sessionTypeDisplay
+        durationMinutes
+        notes
+        videoUrl
+        therapist {
+          id
+          fullName
+        }
+        sessionResources {
+          resource {
+            id
+            title
+            type
+            url
+          }
+        }
+        sessionInventory {
+          item {
+            id
+            name
+          }
+        }
+        scaleEvaluations {
+          id
+          evaluatedAt
+          totalScore
+          scale {
+            id
+            name
+            scaleType
+          }
+          subscaleResponses {
+            id
+            score
+            subscale {
+              id
+              name
+              category
+              maxValue
+            }
+          }
+          valueResponses {
+            id
+            scaleValue {
+              id
+              label
+              value
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const OBTENER_CICLOS_PACIENTES = gql`
   query ObtenerCiclosPacientes(
     $pageSize: Int

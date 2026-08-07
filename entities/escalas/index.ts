@@ -10,3 +10,10 @@ export { useAgregarEscalaSesion } from "./api/useAgregarEscalaSesion";
 export { useCrearEscala } from "./api/useCrearEscala";
 export { useEliminarEscala } from "./api/useEliminarEscala";
 export type { Evaluacion } from "./model/tipos";
+export type { EvaluacionExportarFila, EvaluacionDetalleDTO } from "./model/dto";
+export {
+  generarEvaluacionesPDF,
+  generarEvaluacionesPDFPreview,
+} from "./lib/exportar-pdf";
+export { generarEvaluacionPDF } from "./lib/exportar-evaluacion-pdf";
+export { generarEvaluacionesExcel } from "./lib/exportar-excel";

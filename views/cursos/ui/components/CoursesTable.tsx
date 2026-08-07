@@ -114,7 +114,7 @@ export function CoursesTable({
                     </span>
                   </td>
                   <td className="px-8 py-5">
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                    <div className="flex gap-2">
                       <button
                         onClick={() => onEnroll(course)}
                         className="p-2.5 bg-[#008080]/10 rounded-xl text-[#008080] hover:bg-[#008080] hover:text-white transition-all"

@@ -25,8 +25,7 @@ const CLAVES_FILTRO = ["page", "q", "rol", "tab"] as const;
 
 export const UsuariosPage = () => {
   const { filtros, setFiltros } = useUrlFiltros(CLAVES_FILTRO);
-  const activeTab: TabType =
-    filtros.tab === "TUTORES" ? "TUTORES" : "PERSONAL";
+  const activeTab: TabType = filtros.tab === "TUTORES" ? "TUTORES" : "PERSONAL";
   const paginaActual = Number(filtros.page || "1");
   const [busqueda, setBusqueda] = useState(filtros.q);
   const rolSeleccionado = filtros.rol || "";
@@ -37,8 +36,13 @@ export const UsuariosPage = () => {
   }
   const { roles } = useRoles({ pageSize: 50 });
 
-  const nombreRol = rolSeleccionado || (activeTab === "TUTORES" ? "TUTOR" : undefined);
-  const excluirRol = rolSeleccionado ? undefined : activeTab === "PERSONAL" ? "TUTOR" : undefined;
+  const nombreRol =
+    rolSeleccionado || (activeTab === "TUTORES" ? "TUTOR" : undefined);
+  const excluirRol = rolSeleccionado
+    ? undefined
+    : activeTab === "PERSONAL"
+      ? "TUTOR"
+      : undefined;
 
   const { usuarios, paginas } = useUsuarios({
     pagina: paginaActual,
@@ -106,6 +110,11 @@ export const UsuariosPage = () => {
     setMostrarFormulario(true);
   }, []);
 
+  const handleCerrarFormulario = useCallback(() => {
+    setMostrarFormulario(false);
+    limpiarFormulario();
+  }, [limpiarFormulario]);
+
   const handleShowCredentials = useCallback((usuario: Usuario) => {
     setUsuarioCredenciales(usuario);
     setMostrarPassword(false);
@@ -132,7 +141,8 @@ export const UsuariosPage = () => {
           toast.success("Usuario actualizado correctamente");
         } else {
           const usernameFinal =
-            formUsername || `${formFirstName}.${formLastName}`.toLowerCase().replace(/\s/g, "");
+            formUsername ||
+            `${formFirstName}.${formLastName}`.toLowerCase().replace(/\s/g, "");
           const passwordFinal = formPassword || "temp123";
           const resultado = await crearUsuario({
             username: usernameFinal,
@@ -240,10 +250,7 @@ export const UsuariosPage = () => {
 
       <ModalesUsuario
         mostrarFormulario={mostrarFormulario}
-        alCerrarFormulario={() => {
-          setMostrarFormulario(false);
-          limpiarFormulario();
-        }}
+        alCerrarFormulario={handleCerrarFormulario}
         formProps={{
           firstName: formFirstName,
           setFirstName: setFormFirstName,
@@ -265,10 +272,7 @@ export const UsuariosPage = () => {
           setVisibility: setFormVisibility,
           isEditing: !!editandoUsuario,
           onSubmit: handleFormSubmit,
-          onCancel: () => {
-            setMostrarFormulario(false);
-            limpiarFormulario();
-          },
+          onCancel: handleCerrarFormulario,
         }}
         mostrarCredenciales={mostrarCredenciales}
         alCerrarCredenciales={() => {
