@@ -19,21 +19,21 @@ Configurado en `shared/lib/apollo/`. El `ApolloWrapper` se monta en `MainProvide
 
 ## Convenciones de archivos GraphQL
 
-Cada módulo tiene su carpeta `graphql/` con:
-- `query.ts` — todas las queries (`GET_*`, `SEARCH_*`)
-- `mutacion.ts` — todas las mutaciones (`CREATE_*`, `UPDATE_*`, `DELETE_*`)
-- Se re-exportan desde el `index.ts` del módulo
+Cada entidad tiene su carpeta `api/` con:
+- `consultas.ts` — todas las queries (`GET_*`, `SEARCH_*`)
+- `mutaciones.ts` — todas las mutaciones (`CREATE_*`, `UPDATE_*`, `DELETE_*`)
+- Hooks Apollo (`use*`) en archivos propios; se re-exportan desde el `index.ts` de la entidad
 
 ## Operaciones disponibles
 
-### Auth — `modules/auth/graphql/index.ts`
+### Auth — `shared/api/auth.ts` y `shared/lib/apollo/operations/auth.ts`
 
 ```graphql
 mutation TokenAuth($username, $password)   # Login — devuelve token + user
 query Me                                    # Usuario autenticado completo
 ```
 
-### Pacientes — `modules/atencion/pacientes/graphql/`
+### Pacientes — `entities/paciente/api/`
 
 **Queries:**
 ```graphql
@@ -54,4 +54,8 @@ mutation DeletePatient($id)             # Eliminar paciente
 
 ## Codegen
 
-El proyecto tiene `@graphql-codegen` configurado en devDependencies pero no tiene archivo de config activo aún. Cuando se configure, los tipos generados irían en `shared/types/generated/`.
+Configurado en `codegen.ts`. Descarga el schema del backend (`NEXT_PUBLIC_GRAPHQL_URI`,
+por defecto `http://localhost:8000/graphql/`) y genera los tipos en
+`shared/api/generated/` con el preset `client`. Ejecutar con `pnpm codegen` tras cambios de
+schema o queries; los archivos generados se commitean. Documentos escaneados:
+`entities/**/*.ts`, `shared/api/**/*.ts`, `features/**/*.ts`.

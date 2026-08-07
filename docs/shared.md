@@ -6,7 +6,7 @@
 
 | Componente | Descripción |
 |---|---|
-| `Sidebar.tsx` | Sidebar colapsable. Lee `menuGroups` filtrados por permisos. Usa `useDashboardStore` para navegación |
+| `Sidebar.tsx` | Sidebar colapsable. Lee `menuGroups` filtrados por permisos. Usa `useSidebar`/`useInterfazStore` para el estado del sidebar |
 | `Topbar.tsx` | Barra superior con búsqueda global, notificaciones y perfil |
 
 ### Modales
