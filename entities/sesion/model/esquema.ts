@@ -37,3 +37,9 @@ export type DatosFormularioSesionGrupal = z.infer<
   typeof esquemaSesionGrupal
 >;
 
+export const esquemaNotasSesion = z.object({
+  notes: z.string().min(1, "Las notas no pueden estar vacías"),
+});
+
+export type DatosFormularioNotasSesion = z.infer<typeof esquemaNotasSesion>;
+

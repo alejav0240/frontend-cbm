@@ -27,6 +27,12 @@ import {
   generarSesionDetalladaWord,
 } from "@/entities/sesion";
 import type { FormularioClinicoDataSchema } from "@/features/gestion-paciente/model/FormularioClinicoData.schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  esquemaNotasSesion,
+  type DatosFormularioNotasSesion,
+} from "@/entities/sesion";
 
 type SessionData = SessionType;
 
@@ -57,6 +63,7 @@ import {
   useAsignacionesFormulario,
   useSubmitFullForm,
   useAssignForm,
+  crearEsquemaCuestionario,
 } from "@/entities/formulario";
 import ViewForm from "@/entities/formulario/ui/viewForm";
 import { useObtenerRespuestaFormulario } from "@/entities/formulario/api/useObtenerRespuestaFormulario";
@@ -149,10 +156,19 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
   const [aiViewMode, setAiViewMode] = useState<"list" | "charts">("list");
 
   const [showEditSessionModal, setShowEditSessionModal] = useState(false);
-  const [editedNotes, setEditedNotes] = useState("");
   const [selectedSession, setSelectedSession] = useState<SessionData | null>(
     null,
   );
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<DatosFormularioNotasSesion>({
+    resolver: zodResolver(esquemaNotasSesion),
+    defaultValues: { notes: "" },
+  });
 
   const [showDeleteSessionConfirm, setShowDeleteSessionConfirm] =
     useState(false);
@@ -221,6 +237,21 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
 
     if (!usuario?.databaseId || !paciente?.id) return;
 
+    const esquema = crearEsquemaCuestionario(formulario?.questions ?? []);
+    const resultado = esquema.safeParse(formValues);
+    if (!resultado.success) {
+      const idsFaltantes = new Set(
+        resultado.error.issues.map((issue) => String(issue.path[0] ?? "")),
+      );
+      const preguntasFaltantes = (formulario?.questions ?? [])
+        .filter((pregunta) => idsFaltantes.has(pregunta.id))
+        .map((pregunta) => pregunta.question);
+      toast.error(
+        `Completa las preguntas obligatorias: ${preguntasFaltantes.join(", ")}`,
+      );
+      return;
+    }
+
     const responses = Object.entries(formValues).map(
       ([questionId, responseText]) => ({
         questionId,
@@ -265,18 +296,17 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
 
   const handleEditSession = (session: SessionData) => {
     setSelectedSession(session);
-    setEditedNotes((session.notes as string) || "");
+    reset({ notes: (session.notes as string) || "" });
     setShowEditSessionModal(true);
   };
 
-  const handleSaveSessionEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveSessionEdit = async (data: DatosFormularioNotasSesion) => {
     if (!selectedSession?.id && !selectedSession?.databaseId) return;
     const sessionId = String(
       selectedSession.id || String(selectedSession.databaseId),
     );
     try {
-      await actualizarSesion(sessionId, { notes: editedNotes });
+      await actualizarSesion(sessionId, { notes: data.notes });
       setShowEditSessionModal(false);
       setSelectedSession(null);
       refetch();
@@ -686,18 +716,20 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
         onClose={() => setShowEditSessionModal(false)}
         title={`Editar Notas de Sesión`}
       >
-        <form onSubmit={handleSaveSessionEdit} className="space-y-6">
+        <form onSubmit={handleSubmit(handleSaveSessionEdit)} className="space-y-6">
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Notas Clínicas
             </label>
             <textarea
-              value={editedNotes}
-              onChange={(e) => setEditedNotes(e.target.value)}
+              {...register("notes")}
               rows={8}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white resize-none"
+              className={`w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 outline-none transition-all text-sm dark:text-white resize-none ${errors.notes ? "border-red-500" : "border-transparent focus-visible:border-[#008080]"}`}
               placeholder="Escribe las observaciones clínicas aquí..."
             />
+            {errors.notes && (
+              <p className="text-sm text-red-500">{errors.notes.message}</p>
+            )}
           </div>
           <div className="flex justify-end gap-4 pt-4">
             <button

@@ -317,7 +317,6 @@ export function ViewForm({
   const sortedQuestions = [...form.questions].sort(
     (a, b) => a.orderIndex - b.orderIndex,
   );
-  console.log(values);
   return (
     <div className="space-y-8">
       {form.description && (

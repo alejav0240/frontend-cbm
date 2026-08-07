@@ -16,6 +16,7 @@ export type {
 export {
   esquemaCrearFormulario,
   esquemaAsignarFormulario,
+  crearEsquemaCuestionario,
 } from "./model/esquema";
 export type {
   DatosCrearFormulario,

@@ -1,4 +1,5 @@
 import { z } from "zod/v4";
+import type { FormQuestion } from "./tipos";
 
 export const esquemaCrearFormulario = z.object({
   name: z.string().min(1, "El nombre del formulario es obligatorio"),
@@ -22,3 +23,13 @@ export const esquemaAsignarFormulario = z.object({
 });
 
 export type DatosAsignarFormulario = z.infer<typeof esquemaAsignarFormulario>;
+
+export function crearEsquemaCuestionario(questions: FormQuestion[]) {
+  const shape: Record<string, z.ZodTypeAny> = {};
+  for (const pregunta of questions) {
+    shape[pregunta.id] = pregunta.isRequired
+      ? z.string().min(1, "Esta respuesta es obligatoria")
+      : z.string().optional();
+  }
+  return z.object(shape);
+}
