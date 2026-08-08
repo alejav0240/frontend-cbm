@@ -28,11 +28,20 @@ cd /home/hmusicot/cbm-frontend
 
 ## 2. Configurar variables de entorno
 
-Crear `/home/hmusicot/cbm-frontend/.env.production`:
+El archivo `.env.production` del repositorio **esta versionado en git** y solo contiene las variables publicas `NEXT_PUBLIC_*` (se resetea en cada deploy con `git reset --hard`, asi que NO se le agregan secretos):
 
 ```env
 NEXT_PUBLIC_API_URL=https://api.musicoterapiabolivia.com
 NEXT_PUBLIC_GRAPHQL_URI=https://api.musicoterapiabolivia.com/graphql/
+```
+
+> **Importante:** Las variables `NEXT_PUBLIC_*` se incrustan en el bundle del cliente durante el build. Cambiarlas requiere reconstruir.
+
+### Secretos del servidor (R2 y OneDrive)
+
+Las claves se inyectan en el entorno del proceso pm2 en el VPS (ver seccion 6), NO en `.env.production`. La primera vez crea `/home/hmusicot/cbm-frontend/.env.server` con los valores reales:
+
+```env
 R2_ACCOUNT_ID=tu_r2_account_id
 R2_ACCESS_KEY_ID=tu_r2_access_key
 R2_SECRET_ACCESS_KEY=tu_r2_secret_key
@@ -43,9 +52,7 @@ ONEDRIVE_CLIENT_SECRET=tu_client_secret
 ONEDRIVE_SERVICE_KEY=tu_service_key
 ```
 
-> **Importante:** Las variables `NEXT_PUBLIC_*` se incrustan en el bundle del cliente durante el build. Cambiarlas requiere reconstruir.
->
-> **OneDrive (delegado, cuenta personal):** `ONEDRIVE_SERVICE_KEY` debe coincidir con la variable `ONEDRIVE_SERVICE_KEY` del `.env` del backend. La conexión se hace una sola vez entrando a `/api/onedrive/connect`, que redirige al login de Microsoft y guarda el refresh token encriptado en la BD del backend (`onedrive_connections`). `ONEDRIVE_TENANT_ID`, `ONEDRIVE_DRIVE_ID` y `ONEDRIVE_USER_ID` NO se usan para el flujo delegado con cuenta personal.
+> **OneDrive (delegado, cuenta personal):** `ONEDRIVE_SERVICE_KEY` debe coincidir con la variable `ONEDRIVE_SERVICE_KEY` del `.env` del backend. La conexion se hace una sola vez entrando a `/api/onedrive/connect`, que redirige al login de Microsoft y guarda el refresh token encriptado en la BD del backend (`onedrive_connections`). `ONEDRIVE_TENANT_ID`, `ONEDRIVE_DRIVE_ID` y `ONEDRIVE_USER_ID` NO se usan para el flujo delegado con cuenta personal.
 
 ## 3. Habilitar output standalone
 
@@ -95,11 +102,14 @@ cp -r public .next/standalone/
 
 ```bash
 cd /home/hmusicot/cbm-frontend
-HOSTNAME=127.0.0.1 pm2 start .next/standalone/server.js --name cbm-frontend --cwd /home/hmusicot/cbm-frontend -- --port 3000
+set -a; source .env.server; set +a
+pm2 start .next/standalone/server.js --name cbm-frontend --cwd /home/hmusicot/cbm-frontend --env production -- --port 3000
 pm2 save
 ```
 
-**Por que `HOSTNAME=127.0.0.1`:** Sin esta variable, Next.js se vincula a la IP externa del servidor (`149.56.131.206`), lo que impide que Apache pueda proxyear las peticiones via `127.0.0.1:3000`.
+> `HOSTNAME=127.0.0.1`: Sin esta variable (definida en `.env.server`), Next.js se vincula a la IP externa del servidor (`149.56.131.206`), lo que impide que Apache pueda proxyear las peticiones via `127.0.0.1:3000`.
+>
+> pm2 conserva el entorno con el que arranco el proceso. Si cambias las claves en `.env.server`, hay que `pm2 delete cbm-frontend`, volver a hacer `set -a; source .env.server; set +a` y arrancar de nuevo (un simple `pm2 restart` no refresca las variables).
 
 ## 7. Configurar Apache proxy (.htaccess)
 
@@ -171,7 +181,7 @@ pm2 restart cbm-frontend
 pm2 save
 ```
 
-> Si las variables de entorno cambiaron, tambien hay que actualizar `.env.production` y hacer un rebuild completo.
+> Si cambio `NEXT_PUBLIC_*` (archivo `.env.production` del repo), hay que hacer un rebuild completo. Si cambiaron los secretos del servidor (`R2_*`, `ONEDRIVE_*` en `.env.server`), editar ese archivo, luego `pm2 delete cbm-frontend` y arrancar de nuevo con `source .env.server` (pm2 restart conserva el entorno antiguo).
 
 ## 11. Arquitectura de red
 
