@@ -85,7 +85,7 @@ type TabId = "plan" | "notas" | "recursos" | "escalas";
 type UploadResponse = {
   success: boolean;
   url?: string;
-  storage?: "r2" | "local";
+  storage?: "onedrive" | "r2" | "local";
   message?: string;
 };
 
@@ -385,17 +385,18 @@ export const SesionEnProgresoPage = () => {
     async (archivo: File | null): Promise<UploadResponse | null> => {
       if (!archivo || !sesion) return null;
 
-      const formData = new FormData();
-      formData.append("file", archivo);
-      formData.append("pacienteId", sesion.pacienteId);
-      formData.append("pacienteNombre", sesion.pacienteNombre);
-      formData.append("sessionId", sesion.id);
-      formData.append("numeroCiclo", "sin-ciclo");
-      formData.append("grabadoEn", new Date().toISOString());
-
       const response = await fetch("/api/upload", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": archivo.type || "video/webm",
+          "x-paciente-id": sesion.pacienteId,
+          "x-paciente-nombre": sesion.pacienteNombre,
+          "x-session-id": sesion.id,
+          "x-numero-ciclo": "sin-ciclo",
+          "x-grabado-en": new Date().toISOString(),
+          "x-filename": archivo.name,
+        },
+        body: archivo,
       });
       const data = (await response.json()) as UploadResponse;
 
@@ -611,6 +612,9 @@ export const SesionEnProgresoPage = () => {
 
     if (errores.length === 0) {
       toast.success("Sesión guardada exitosamente");
+      if (almacenamientoVideo === "onedrive") {
+        toast.success("Video subido a OneDrive");
+      }
       if (almacenamientoVideo === "r2") {
         toast.success("Video subido a Cloudflare R2");
       }

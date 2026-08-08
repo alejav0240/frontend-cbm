@@ -38,14 +38,14 @@ R2_ACCESS_KEY_ID=tu_r2_access_key
 R2_SECRET_ACCESS_KEY=tu_r2_secret_key
 R2_BUCKET=cbm-plaform
 R2_PUBLIC_BASE_URL=https://pub-xxx.r2.dev
-ONEDRIVE_TENANT_ID=tu_tenant_id
 ONEDRIVE_CLIENT_ID=tu_client_id
 ONEDRIVE_CLIENT_SECRET=tu_client_secret
-ONEDRIVE_DRIVE_ID=tu_drive_id
-ONEDRIVE_USER_ID=tu_user_id
+ONEDRIVE_SERVICE_KEY=tu_service_key
 ```
 
 > **Importante:** Las variables `NEXT_PUBLIC_*` se incrustan en el bundle del cliente durante el build. Cambiarlas requiere reconstruir.
+>
+> **OneDrive (delegado, cuenta personal):** `ONEDRIVE_SERVICE_KEY` debe coincidir con la variable `ONEDRIVE_SERVICE_KEY` del `.env` del backend. La conexión se hace una sola vez entrando a `/api/onedrive/connect`, que redirige al login de Microsoft y guarda el refresh token encriptado en la BD del backend (`onedrive_connections`). `ONEDRIVE_TENANT_ID`, `ONEDRIVE_DRIVE_ID` y `ONEDRIVE_USER_ID` NO se usan para el flujo delegado con cuenta personal.
 
 ## 3. Habilitar output standalone
 
