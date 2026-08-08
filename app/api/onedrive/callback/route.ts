@@ -48,8 +48,18 @@ export async function GET(request: NextRequest) {
     const userEmail = me?.userPrincipalName || me?.mail || "";
 
     const saved = await storeRefreshTokenInBackend(tokens.refresh_token, userEmail);
-    if (!saved) {
-      return buildRedirect(origin, "onedrive=error&message=no_se_pudo_guardar");
+    if (!saved.ok) {
+      const status = saved.status ? `status_${saved.status}` : "";
+      const detail = saved.errorBody
+        ? saved.errorBody.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 40)
+        : "";
+      const message = [status, detail].filter(Boolean).join("_");
+      return buildRedirect(
+        origin,
+        `onedrive=error&message=${encodeURIComponent(
+          message || "no_se_pudo_guardar",
+        )}`,
+      );
     }
 
     return buildRedirect(origin, "onedrive=connected");

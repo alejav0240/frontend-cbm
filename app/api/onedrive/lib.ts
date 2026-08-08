@@ -134,19 +134,39 @@ export const fetchRefreshTokenFromBackend = async (): Promise<string | null> => 
   return data.refresh_token || null;
 };
 
+export type StoreTokenResult = {
+  ok: boolean;
+  status?: number;
+  errorBody?: string;
+};
+
 export const storeRefreshTokenInBackend = async (
   refreshToken: string,
   userEmail: string,
-): Promise<boolean> => {
+): Promise<StoreTokenResult> => {
   const { backendUrl, serviceKey } = getOnedriveConfig();
-  const response = await fetch(`${backendUrl}/api/onedrive/token`, {
-    method: "POST",
-    headers: {
-      "X-Service-Key": serviceKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ refresh_token: refreshToken, user_email: userEmail }),
-    cache: "no-store",
-  });
-  return response.ok;
+
+  let response: Response;
+  try {
+    response = await fetch(`${backendUrl}/api/onedrive/token`, {
+      method: "POST",
+      headers: {
+        "X-Service-Key": serviceKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refresh_token: refreshToken, user_email: userEmail }),
+      cache: "no-store",
+    });
+  } catch (error) {
+    const reason =
+      error instanceof Error ? error.message : "Failed to fetch backend";
+    return { ok: false, errorBody: reason };
+  }
+
+  if (response.ok) {
+    return { ok: true, status: response.status };
+  }
+
+  const errorBody = (await response.text()).slice(0, 200);
+  return { ok: false, status: response.status, errorBody };
 };

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { motion } from "motion/react";
 import { Play } from "lucide-react";
 import { useAuthStore } from "@/shared/model/useAuthStore";
@@ -57,6 +58,25 @@ export const DashboardPage = () => {
   const router = useRouter();
   const { usuario } = useAuthStore();
   const { setSesion } = useSesionActivaStore();
+  const onedriveToastMostrado = useRef(false);
+
+  useEffect(() => {
+    if (onedriveToastMostrado.current || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const resultado = params.get("onedrive");
+    if (resultado === "connected") {
+      onedriveToastMostrado.current = true;
+      toast.success("OneDrive conectado correctamente");
+      router.replace("/dashboard");
+    } else if (resultado === "error") {
+      onedriveToastMostrado.current = true;
+      const detalle = decodeURIComponent(
+        params.get("message") || "Error desconocido",
+      ).replace(/_/g, " ");
+      toast.error(`No se pudo conectar OneDrive: ${detalle}`);
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   const { sesiones, cargando: cargandoSesiones } = useSesiones({
     pageSize: 50,
