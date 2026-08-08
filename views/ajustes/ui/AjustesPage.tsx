@@ -28,7 +28,7 @@ const TarjetaOneDrive = () => {
     let activo = true;
     void (async () => {
       try {
-        const response = await fetch("/api/onedrive/status", {
+        const response = await fetch(`/api/onedrive/status?_=${Date.now()}`, {
           cache: "no-store",
         });
         const data = (await response.json()) as OneDriveStatus;
