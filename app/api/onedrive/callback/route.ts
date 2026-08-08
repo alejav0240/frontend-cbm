@@ -3,13 +3,14 @@ import {
   exchangeCodeForToken,
   getMe,
   getOnedriveConfig,
+  getPublicOrigin,
   storeRefreshTokenInBackend,
 } from "@/app/api/onedrive/lib";
 
 export const runtime = "nodejs";
 
 const buildRedirect = (origin: string, query: string) => {
-  const url = new URL("/dashboard", origin);
+  const url = new URL("/dashboard", getPublicOrigin(origin));
   url.search = query;
   return NextResponse.redirect(url.toString());
 };

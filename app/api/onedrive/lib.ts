@@ -27,8 +27,13 @@ export const isOnedriveConfigured = () => {
   return Boolean(config.clientId && config.clientSecret && config.serviceKey);
 };
 
+export const getPublicOrigin = (origin: string) => {
+  const publicUrl = process.env.APP_URL?.replace(/\/+$/, "");
+  return publicUrl || origin;
+};
+
 export const getRedirectUri = (origin: string) =>
-  `${origin}/api/onedrive/callback`;
+  `${getPublicOrigin(origin)}/api/onedrive/callback`;
 
 export const buildAuthorizeUrl = (origin: string) => {
   const { clientId } = getOnedriveConfig();
