@@ -130,10 +130,13 @@ export const getAccessToken = async (refreshToken: string): Promise<string> => {
 
 export const fetchRefreshTokenFromBackend = async (): Promise<string | null> => {
   const { backendUrl, serviceKey } = getOnedriveConfig();
-  const response = await fetch(`${backendUrl}/api/onedrive/token`, {
-    headers: { "X-Service-Key": serviceKey },
-    cache: "no-store",
-  });
+  const response = await fetch(
+    `${backendUrl}/api/onedrive/token?_=${Date.now()}`,
+    {
+      headers: { "X-Service-Key": serviceKey },
+      cache: "no-store",
+    },
+  );
   if (!response.ok) return null;
   const data = (await response.json()) as { refresh_token?: string | null };
   return data.refresh_token || null;

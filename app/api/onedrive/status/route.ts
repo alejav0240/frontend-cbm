@@ -13,9 +13,10 @@ export async function GET(): Promise<NextResponse<OnedriveStatusResponse>> {
   const { backendUrl } = getOnedriveConfig();
 
   try {
-    const response = await fetch(`${backendUrl}/api/onedrive/status`, {
-      cache: "no-store",
-    });
+    const response = await fetch(
+      `${backendUrl}/api/onedrive/status?_=${Date.now()}`,
+      { cache: "no-store" },
+    );
     if (!response.ok) {
       return NextResponse.json(
         { connected: false, error: `backend_${response.status}` },
