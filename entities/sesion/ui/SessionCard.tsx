@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import {
   Search,
   BarChart3,
@@ -17,6 +18,9 @@ import {
   ChevronRight,
   ExternalLink,
   FileText,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 
 // ============ TYPES & INTERFACES ============
@@ -85,6 +89,7 @@ export interface SessionType {
   createdAt: unknown;
   notes: string | null;
   videoUrl: string | null;
+  videoStatus: string | null;
   sessionTypeDisplay: string | null;
   paymentStatusDisplay: string | null;
   sessionDate: unknown;
@@ -109,6 +114,25 @@ interface SessionCardProps {
 }
 
 // ============ COMPONENTE PRINCIPAL ============
+
+const reintentarSubida = async (sessionId: string) => {
+  try {
+    const response = await fetch("/api/upload/retry", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    });
+    const data = (await response.json()) as { success?: boolean };
+    if (!response.ok || !data.success) {
+      throw new Error("No se pudo reintentar");
+    }
+    toast.success("Reintentando la subida de la grabación…");
+  } catch {
+    toast.error(
+      "No se pudo reintentar ahora. Probá nuevamente en unos minutos.",
+    );
+  }
+};
 
 const SessionCard: React.FC<SessionCardProps> = ({
   session,
@@ -553,6 +577,42 @@ const SessionCard: React.FC<SessionCardProps> = ({
                   </video>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Estado de subida (sin video aún) */}
+          {!session.videoUrl && session.videoStatus === "subiendo" && (
+            <div className="flex items-center gap-3 rounded-2xl border border-teal-500/20 bg-teal-500/5 px-4 py-3">
+              <Loader2 size={18} className="animate-spin text-[#008080]" />
+              <div>
+                <p className="text-xs font-bold text-[#008080] dark:text-teal-400">
+                  Subiendo grabación…
+                </p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  El video se sube en segundo plano. Te avisaremos cuando
+                  termine.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!session.videoUrl && session.videoStatus === "fallo" && (
+            <div className="flex items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/5 px-4 py-3">
+              <AlertCircle size={18} className="text-red-500 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs font-bold text-red-600 dark:text-red-400">
+                  La grabación no se pudo subir
+                </p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  Podés reintentarla o intentar nuevamente más tarde.
+                </p>
+              </div>
+              <button
+                onClick={() => void reintentarSubida(String(session.id))}
+                className="flex items-center gap-1.5 rounded-xl bg-[#008080] px-3 py-1.5 text-[11px] font-bold text-white hover:bg-[#006666] transition-colors"
+              >
+                <RefreshCw size={13} /> Reintentar
+              </button>
             </div>
           )}
 

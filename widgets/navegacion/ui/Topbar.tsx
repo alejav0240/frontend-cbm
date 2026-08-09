@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/model/useAuthStore";
 import { useSidebar } from "@/shared/model/useInterfazStore";
 import { usePacienteSeleccionadoStore } from "@/entities/paciente";
+import { CampanaNotificaciones } from "@/widgets/navegacion/ui/CampanaNotificaciones";
 
 export const Topbar = () => {
   const { theme, setTheme } = useTheme();
@@ -77,6 +78,8 @@ export const Topbar = () => {
       </div>
 
       <div className="flex items-center gap-3">
+        <CampanaNotificaciones />
+
         <button
           onClick={toggleTheme}
           className="p-3 text-gray-400 hover:text-[#008080] rounded-2xl transition-all"

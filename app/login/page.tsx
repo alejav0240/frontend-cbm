@@ -100,6 +100,7 @@ export default function Login() {
                 src="/logohorizontal.png"
                 alt="Logo"
                 fill
+                sizes="192px"
                 className="object-contain"
                 priority
               />

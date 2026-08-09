@@ -15,6 +15,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://musicoterapiabolivia.com",
+  ),
   title: {
     default: "Centro Boliviano de Musicoterapia",
     template: "%s | Centro Boliviano de Musicoterapia",
@@ -71,6 +74,7 @@ export default function RootLayout({
       lang="es"
       className={`${inter.variable} ${playfair.variable}`}
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
     >
       <body>
         <MainProvider>{children}</MainProvider>

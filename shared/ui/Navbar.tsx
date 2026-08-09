@@ -209,6 +209,7 @@ export default function Navbar() {
                 src="/logohorizontal.png"
                 alt="Centro Boliviano de Musicoterapia"
                 fill
+                sizes="192px"
                 className="object-contain"
                 priority
               />

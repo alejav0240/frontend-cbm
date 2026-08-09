@@ -13,6 +13,7 @@ import {
   VistaCamara,
   WorkspaceSesion,
 } from "@/features/sesion-en-progreso";
+import { subirEnSegundoPlano } from "@/features/sesion-en-progreso/model/colaSubida";
 import { useSesionActivaStore, ACTUALIZAR_SESION } from "@/entities/sesion";
 import {
   usePlanesTratamiento,
@@ -82,27 +83,18 @@ const MAPA_TIPO_ESCALA: Record<string, string> = {
 
 type TabId = "plan" | "notas" | "recursos" | "escalas";
 
-type UploadResponse = {
-  success: boolean;
-  url?: string;
-  storage?: "onedrive" | "r2" | "local";
-  message?: string;
-};
-
 type PasoGuardadoId =
   | "detener-grabacion"
-  | "preparar-video"
-  | "subir-video"
   | "guardar-datos"
+  | "iniciar-subida"
   | "completar";
 
 type EstadoPasoGuardado = "pending" | "loading" | "completed" | "error";
 
 const PASOS_GUARDADO: Array<{ id: PasoGuardadoId; label: string }> = [
   { id: "detener-grabacion", label: "Deteniendo grabación" },
-  { id: "preparar-video", label: "Preparando video" },
-  { id: "subir-video", label: "Subiendo video" },
   { id: "guardar-datos", label: "Guardando datos clínicos" },
+  { id: "iniciar-subida", label: "Iniciando subida en segundo plano" },
   { id: "completar", label: "Sesión completada" },
 ];
 
@@ -140,42 +132,14 @@ export const SesionEnProgresoPage = () => {
   const [estadoGuardado, setEstadoGuardado] = useState<
     Record<PasoGuardadoId, EstadoPasoGuardado>
   >(crearEstadoGuardadoInicial);
-  const [subidaTimer, setSubidaTimer] = useState(0);
   const [detallesPasos, setDetallesPasos] = useState<
     Record<PasoGuardadoId, string>
   >({
     "detener-grabacion": "",
-    "preparar-video": "",
-    "subir-video": "",
     "guardar-datos": "",
+    "iniciar-subida": "",
     completar: "",
   });
-  const subidaIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const actualizarDetallePaso = useCallback(
-    (id: PasoGuardadoId, detalle: string) => {
-      setDetallesPasos((prev) => ({ ...prev, [id]: detalle }));
-    },
-    [],
-  );
-
-  useEffect(() => {
-    if (estadoGuardado["subir-video"] === "loading") {
-      subidaIntervalRef.current = setInterval(() => {
-        setSubidaTimer((prev) => prev + 1);
-      }, 1000);
-    } else {
-      if (subidaIntervalRef.current) {
-        clearInterval(subidaIntervalRef.current);
-        subidaIntervalRef.current = null;
-      }
-    }
-    return () => {
-      if (subidaIntervalRef.current) {
-        clearInterval(subidaIntervalRef.current);
-      }
-    };
-  }, [estadoGuardado]);
 
   const duracionSesion = useSesionConfigStore((s) => s.duracionSesion);
   const { usuario } = useAuthStore();
@@ -189,6 +153,13 @@ export const SesionEnProgresoPage = () => {
   const { submitFullForm } = useSubmitFullForm();
 
   const [finalizando, setFinalizando] = useState(false);
+
+  const actualizarDetallePaso = useCallback(
+    (id: PasoGuardadoId, detalle: string) => {
+      setDetallesPasos((prev) => ({ ...prev, [id]: detalle }));
+    },
+    [],
+  );
 
   const actualizarPasoGuardado = useCallback(
     (id: PasoGuardadoId, estado: EstadoPasoGuardado) => {
@@ -381,34 +352,6 @@ export const SesionEnProgresoPage = () => {
     refetchFormularios,
   ]);
 
-  const subirGrabacion = useCallback(
-    async (archivo: File | null): Promise<UploadResponse | null> => {
-      if (!archivo || !sesion) return null;
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": archivo.type || "video/webm",
-          "x-paciente-id": sesion.pacienteId,
-          "x-paciente-nombre": sesion.pacienteNombre,
-          "x-session-id": sesion.id,
-          "x-numero-ciclo": "sin-ciclo",
-          "x-grabado-en": new Date().toISOString(),
-          "x-filename": archivo.name,
-        },
-        body: archivo,
-      });
-      const data = (await response.json()) as UploadResponse;
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "No se pudo guardar la grabación");
-      }
-
-      return data;
-    },
-    [sesion],
-  );
-
   const handleFinalizar = async () => {
     if (finalizando || !sesion) return;
     setFinalizando(true);
@@ -416,12 +359,10 @@ export const SesionEnProgresoPage = () => {
     setEstadoGuardado(crearEstadoGuardadoInicial());
     setDetallesPasos({
       "detener-grabacion": "",
-      "preparar-video": "",
-      "subir-video": "",
       "guardar-datos": "",
+      "iniciar-subida": "",
       completar: "",
     });
-    setSubidaTimer(0);
 
     const sessionId = sesion.id;
     const pacienteId = sesion.pacienteId;
@@ -434,41 +375,14 @@ export const SesionEnProgresoPage = () => {
     }
 
     const errores: string[] = [];
-    let videoUrl: string | null = null;
-    let almacenamientoVideo: UploadResponse["storage"] | null = null;
+    let archivo: File | null = null;
 
     try {
       actualizarPasoGuardado("detener-grabacion", "loading");
-      const archivo = await grabacion.detenerGrabacion();
+      archivo = await grabacion.detenerGrabacion();
       actualizarPasoGuardado("detener-grabacion", "completed");
-
-      actualizarPasoGuardado("preparar-video", "loading");
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      actualizarPasoGuardado("preparar-video", "completed");
-
-      actualizarPasoGuardado("subir-video", "loading");
-
-      let resultadoSubida: UploadResponse | null = null;
-      if (archivo) {
-        resultadoSubida = await subirGrabacion(archivo);
-        videoUrl = resultadoSubida?.url ?? null;
-        almacenamientoVideo = resultadoSubida?.storage ?? null;
-      }
-
-      if (almacenamientoVideo === "local") {
-        actualizarDetallePaso(
-          "subir-video",
-          "No se pudo subir a Cloudflare R2, se utilizará almacenamiento local como respaldo.",
-        );
-      }
-
-      actualizarPasoGuardado("subir-video", "completed");
     } catch {
-      actualizarPasoGuardado("subir-video", "error");
-      actualizarDetallePaso(
-        "subir-video",
-        "No se pudo subir a Cloudflare R2, se utilizará almacenamiento local como respaldo.",
-      );
+      actualizarPasoGuardado("detener-grabacion", "error");
       errores.push("grabación de video");
     }
 
@@ -572,7 +486,6 @@ export const SesionEnProgresoPage = () => {
           notes: notas || null,
           durationMinutes: Math.floor(segundos / 60),
           sessionStatus: "completa",
-          videoUrl,
         },
       });
     } catch {
@@ -594,46 +507,66 @@ export const SesionEnProgresoPage = () => {
       );
     }
 
+    // 7. Iniciar subida en segundo plano (no bloquea la navegación)
+    actualizarPasoGuardado("iniciar-subida", "loading");
+    if (archivo) {
+      const toastId = toast.loading("Subiendo la grabación en segundo plano…");
+      void subirEnSegundoPlano(
+        {
+          sessionId,
+          archivo,
+          pacienteId,
+          pacienteNombre: sesion.pacienteNombre,
+          grabadoEn: new Date().toISOString(),
+          addedAt: Date.now(),
+        },
+        (progreso) => {
+          const mb = Math.max(1, Math.round(progreso.bytesCargados / 1024 / 1024));
+          toast.loading(
+            `Subiendo la grabación (${mb} MB enviados)…`,
+            { id: toastId },
+          );
+        },
+      ).then((resultado) => {
+        toast.dismiss(toastId);
+        if (resultado === "ok") {
+          toast.success("La grabación se subió correctamente.");
+        } else {
+          toast.warning(
+            "No se pudo subir la grabación ahora. Se reintentará automáticamente.",
+          );
+        }
+      });
+    }
+    actualizarPasoGuardado("iniciar-subida", "completed");
+    actualizarDetallePaso(
+      "iniciar-subida",
+      "La grabación se sube en segundo plano. Te avisaremos cuando termine.",
+    );
+
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     actualizarPasoGuardado(
       "completar",
-      errores.length === 0
+      errores.filter((e) => e !== "grabación de video").length === 0
         ? "completed"
-        : errores.length === 1 &&
-            errores[0] === "grabación de video" &&
-            almacenamientoVideo === "local"
-          ? "completed"
-          : "error",
+        : "error",
     );
 
-    // 7. Cleanup
+    // 8. Cleanup
     limpiarSesion();
 
-    if (errores.length === 0) {
+    if (errores.filter((e) => e !== "grabación de video").length === 0) {
       toast.success("Sesión guardada exitosamente");
-      if (almacenamientoVideo === "onedrive") {
-        toast.success("Video subido a OneDrive");
-      }
-      if (almacenamientoVideo === "r2") {
-        toast.success("Video subido a Cloudflare R2");
-      }
-      if (almacenamientoVideo === "local") {
-        toast.warning(
-          "Cloudflare R2 no estuvo disponible. Video guardado localmente",
+      if (archivo) {
+        toast.info(
+          "La grabación se sube en segundo plano. Te avisaremos cuando termine.",
         );
       }
-    } else if (
-      errores.length === 1 &&
-      errores[0] === "grabación de video" &&
-      almacenamientoVideo === "local"
-    ) {
-      toast.success("Sesión guardada exitosamente");
-      toast.warning(
-        "Cloudflare R2 no estuvo disponible. Video guardado localmente",
-      );
     } else {
-      toast.warning(`Sesión guardada con errores en: ${errores.join(", ")}`);
+      toast.warning(
+        `Sesión guardada con errores en: ${errores.filter((e) => e !== "grabación de video").join(", ")}`,
+      );
     }
 
     await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -732,12 +665,6 @@ export const SesionEnProgresoPage = () => {
     }
   }, [tiempoRestante, duracionSesion]);
 
-  const formatearTemporizadorSubida = (segundosTotales: number) => {
-    const mins = Math.floor(segundosTotales / 60);
-    const secs = segundosTotales % 60;
-    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  };
-
   if (finalizando) {
     return (
       <div className="fixed inset-0 z-[120] bg-slate-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-6 md:p-12 overflow-y-auto">
@@ -758,8 +685,8 @@ export const SesionEnProgresoPage = () => {
               Guardando sesión
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-              Estamos procesando la información de la sesión. No cierres esta
-              ventana hasta completar el proceso.
+              Guardamos los datos de la sesión. La grabación se subirá en
+              segundo plano y te avisaremos cuando esté lista.
             </p>
           </div>
 
@@ -770,7 +697,7 @@ export const SesionEnProgresoPage = () => {
               className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-500"
             />
             <p className="text-xs font-semibold leading-relaxed">
-              No cierres esta ventana mientras guardamos la sesión.
+              No cierres esta ventana mientras guardamos la información.
             </p>
           </div>
 
@@ -827,16 +754,7 @@ export const SesionEnProgresoPage = () => {
                               : "text-slate-700 dark:text-zinc-300"
                       }`}
                     >
-                      {paso.id === "subir-video" && loading ? (
-                        <span className="flex items-center gap-2 flex-wrap">
-                          <span>Subiendo video</span>
-                          <span className="font-mono text-[10px] font-extrabold bg-teal-500/10 dark:bg-teal-400/10 text-[#008080] dark:text-teal-400 px-2 py-0.5 rounded-full">
-                            {formatearTemporizadorSubida(subidaTimer)}
-                          </span>
-                        </span>
-                      ) : (
-                        paso.label
-                      )}
+                      {paso.label}
                     </p>
 
                     {detallesPasos[paso.id] && (

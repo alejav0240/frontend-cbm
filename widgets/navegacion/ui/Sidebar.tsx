@@ -428,6 +428,7 @@ export const Sidebar = () => {
                                 src="/logocortoicono.png"
                                 alt="Logo"
                                 fill
+                                sizes="48px"
                                 className="object-contain"
                             />
                         </div>
@@ -507,6 +508,7 @@ export const Sidebar = () => {
                                         src="/logocortoicono.png"
                                         alt="Logo"
                                         fill
+                                        sizes="48px"
                                         className="object-contain"
                                     />
                                 </div>

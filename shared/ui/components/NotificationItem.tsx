@@ -9,6 +9,7 @@ export function NotificationItem({
   time,
   color,
   isRead = true,
+  acciones,
 }: {
   icon: React.ReactNode;
   title: string;
@@ -16,6 +17,7 @@ export function NotificationItem({
   time: string;
   color: string;
   isRead?: boolean;
+  acciones?: React.ReactNode;
 }) {
   return (
     <div
@@ -42,6 +44,7 @@ export function NotificationItem({
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
             {time}
           </p>
+          {acciones && <div className="mt-2">{acciones}</div>}
         </div>
       </div>
     </div>

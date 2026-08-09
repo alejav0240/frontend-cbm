@@ -17,6 +17,8 @@ import {
   Clock,
   CalendarX,
   Plus,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { Pagination } from "@/shared/ui/Pagination";
 import type { SesionNormalizada } from "@/entities/sesion";
@@ -193,6 +195,18 @@ export function TablaSesiones({
                   >
                     {sesion.estadoMostrado}
                   </span>
+                  {!sesion.urlGrabacion && sesion.videoStatus === "subiendo" && (
+                    <span className="mt-2 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400 bg-teal-500/10">
+                      <Loader2 size={11} className="animate-spin" />
+                      Subiendo
+                    </span>
+                  )}
+                  {!sesion.urlGrabacion && sesion.videoStatus === "fallo" && (
+                    <span className="mt-2 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400 bg-red-500/10">
+                      <AlertCircle size={11} />
+                      Fallo de subida
+                    </span>
+                  )}
                 </td>
                 <td className="px-6 md:px-6 py-5">
                   <div className="flex items-center gap-2">

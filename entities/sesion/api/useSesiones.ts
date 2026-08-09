@@ -82,6 +82,7 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
             tipo: s.tipoSesionMostrado || "Regular",
             notas: notasFormateadas,
             urlGrabacion: s.videoUrl || undefined,
+            videoStatus: s.videoStatus || "",
           };
         })
     );

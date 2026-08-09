@@ -45,6 +45,7 @@ export const OBTENER_SESIONES = gql`
         tipoSesion: sessionType
         tipoSesionMostrado: sessionTypeDisplay
         videoUrl
+        videoStatus
         grupo: group {
           id
           descripcion: description
@@ -136,6 +137,7 @@ export const OBTENER_CICLOS = gql`
           createdAt
           notes
           videoUrl
+          videoStatus
           sessionTypeDisplay
           paymentStatusDisplay
           sessionDate
@@ -230,6 +232,7 @@ export const OBTENER_CICLOS_PACIENTE = gql`
         durationMinutes
         notes
         videoUrl
+        videoStatus
         therapist {
           id
           fullName

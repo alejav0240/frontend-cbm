@@ -30,6 +30,7 @@ export default function LoadingScreen() {
             src="/logohorizontal.png"
             alt="Centro Boliviano de Musicoterapia Logo"
             fill
+            sizes="288px"
             className="object-contain transition-all duration-500"
             priority
           />

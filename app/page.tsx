@@ -810,6 +810,7 @@ const Footer = () => (
             src="/logohorizontal.png"
             alt="Logo"
             fill
+            sizes="192px"
             className="object-contain opacity-80"
           />
         </div>

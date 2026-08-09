@@ -28,6 +28,7 @@
 
 # uploads
 /public/uploads
+/uploads
 
 # misc
 .DS_Store

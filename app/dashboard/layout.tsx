@@ -10,6 +10,7 @@ import { useAuthStore } from "@/shared/model/useAuthStore";
 import { esTutor } from "@/shared/lib/permissions/permissions.config";
 import LoadingScreen from "@/shared/ui/LoadingScreen";
 import { Sidebar, Topbar } from "@/widgets/navegacion";
+import { reanudarSubidasPendientes } from "@/features/sesion-en-progreso/model/colaSubida";
 
 export default function DashboardLayout({
   children,
@@ -37,6 +38,7 @@ export default function DashboardLayout({
         modules: me.modules?.filter((m): m is string => m != null) ?? undefined,
         role: me.role ?? undefined,
       } as UsuarioAutenticado);
+      void reanudarSubidasPendientes();
     } else if (!loading) {
       setEstaCargando(false);
     }

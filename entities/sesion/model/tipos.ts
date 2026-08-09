@@ -39,6 +39,7 @@ export interface SesionNormalizada {
   tipo: string;
   notas: string;
   urlGrabacion?: string;
+  videoStatus?: string | null;
 }
 
 export interface SesionFiltros {
