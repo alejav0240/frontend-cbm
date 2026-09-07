@@ -26,7 +26,7 @@ export const CREATE_USER = gql`
         username
         email
       }
-      plainPassword
+      emailSent
     }
   }
 `;

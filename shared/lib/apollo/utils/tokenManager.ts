@@ -30,7 +30,7 @@ export const TokenManager = {
     console.error("[TokenManager] Refresh token failed", error);
 
     // Limpiar estado de autenticación
-    useAuthStore.getState().cerrarSesion();
+    void useAuthStore.getState().cerrarSesion();
 
     // Redirigir al login solo en cliente
     if (isBrowser() && window.location.pathname !== "/login") {
@@ -42,7 +42,7 @@ export const TokenManager = {
    * Logout completo: limpia store, cookies y redirige
    */
   logout: (): void => {
-    useAuthStore.getState().cerrarSesion();
+    void useAuthStore.getState().cerrarSesion();
 
     if (isBrowser() && window.location.pathname !== "/login") {
       window.location.replace("/login");

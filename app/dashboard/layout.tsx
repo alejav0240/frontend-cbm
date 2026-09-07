@@ -28,6 +28,8 @@ export default function DashboardLayout({
   useEffect(() => {
     if (data?.me) {
       const me = data.me;
+      // Mantener cookie cbm_auth activa para middleware
+      document.cookie = `cbm_auth=1; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
       setUsuario({
         ...me,
         databaseId: me.databaseId,

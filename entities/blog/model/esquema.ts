@@ -13,6 +13,7 @@ export const esquemaPostBlog = z.object({
     .or(z.literal("")),
   tiempoLectura: z.string().optional(),
   estado: z.enum(["DRAFT", "PUBLISHED"]),
+  tipo: z.enum(["MARKDOWN", "LATEX"]),
 });
 
 export type FormularioPostBlog = z.infer<typeof esquemaPostBlog>;

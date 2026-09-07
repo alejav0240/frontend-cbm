@@ -20,6 +20,8 @@ interface ModalesUsuarioProps {
     setFirstName: (val: string) => void;
     lastName: string;
     setLastName: (val: string) => void;
+    email: string;
+    setEmail: (val: string) => void;
     carnet: string;
     setCarnet: (val: string) => void;
     phone: string;
@@ -115,6 +117,8 @@ export const ModalesUsuario = ({
           setFirstName={formProps.setFirstName}
           lastName={formProps.lastName}
           setLastName={formProps.setLastName}
+          email={formProps.email}
+          setEmail={formProps.setEmail}
           carnet={formProps.carnet}
           setCarnet={formProps.setCarnet}
           phone={formProps.phone}

@@ -20,7 +20,7 @@ interface CreateUserData {
       username: string;
       email: string;
     } | null;
-    plainPassword: string | null;
+    emailSent?: boolean | null;
   } | null;
 }
 

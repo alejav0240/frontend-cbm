@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const OBTENER_POSTS_BLOG = gql`
-  query ObtenerPostsBlog($status: String, $page: Int, $pageSize: Int, $search: String) {
-    blogPosts(status: $status, page: $page, pageSize: $pageSize, search: $search) {
+  query ObtenerPostsBlog($status: String, $type: String, $page: Int, $pageSize: Int, $search: String) {
+    blogPosts(status: $status, type: $type, page: $page, pageSize: $pageSize, search: $search) {
       results {
         id
         titulo: title
@@ -13,6 +13,7 @@ export const OBTENER_POSTS_BLOG = gql`
         urlImagen: imageUrl
         tiempoLectura: readTime
         estado: status
+        tipo: type
         fechaCreacion: createdAt
         updatedAt
       }

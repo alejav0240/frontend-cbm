@@ -6,6 +6,7 @@ import {
   useCreateUser,
   useUpdateUser,
   Usuario,
+  generarUsername,
 } from "@/entities/usuario";
 import { ModalesUsuario } from "@/features/gestion-usuario";
 import { UsersHeader } from "./components/UsersHeader";
@@ -67,6 +68,7 @@ export const UsuariosPage = () => {
 
   const [formFirstName, setFormFirstName] = useState("");
   const [formLastName, setFormLastName] = useState("");
+  const [formEmail, setFormEmail] = useState("");
   const [formCarnet, setFormCarnet] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formUsername, setFormUsername] = useState("");
@@ -80,6 +82,7 @@ export const UsuariosPage = () => {
   const limpiarFormulario = useCallback(() => {
     setFormFirstName("");
     setFormLastName("");
+    setFormEmail("");
     setFormCarnet("");
     setFormPhone("");
     setFormUsername("");
@@ -99,6 +102,7 @@ export const UsuariosPage = () => {
     const partes = (usuario.fullName || "").split(" ");
     setFormFirstName(partes[0] || "");
     setFormLastName(partes.slice(1).join(" ") || "");
+    setFormEmail(usuario.email || "");
     setFormCarnet(String(usuario.ci || ""));
     setFormPhone(String(usuario.celular || ""));
     setFormUsername(usuario.username || "");
@@ -133,6 +137,7 @@ export const UsuariosPage = () => {
             id: editandoUsuario.id,
             firstName: formFirstName,
             lastName: formLastName,
+            email: formEmail.trim(),
             ci: formCarnet,
             celular: formPhone,
             visibility: formVisibility,
@@ -141,12 +146,14 @@ export const UsuariosPage = () => {
           toast.success("Usuario actualizado correctamente");
         } else {
           const usernameFinal =
-            formUsername ||
-            `${formFirstName}.${formLastName}`.toLowerCase().replace(/\s/g, "");
+            formUsername.trim() ||
+            generarUsername(formFirstName, formLastName);
           const passwordFinal = formPassword || "temp123";
-          const resultado = await crearUsuario({
+          const emailFinal = formEmail.trim();
+
+          await crearUsuario({
             username: usernameFinal,
-            email: `${usernameFinal}@sistema.com`,
+            email: emailFinal,
             password: passwordFinal,
             ci: formCarnet,
             firstName: formFirstName,
@@ -154,19 +161,7 @@ export const UsuariosPage = () => {
             celular: formPhone,
             roleId: formRoleId,
           });
-          const userCreado = resultado.data?.createUser?.user;
-          toast.success("Usuario creado correctamente");
-          setMostrarFormulario(false);
-          limpiarFormulario();
-          setUsuarioCredenciales({
-            id: userCreado?.id || "",
-            username: userCreado?.username || usernameFinal,
-            fullName: `${formFirstName} ${formLastName}`,
-          } as Usuario);
-          setCredencialesPassword(passwordFinal);
-          setMostrarPassword(false);
-          setMostrarCredenciales(true);
-          return;
+          toast.success(`Usuario creado exitosamente. Se envió un correo con las credenciales a ${emailFinal}`);
         }
         setMostrarFormulario(false);
         limpiarFormulario();
@@ -185,6 +180,7 @@ export const UsuariosPage = () => {
       editandoUsuario,
       formFirstName,
       formLastName,
+      formEmail,
       formCarnet,
       formPhone,
       formUsername,
@@ -256,6 +252,8 @@ export const UsuariosPage = () => {
           setFirstName: setFormFirstName,
           lastName: formLastName,
           setLastName: setFormLastName,
+          email: formEmail,
+          setEmail: setFormEmail,
           carnet: formCarnet,
           setCarnet: setFormCarnet,
           phone: formPhone,

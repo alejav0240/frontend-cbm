@@ -47,7 +47,7 @@ import {
 import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import { toast } from "sonner";
-import { motion, type TargetAndTransition } from "motion/react";
+import { motion } from "motion/react";
 import { useSesionConfigStore } from "@/shared/model/useSesionConfigStore";
 import { alertarFinSesion } from "@/shared/lib/utils/alarmaDuracion";
 import { useMutation } from "@apollo/client/react";
@@ -123,9 +123,19 @@ export const SesionEnProgresoPage = () => {
   const [formResponses, setFormResponses] = useState<
     Record<string, FormResponseValue>
   >({});
+  const [ultimoGuardado, setUltimoGuardado] = useState<Date | null>(null);
+  const [draftRestaurado, setDraftRestaurado] = useState(false);
   const [tabActiva, setTabActiva] = useState<TabId>("plan");
   const [camaraAbierta, setCamaraAbierta] = useState(true);
-  const [mobileCameraOpen, setMobileCameraOpen] = useState(true);
+  const [mobileCameraOpen, setMobileCameraOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+    checkIsDesktop();
+    window.addEventListener("resize", checkIsDesktop);
+    return () => window.removeEventListener("resize", checkIsDesktop);
+  }, []);
   const alertaEnviadaRef = useRef(false);
   const mobileVideoRef = useRef<HTMLVideoElement>(null);
   const desktopVideoRef = useRef<HTMLVideoElement>(null);
@@ -140,6 +150,75 @@ export const SesionEnProgresoPage = () => {
     "iniciar-subida": "",
     completar: "",
   });
+
+  // Restaurar borrador de la sesión en progreso desde sessionStorage si existe
+  useEffect(() => {
+    if (!sesion?.id || draftRestaurado) return;
+    const rafId = requestAnimationFrame(() => {
+      try {
+        const storageKey = `cbm_sesion_progreso_${sesion.id}`;
+        const saved = sessionStorage.getItem(storageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.notas !== undefined) setNotas(parsed.notas);
+          if (Array.isArray(parsed.completedSteps)) setCompletedSteps(parsed.completedSteps);
+          if (Array.isArray(parsed.selectedResources)) setSelectedResources(parsed.selectedResources);
+          if (Array.isArray(parsed.selectedScales)) setSelectedScales(parsed.selectedScales);
+          if (Array.isArray(parsed.selectedForms)) setSelectedForms(parsed.selectedForms);
+          if (parsed.formResponses && typeof parsed.formResponses === "object") setFormResponses(parsed.formResponses);
+          if (parsed.savedAt) setUltimoGuardado(new Date(parsed.savedAt));
+          toast.info("Borrador de sesión recuperado automáticamente.");
+        }
+      } catch (e) {
+        console.error("Error al recuperar borrador de sesión:", e);
+      } finally {
+        setDraftRestaurado(true);
+      }
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, [sesion?.id, draftRestaurado]);
+
+  // Guardado automático periódico / por cambio (debounced 500ms)
+  useEffect(() => {
+    if (!sesion?.id || !draftRestaurado) return;
+    const timer = setTimeout(() => {
+      try {
+        const storageKey = `cbm_sesion_progreso_${sesion.id}`;
+        const now = new Date();
+        const payload = {
+          notas,
+          completedSteps,
+          selectedResources,
+          selectedScales,
+          selectedForms,
+          formResponses,
+          savedAt: now.toISOString(),
+        };
+        sessionStorage.setItem(storageKey, JSON.stringify(payload));
+        setUltimoGuardado(now);
+      } catch (e) {
+        console.error("Error en autosave de sesión:", e);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [notas, completedSteps, selectedResources, selectedScales, selectedForms, formResponses, sesion?.id, draftRestaurado]);
+
+  // Sincronizar pausa de sesión con grabación
+  const handleToggleActive = useCallback(
+    (nuevoEstado: boolean) => {
+      setIsActive(nuevoEstado);
+      if (grabacion.estaGrabando) {
+        if (!nuevoEstado) {
+          grabacion.pausarGrabacion();
+        } else {
+          grabacion.reanudarGrabacion();
+        }
+      }
+    },
+    [grabacion],
+  );
 
   const duracionSesion = useSesionConfigStore((s) => s.duracionSesion);
   const { usuario } = useAuthStore();
@@ -554,6 +633,11 @@ export const SesionEnProgresoPage = () => {
     );
 
     // 8. Cleanup
+    try {
+      sessionStorage.removeItem(`cbm_sesion_progreso_${sessionId}`);
+    } catch {
+      // ignore
+    }
     limpiarSesion();
 
     if (errores.filter((e) => e !== "grabación de video").length === 0) {
@@ -855,7 +939,7 @@ export const SesionEnProgresoPage = () => {
         activeSession={activeSession}
         timer={segundos}
         isActive={isActive}
-        setIsActive={setIsActive}
+        setIsActive={handleToggleActive}
         isRecording={grabacion.estaGrabando}
         toggleRecording={toggleRecording}
         setShowFinishConfirm={setShowFinishModal}
@@ -896,24 +980,25 @@ export const SesionEnProgresoPage = () => {
         flex
         flex-col
         lg:flex-row
-        overflow-hidden
+        overflow-y-auto
+        lg:overflow-hidden
+        overscroll-contain
     "
       >
         <motion.section
           initial={false}
           animate={{
-            width: {
-              lg: camaraAbierta ? "50%" : "56px",
-            },
-          } as unknown as TargetAndTransition}
+            width: isDesktop ? (camaraAbierta ? "50%" : "56px") : "100%",
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
           className="
         relative
         border-b lg:border-b-0 lg:border-r
         border-gray-200 dark:border-white/5
         bg-gray-50/30 dark:bg-white/[0.02]
-        lg:w-1/2
         w-full
-        lg:flex-shrink-0
+        lg:max-w-none
+        flex-shrink-0
     "
         >
           {/* MOBILE CAMERA */}
@@ -924,56 +1009,47 @@ export const SesionEnProgresoPage = () => {
             transition-all
             duration-300
             overflow-hidden
-
-            ${mobileCameraOpen ? "h-full" : "h-16"}
+            ${mobileCameraOpen ? "h-72 sm:h-80" : "h-12"}
         `}
           >
             {mobileCameraOpen ? (
-              <>
-                <VistaCamara
-                  stream={grabacion.stream}
-                  videoRef={mobileVideoRef}
-                  isRecording={grabacion.estaGrabando}
-                  videoDevices={grabacion.dispositivos}
-                  selectedDeviceId={grabacion.dispositivoSeleccionado}
-                  switchCamera={grabacion.cambiarCamara}
-                  startRecording={grabacion.iniciarGrabacion}
-                />
-
-                <button
-                  onClick={() => setMobileCameraOpen(false)}
-                  className="
-                        absolute top-3 right-3
-                        z-20
-                        rounded-xl
-                        bg-black/50
-                        text-white
-                        p-2
-                    "
-                >
-                  <ChevronLeft size={18} />
-                </button>
-              </>
+              <VistaCamara
+                stream={grabacion.stream}
+                videoRef={mobileVideoRef}
+                isRecording={grabacion.estaGrabando}
+                videoDevices={grabacion.dispositivos}
+                selectedDeviceId={grabacion.dispositivoSeleccionado}
+                switchCamera={grabacion.cambiarCamara}
+                startRecording={grabacion.iniciarGrabacion}
+                onClose={() => setMobileCameraOpen(false)}
+                isMobile={true}
+              />
             ) : (
               <button
                 onClick={() => setMobileCameraOpen(true)}
                 className="
                     h-full
                     w-full
+                    px-4
                     flex
                     items-center
-                    justify-center
-                    text-gray-400
+                    justify-between
+                    text-xs font-semibold
+                    text-slate-600 dark:text-slate-300
+                    bg-slate-100 dark:bg-zinc-800/80
                 "
               >
-                <div className="relative">
-                  <Video size={22} />
+                <div className="flex items-center gap-2">
+                  <Video size={16} className="text-[#008080]" />
+                  <span>Ver Cámara en vivo</span>
                   {grabacion.estaGrabando && (
-                    <div className="absolute -top-1 -right-1 flex items-center gap-1 bg-red-500 px-1.5 py-0.5 rounded-full">
-                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                    </div>
+                    <span className="flex items-center gap-1 bg-red-500/10 text-red-500 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                      REC
+                    </span>
                   )}
                 </div>
+                <span className="text-[11px] text-teal-600 dark:text-teal-400">Expandir</span>
               </button>
             )}
           </div>
@@ -988,33 +1064,16 @@ export const SesionEnProgresoPage = () => {
         "
           >
             {camaraAbierta ? (
-              <>
-                <VistaCamara
-                  stream={grabacion.stream}
-                  videoRef={desktopVideoRef}
-                  isRecording={grabacion.estaGrabando}
-                  videoDevices={grabacion.dispositivos}
-                  selectedDeviceId={grabacion.dispositivoSeleccionado}
-                  switchCamera={grabacion.cambiarCamara}
-                  startRecording={grabacion.iniciarGrabacion}
-                />
-
-                <button
-                  onClick={() => setCamaraAbierta(false)}
-                  className="
-                        absolute
-                        top-3
-                        right-3
-                        p-2
-                        rounded-xl
-                        bg-white
-                        dark:bg-[#111]
-                        shadow
-                    "
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </>
+              <VistaCamara
+                stream={grabacion.stream}
+                videoRef={desktopVideoRef}
+                isRecording={grabacion.estaGrabando}
+                videoDevices={grabacion.dispositivos}
+                selectedDeviceId={grabacion.dispositivoSeleccionado}
+                switchCamera={grabacion.cambiarCamara}
+                startRecording={grabacion.iniciarGrabacion}
+                onClose={() => setCamaraAbierta(false)}
+              />
             ) : (
               <div
                 className="
@@ -1062,29 +1121,32 @@ export const SesionEnProgresoPage = () => {
             </div>
           </div>
         ) : (
-          <WorkspaceSesion
-            tabActiva={tabActiva}
-            setTabActiva={setTabActiva}
-            notas={notas}
-            alCambiarNotas={setNotas}
-            timer={segundos}
-            formatTime={formatearTiempo}
-            planTratamiento={patientPlan}
-            completedSteps={completedSteps}
-            totalSteps={totalSteps}
-            toggleStep={toggleStep}
-            recursos={recursos}
-            selectedResources={selectedResources}
-            toggleResource={toggleResource}
-            evaluationScales={evaluationScales}
-            selectedScales={selectedScales}
-            toggleScale={toggleScale}
-            formTemplates={formTemplates}
-            selectedForms={selectedForms}
-            toggleForm={toggleForm}
-            formResponses={formResponses}
-            updateForm={updateForm}
-          />
+          <div className="flex-1 min-h-0 flex flex-col">
+            <WorkspaceSesion
+              tabActiva={tabActiva}
+              setTabActiva={setTabActiva}
+              notas={notas}
+              alCambiarNotas={setNotas}
+              ultimoGuardado={ultimoGuardado}
+              timer={segundos}
+              formatTime={formatearTiempo}
+              planTratamiento={patientPlan}
+              completedSteps={completedSteps}
+              totalSteps={totalSteps}
+              toggleStep={toggleStep}
+              recursos={recursos}
+              selectedResources={selectedResources}
+              toggleResource={toggleResource}
+              evaluationScales={evaluationScales}
+              selectedScales={selectedScales}
+              toggleScale={toggleScale}
+              formTemplates={formTemplates}
+              selectedForms={selectedForms}
+              toggleForm={toggleForm}
+              formResponses={formResponses}
+              updateForm={updateForm}
+            />
+          </div>
         )}
       </main>
 

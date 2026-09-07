@@ -62,9 +62,16 @@ export function UsersTable({
                     <div className="w-10 h-10 rounded-xl bg-[#008080]/10 text-[#008080] flex items-center justify-center font-bold">
                       {user.fullName?.charAt(0) || "?"}
                     </div>
-                    <span className="text-sm dark:text-white font-bold group-hover:text-[#008080] transition-colors">
-                      {user.fullName}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-sm dark:text-white font-bold group-hover:text-[#008080] transition-colors">
+                        {user.fullName}
+                      </span>
+                      {user.email && (
+                        <span className="text-xs text-gray-400 font-normal">
+                          {user.email}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </td>
                 <td className="px-8 py-5 text-sm text-gray-500 dark:text-gray-400">

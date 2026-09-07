@@ -12,6 +12,7 @@ interface ActualizarPostBlogVars {
   imageUrl?: string;
   readTime?: string;
   status?: string;
+  type?: string;
 }
 
 export function useActualizarPostBlog() {

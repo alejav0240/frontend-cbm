@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import Image from "next/image";
-import { Calendar, User, Edit2, Trash2, BookOpen, Clock, Eye } from "lucide-react";
+import { Calendar, User, Edit2, Trash2, BookOpen, Clock, Eye, Sigma } from "lucide-react";
 import { PostBlog } from "@/entities/blog";
 
 interface BlogPostCardProps {
@@ -20,6 +20,8 @@ const estadoBorder: Record<string, string> = {
 };
 
 export function BlogPostCard({ post, onEdit, onDelete, onView, idx }: BlogPostCardProps) {
+  const esLatex = post.tipo?.toUpperCase() === "LATEX";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -44,9 +46,19 @@ export function BlogPostCard({ post, onEdit, onDelete, onView, idx }: BlogPostCa
             <BookOpen size={48} />
           </div>
         )}
-        <div className="absolute top-4 left-4">
+        <div className="absolute top-4 left-4 flex items-center gap-1.5 flex-wrap">
           <span className="px-3 py-1 bg-white/90 dark:bg-black/60 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest text-[#008080]">
             {post.categoria}
+          </span>
+          <span
+            className={`px-2 py-1 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 ${
+              esLatex
+                ? "bg-purple-600/90 text-white shadow-sm"
+                : "bg-sky-600/90 text-white shadow-sm"
+            }`}
+          >
+            {esLatex ? <Sigma size={10} /> : null}
+            {esLatex ? "LaTeX" : "MD"}
           </span>
         </div>
         <div className="absolute top-4 right-4">

@@ -34,3 +34,14 @@ export const CONSULTA_YO = gql`
     }
   }
 `;
+
+export const CERRAR_SESION_MUTACION = gql`
+  mutation CerrarSesion {
+    deleteTokenCookie {
+      deleted
+    }
+    deleteRefreshTokenCookie {
+      deleted
+    }
+  }
+`;

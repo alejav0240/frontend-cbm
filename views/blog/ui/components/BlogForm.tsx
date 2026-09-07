@@ -12,9 +12,11 @@ import {
   Code,
   Link,
   Heading1,
+  Heading2,
   List,
   Quote,
   Sigma,
+  Divide,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,7 +49,15 @@ interface BlogFormProps {
   onDirtyChange?: (dirty: boolean) => void;
 }
 
-const TOOLBAR_ITEMS = [
+interface ToolbarItem {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  syntax: string;
+  wrap: boolean;
+  closeSyntax?: string;
+}
+
+const TOOLBAR_ITEMS: ToolbarItem[] = [
   { icon: Heading1, label: "Título", syntax: "## ", wrap: false },
   { icon: Bold, label: "Negrita", syntax: "**", wrap: true },
   { icon: Italic, label: "Cursiva", syntax: "_", wrap: true },
@@ -55,10 +65,26 @@ const TOOLBAR_ITEMS = [
   { icon: List, label: "Lista", syntax: "- ", wrap: false },
   { icon: Quote, label: "Cita", syntax: "> ", wrap: false },
   { icon: Code, label: "Código", syntax: "```\n\n```", wrap: false },
-  { icon: Sigma, label: "LaTeX", syntax: "$$ ", wrap: false },
+  { icon: Sigma, label: "Fórmula LaTeX", syntax: "$$ ", wrap: false },
 ];
 
-function insertSyntax(textarea: HTMLTextAreaElement | null, syntax: string, wrap: boolean) {
+const LATEX_TOOLBAR_ITEMS: ToolbarItem[] = [
+  { icon: Heading1, label: "Sección", syntax: "\\section{", wrap: true, closeSyntax: "}" },
+  { icon: Heading2, label: "Subsección", syntax: "\\subsection{", wrap: true, closeSyntax: "}" },
+  { icon: Bold, label: "Negrita", syntax: "\\textbf{", wrap: true, closeSyntax: "}" },
+  { icon: Italic, label: "Cursiva", syntax: "\\textit{", wrap: true, closeSyntax: "}" },
+  { icon: Divide, label: "Fracción", syntax: "\\frac{", wrap: true, closeSyntax: "}{den}" },
+  { icon: Sigma, label: "Sumatoria", syntax: "\\sum_{i=1}^{n} ", wrap: false },
+  { icon: Code, label: "Ecuación Display", syntax: "$$\n", wrap: true, closeSyntax: "\n$$" },
+  { icon: List, label: "Lista", syntax: "\\begin{itemize}\n  \\item ", wrap: true, closeSyntax: "\n\\end{itemize}" },
+];
+
+function insertSyntax(
+  textarea: HTMLTextAreaElement | null,
+  syntax: string,
+  wrap: boolean,
+  closeSyntax?: string
+) {
   if (!textarea) return;
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
@@ -68,9 +94,14 @@ function insertSyntax(textarea: HTMLTextAreaElement | null, syntax: string, wrap
   let newText: string;
   let cursorPos: number;
 
+  const closing = closeSyntax ?? (wrap ? syntax : "");
+
   if (wrap && selected) {
-    newText = text.substring(0, start) + syntax + selected + syntax + text.substring(end);
-    cursorPos = end + syntax.length * 2;
+    newText = text.substring(0, start) + syntax + selected + closing + text.substring(end);
+    cursorPos = start + syntax.length + selected.length + closing.length;
+  } else if (wrap && closing) {
+    newText = text.substring(0, start) + syntax + closing + text.substring(end);
+    cursorPos = start + syntax.length;
   } else {
     newText = text.substring(0, start) + syntax + text.substring(end);
     cursorPos = start + syntax.length;
@@ -105,6 +136,7 @@ export function BlogForm({
       urlImagen: postEditar?.urlImagen ?? "",
       tiempoLectura: postEditar?.tiempoLectura ?? "",
       estado: (postEditar?.estado as "DRAFT" | "PUBLISHED") ?? "DRAFT",
+      tipo: (postEditar?.tipo?.toUpperCase() as "MARKDOWN" | "LATEX") ?? "MARKDOWN",
     },
   });
 
@@ -117,7 +149,9 @@ export function BlogForm({
   } = form;
 
   const formValues = watch();
-  const tieneLatex = /\$[^$]/.test(formValues.contenido);
+  const esModoLatex = formValues.tipo === "LATEX";
+  const tieneLatex = esModoLatex || /\$[^$]/.test(formValues.contenido);
+  const toolbarActual = esModoLatex ? LATEX_TOOLBAR_ITEMS : TOOLBAR_ITEMS;
 
   const { ref: contenidoRef, ...contenidoRest } = register("contenido");
 
@@ -188,8 +222,8 @@ export function BlogForm({
 
   const imagePreviewUrl = getImagePreviewUrl();
 
-  const handleInsertSyntax = (syntax: string, wrap: boolean) => {
-    insertSyntax(textareaRef.current, syntax, wrap);
+  const handleInsertSyntax = (syntax: string, wrap: boolean, closeSyntax?: string) => {
+    insertSyntax(textareaRef.current, syntax, wrap, closeSyntax);
   };
 
   return (
@@ -342,18 +376,34 @@ export function BlogForm({
               {...register("autor")}
             />
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                Estado
-              </label>
-              <select
-                {...register("estado")}
-                disabled={cargando}
-                className="w-full px-4 py-3 rounded-xl border-2 outline-none transition-all text-sm dark:text-white bg-gray-50 dark:bg-white/5 border-transparent focus-visible:border-[#008080] focus-visible:ring-2 focus-visible:ring-[#008080]/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <option value="DRAFT">Borrador</option>
-                <option value="PUBLISHED">Publicado</option>
-              </select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  Formato (Tipo)
+                </label>
+                <select
+                  {...register("tipo")}
+                  disabled={cargando}
+                  className="w-full px-4 py-3 rounded-xl border-2 outline-none transition-all text-sm dark:text-white bg-gray-50 dark:bg-white/5 border-transparent focus-visible:border-[#008080] focus-visible:ring-2 focus-visible:ring-[#008080]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="MARKDOWN">Markdown</option>
+                  <option value="LATEX">LaTeX</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  Estado
+                </label>
+                <select
+                  {...register("estado")}
+                  disabled={cargando}
+                  className="w-full px-4 py-3 rounded-xl border-2 outline-none transition-all text-sm dark:text-white bg-gray-50 dark:bg-white/5 border-transparent focus-visible:border-[#008080] focus-visible:ring-2 focus-visible:ring-[#008080]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="DRAFT">Borrador</option>
+                  <option value="PUBLISHED">Publicado</option>
+                </select>
+              </div>
             </div>
 
             <TextAreaField
@@ -367,17 +417,26 @@ export function BlogForm({
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-              Contenido (Markdown / LaTeX)
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center justify-between">
+              <span>Contenido ({esModoLatex ? "LaTeX" : "Markdown"})</span>
+              <span className="text-[10px] font-normal normal-case text-gray-400">
+                {esModoLatex ? "Sintaxis LaTeX y KaTeX" : "Sintaxis Markdown enriquecido"}
+              </span>
             </label>
 
             <div className="flex flex-wrap gap-1 p-2 bg-gray-50 dark:bg-white/5 rounded-t-2xl border-b border-gray-200 dark:border-white/10">
-              {TOOLBAR_ITEMS.map((item) => (
+              {toolbarActual.map((item) => (
                 <button
                   key={item.label}
                   type="button"
                   disabled={cargando}
-                  onClick={() => handleInsertSyntax(item.syntax, item.wrap)}
+                  onClick={() =>
+                    handleInsertSyntax(
+                      item.syntax,
+                      item.wrap,
+                      item.closeSyntax
+                    )
+                  }
                   title={item.label}
                   className="p-2 rounded-lg text-gray-500 hover:text-[#008080] hover:bg-white dark:hover:bg-white/10 transition-all disabled:opacity-50"
                 >
@@ -394,7 +453,11 @@ export function BlogForm({
               }}
               disabled={cargando}
               className="w-full h-[380px] px-4 py-4 bg-gray-50 dark:bg-white/5 rounded-b-[24px] border-2 border-transparent focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white font-mono resize-none custom-scrollbar disabled:opacity-50"
-              placeholder="# Título&#10;&#10;Escribe tu contenido usando Markdown...&#10;&#10;Soporta LaTeX: $E = mc^2$ o bloques:&#10;$$&#10;\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}&#10;$$"
+              placeholder={
+                esModoLatex
+                  ? "\\section{Título del Artículo}\n\nEscribe tu contenido usando LaTeX...\n\nEcuación destacada:\n$$\n\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}\n$$"
+                  : "# Título\n\nEscribe tu contenido usando Markdown...\n\nSoporta LaTeX: $E = mc^2$ o bloques:\n$$\n\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}\n$$"
+              }
             />
             {errors.contenido && (
               <p className="text-red-500 text-xs">
@@ -410,6 +473,7 @@ export function BlogForm({
           contenido={formValues.contenido}
           categoria={formValues.categoria}
           urlImagen={formValues.urlImagen}
+          tipo={formValues.tipo}
         />
       )}
 

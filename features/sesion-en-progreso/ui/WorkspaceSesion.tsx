@@ -37,6 +37,7 @@ interface WorkspaceSesionProps {
   toggleForm: (id: string) => void;
   formResponses: Record<string, FormResponseValue>;
   updateForm: (key: string, value: FormResponseValue) => void;
+  ultimoGuardado?: Date | null;
 }
 
 interface TabBadge {
@@ -66,6 +67,7 @@ export const WorkspaceSesion = ({
   toggleForm,
   formResponses,
   updateForm,
+  ultimoGuardado,
 }: WorkspaceSesionProps) => {
   const tabs: {
     id: typeof tabActiva;
@@ -118,9 +120,9 @@ export const WorkspaceSesion = ({
   ] as const;
 
   return (
-    <div className="flex-1 flex flex-col bg-white dark:bg-accent">
+    <div className="flex-1 flex flex-col bg-white dark:bg-accent min-h-0">
       {/* Tabs */}
-      <div role="tablist" className="flex border-b border-gray-100 dark:border-white/5">
+      <div role="tablist" className="flex border-b border-gray-100 dark:border-white/5 sticky top-0 bg-white dark:bg-accent z-10">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -129,14 +131,14 @@ export const WorkspaceSesion = ({
             aria-controls={`panel-${tab.id}`}
             id={`tab-${tab.id}`}
             onClick={() => setTabActiva(tab.id)}
-            className={`relative flex-1 flex items-center justify-center gap-2 py-4 text-xs font-bold uppercase tracking-widest transition-all ${
+            className={`relative flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-3 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
               tabActiva === tab.id
                 ? "text-[#008080] border-b-2 border-[#008080] bg-[#008080]/5"
                 : "text-gray-400 hover:bg-gray-50 dark:hover:bg-white/2"
             }`}
           >
             {tab.icon}
-            <span className="hidden sm:inline">{tab.label}</span>
+            <span className="hidden xs:inline sm:inline">{tab.label}</span>
             {tab.badge && (
               <span
                 className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-black leading-none ${
@@ -157,7 +159,7 @@ export const WorkspaceSesion = ({
         role="tabpanel"
         id={`panel-${tabActiva}`}
         aria-labelledby={`tab-${tabActiva}`}
-        className="flex-1 p-4 md:p-8 overflow-y-auto custom-scrollbar"
+        className="flex-1 p-3.5 sm:p-6 md:p-8 overflow-y-auto overscroll-contain"
       >
         <AnimatePresence mode="wait">
           {tabActiva === "notas" && (
@@ -167,6 +169,7 @@ export const WorkspaceSesion = ({
               setNotes={alCambiarNotas}
               timer={timer}
               formatTime={formatTime}
+              ultimoGuardado={ultimoGuardado}
             />
           )}
 

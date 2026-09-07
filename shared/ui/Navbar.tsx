@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon, LayoutDashboard } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useAuthStore } from "@/shared/model/useAuthStore";
 
 // ===== CONSTANTES =====
 
@@ -127,6 +128,20 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("inicio");
 
+  const { estaAutenticado, usuario } = useAuthStore();
+  const [hasClientSession, setHasClientSession] = useState(false);
+
+  useEffect(() => {
+    const checkSession = () => {
+      const token = localStorage.getItem("token");
+      const hasCookie = document.cookie.includes("cbm_auth=");
+      setHasClientSession(!!token || hasCookie || estaAutenticado || !!usuario);
+    };
+    checkSession();
+  }, [estaAutenticado, usuario]);
+
+  const hasSession = hasClientSession || estaAutenticado || !!usuario;
+
   // Memoizar links con href correcto según la página
   const navLinks = useMemo(
     () =>
@@ -225,6 +240,7 @@ export default function Navbar() {
             isDarkMode={isDarkMode}
             onThemeToggle={handleThemeToggle}
             ctaHref={isHome ? "#contacto" : "/#contacto"}
+            hasSession={hasSession}
           />
 
           {/* Mobile Controls */}
@@ -245,6 +261,7 @@ export default function Navbar() {
         isLinkActive={isLinkActive}
         onClose={() => setIsMenuOpen(false)}
         ctaHref={isHome ? "#contacto" : "/#contacto"}
+        hasSession={hasSession}
       />
     </nav>
   );
@@ -273,19 +290,31 @@ const DesktopActions = ({
   isDarkMode,
   onThemeToggle,
   ctaHref,
+  hasSession = false,
 }: {
   mounted: boolean;
   isDarkMode: boolean;
   onThemeToggle: () => void;
   ctaHref: string;
+  hasSession?: boolean;
 }) => (
   <div className="hidden lg:flex items-center gap-4">
-    <Link
-      href="/login"
-      className="text-sm font-bold text-gray-500 hover:text-[#008080] dark:text-gray-400 dark:hover:text-white transition-colors px-4"
-    >
-      Login
-    </Link>
+    {hasSession ? (
+      <Link
+        href="/dashboard"
+        className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-white bg-[#008080] hover:bg-[#006666] px-4 py-2.5 rounded-xl shadow-md shadow-[#008080]/20 transition-all hover:-translate-y-0.5"
+      >
+        <LayoutDashboard size={15} />
+        <span>Ir a Dashboard</span>
+      </Link>
+    ) : (
+      <Link
+        href="/login"
+        className="text-sm font-bold text-gray-500 hover:text-[#008080] dark:text-gray-400 dark:hover:text-white transition-colors px-4"
+      >
+        Login
+      </Link>
+    )}
     <ThemeToggle
       mounted={mounted}
       isDarkMode={isDarkMode}
@@ -334,12 +363,14 @@ const MobileMenu = ({
   isLinkActive,
   onClose,
   ctaHref,
+  hasSession = false,
 }: {
   isOpen: boolean;
   navLinks: NavLinkItem[];
   isLinkActive: (link: NavLinkItem) => boolean;
   onClose: () => void;
   ctaHref: string;
+  hasSession?: boolean;
 }) => (
   <AnimatePresence>
     {isOpen && (
@@ -374,13 +405,24 @@ const MobileMenu = ({
 
             <div className="h-px bg-gray-100 dark:bg-white/5 my-2" />
 
-            <Link
-              href="/login"
-              onClick={onClose}
-              className="flex items-center justify-center py-4 text-sm font-bold text-gray-500 dark:text-gray-400"
-            >
-              Iniciar Sesión
-            </Link>
+            {hasSession ? (
+              <Link
+                href="/dashboard"
+                onClick={onClose}
+                className="flex items-center justify-center gap-2 py-3.5 text-xs font-black uppercase tracking-wider text-white bg-[#008080] hover:bg-[#006666] rounded-xl shadow-lg shadow-[#008080]/20"
+              >
+                <LayoutDashboard size={16} />
+                <span>Ir a Dashboard</span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                onClick={onClose}
+                className="flex items-center justify-center py-4 text-sm font-bold text-gray-500 dark:text-gray-400"
+              >
+                Iniciar Sesión
+              </Link>
+            )}
 
             <CTALink href={ctaHref}>Agendar Sesión</CTALink>
           </div>

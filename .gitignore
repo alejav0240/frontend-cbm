@@ -5,6 +5,9 @@
 /.antigravitycli/
 /.junie/
 /.codex/
+/.codegraph/
+/.atl/
+/test-results/
 
 # dependencies
 /node_modules

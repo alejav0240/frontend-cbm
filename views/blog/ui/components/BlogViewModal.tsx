@@ -22,6 +22,7 @@ export function BlogViewModal({ isOpen, onClose, post }: BlogViewModalProps) {
         contenido={post.contenido}
         categoria={post.categoria}
         urlImagen={post.urlImagen}
+        tipo={post.tipo}
       />
     </Modal>
   );

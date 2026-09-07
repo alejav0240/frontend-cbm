@@ -68,11 +68,11 @@ export function EvaluationTab({
             return (
               <div
                 key={scale.id}
-                className="bg-white dark:bg-[#111] p-6 md:p-8 rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm relative group"
+                className="bg-white dark:bg-[#111] p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm relative group"
               >
                 <button
                   onClick={() => toggleScale(scale.id)}
-                  className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
+                  className="absolute top-4 right-4 sm:top-6 sm:right-6 p-1.5 sm:p-2 text-gray-400 hover:text-red-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
                 >
                   <X size={16} />
                 </button>
@@ -85,38 +85,73 @@ export function EvaluationTab({
 
                 <div className="grid gap-6">
                   {scale.type === "subscales" ? (
-                    scale.subscales.map((sub: MappedSubscale) => (
-                      <div key={sub.id} className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                            {sub.name}
-                          </label>
-                          <span className="text-[10px] font-bold text-[#008080]">
-                            Puntaje:{" "}
-                            {formResponses[`scale_${scale.id}_sub_${sub.id}`] ||
-                              0}{" "}
-                            / {sub.maxScore}
-                          </span>
+                    scale.subscales.map((sub: MappedSubscale) => {
+                      const currentVal = Number(
+                        formResponses[`scale_${scale.id}_sub_${sub.id}`] || 0,
+                      );
+                      const ratio = sub.maxScore > 0 ? currentVal / sub.maxScore : 0;
+                      return (
+                        <div key={sub.id} className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2.5">
+                          <div className="flex justify-between items-center">
+                            <label className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                              {sub.name}
+                            </label>
+                            <span
+                              className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                                ratio >= 0.7
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                  : ratio >= 0.4
+                                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                    : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300"
+                              }`}
+                            >
+                              {currentVal} / {sub.maxScore}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateForm(
+                                  `scale_${scale.id}_sub_${sub.id}`,
+                                  Math.max(0, currentVal - 1),
+                                )
+                              }
+                              disabled={currentVal <= 0}
+                              className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 flex items-center justify-center font-bold text-base hover:bg-gray-100 dark:hover:bg-white/20 disabled:opacity-40 transition-all shrink-0 active:scale-95"
+                            >
+                              -
+                            </button>
+                            <input
+                              type="range"
+                              min="0"
+                              max={sub.maxScore}
+                              value={currentVal}
+                              onChange={(e) =>
+                                updateForm(
+                                  `scale_${scale.id}_sub_${sub.id}`,
+                                  parseInt(e.target.value),
+                                )
+                              }
+                              className="w-full h-2.5 bg-gray-200 dark:bg-white/10 rounded-full appearance-none cursor-pointer accent-[#008080]"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateForm(
+                                  `scale_${scale.id}_sub_${sub.id}`,
+                                  Math.min(sub.maxScore, currentVal + 1),
+                                )
+                              }
+                              disabled={currentVal >= sub.maxScore}
+                              className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 flex items-center justify-center font-bold text-base hover:bg-gray-100 dark:hover:bg-white/20 disabled:opacity-40 transition-all shrink-0 active:scale-95"
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
-                        <input
-                          type="range"
-                          min="0"
-                          max={sub.maxScore}
-                          value={Number(
-                            formResponses[
-                              `scale_${scale.id}_sub_${sub.id}`
-                            ] || 0,
-                          )}
-                          onChange={(e) =>
-                            updateForm(
-                              `scale_${scale.id}_sub_${sub.id}`,
-                              parseInt(e.target.value),
-                            )
-                          }
-                          className="w-full h-1.5 bg-gray-100 dark:bg-white/5 rounded-full appearance-none cursor-pointer accent-[#008080]"
-                        />
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="flex flex-wrap gap-3">
                       {scale.values?.map((val: MappedScaleValue) => (
@@ -167,11 +202,11 @@ export function EvaluationTab({
             return (
               <div
                 key={form.id}
-                className="bg-white dark:bg-[#111] p-6 md:p-8 rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm relative group"
+                className="bg-white dark:bg-[#111] p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm relative group"
               >
                 <button
                   onClick={() => toggleForm(form.id)}
-                  className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
+                  className="absolute top-4 right-4 sm:top-6 sm:right-6 p-1.5 sm:p-2 text-gray-400 hover:text-red-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
                 >
                   <X size={16} />
                 </button>

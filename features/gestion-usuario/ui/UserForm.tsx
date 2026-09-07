@@ -4,13 +4,18 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { User, CreditCard, Phone, Key, AlertCircle } from "lucide-react";
+import { User, Mail, CreditCard, Phone, Key, AlertCircle, Sparkles } from "lucide-react";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 import { useRoles } from "@/entities/rol";
+import { generarUsername } from "@/entities/usuario";
 
 const esquemaFormulario = z.object({
   firstName: z.string().min(1, "El nombre es requerido"),
   lastName: z.string().min(1, "El apellido es requerido"),
+  email: z
+    .string()
+    .min(1, "El correo electrónico es requerido")
+    .email("Ingrese un correo electrónico válido"),
   carnet: z.string().optional(),
   phone: z.string().optional(),
   username: z.string().optional(),
@@ -27,6 +32,8 @@ interface UserFormProps {
   setFirstName: (val: string) => void;
   lastName: string;
   setLastName: (val: string) => void;
+  email: string;
+  setEmail: (val: string) => void;
   carnet: string;
   setCarnet: (val: string) => void;
   phone: string;
@@ -51,6 +58,8 @@ export function UserForm({
   setFirstName,
   lastName,
   setLastName,
+  email,
+  setEmail,
   carnet,
   setCarnet,
   phone,
@@ -83,6 +92,7 @@ export function UserForm({
     defaultValues: {
       firstName,
       lastName,
+      email,
       carnet,
       phone,
       username,
@@ -93,9 +103,22 @@ export function UserForm({
     },
   });
 
+  useEffect(() => { setValue("firstName", firstName); }, [firstName, setValue]);
+  useEffect(() => { setValue("lastName", lastName); }, [lastName, setValue]);
+  useEffect(() => { setValue("email", email); }, [email, setValue]);
+  useEffect(() => { setValue("carnet", carnet); }, [carnet, setValue]);
+  useEffect(() => { setValue("phone", phone); }, [phone, setValue]);
+  useEffect(() => { setValue("username", username); }, [username, setValue]);
+  useEffect(() => { setValue("password", password); }, [password, setValue]);
   useEffect(() => { setValue("roleId", roleId); }, [roleId, setValue]);
   useEffect(() => { setValue("status", status); }, [status, setValue]);
   useEffect(() => { setValue("visibility", visibility); }, [visibility, setValue]);
+
+  const handleAutoGenerateUsername = () => {
+    const sugerencia = generarUsername(firstName, lastName);
+    setUsername(sugerencia);
+    setValue("username", sugerencia, { shouldValidate: true, shouldDirty: true });
+  };
 
   const onValidSubmit = () => {
     onSubmit(new Event("submit") as unknown as React.FormEvent);
@@ -163,23 +186,32 @@ export function UserForm({
       <div className="grid sm:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-            Carnet de Identidad
+            Correo Electrónico *
           </label>
           <div className="relative">
-            <CreditCard
+            <Mail
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
               size={18}
             />
             <input
-              type="text"
-              {...register("carnet", {
-                onChange: (e) => setCarnet(e.target.value),
+              type="email"
+              {...register("email", {
+                onChange: (e) => setEmail(e.target.value),
               })}
-              defaultValue={carnet}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white border-transparent focus-visible:border-[#008080]"
-              placeholder="Ej. 1234567 LP"
+              defaultValue={email}
+              className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white ${zodErrors.email ? "border-red-500" : "border-transparent focus-visible:border-[#008080]"}`}
+              placeholder="ejemplo@correo.com"
             />
           </div>
+          {zodErrors.email ? (
+            <p className="text-[10px] text-red-500 font-bold mt-1 ml-4 flex items-center gap-1">
+              <AlertCircle size={10} /> {zodErrors.email.message}
+            </p>
+          ) : (
+            <p className="text-[10px] text-gray-400 mt-1 ml-4">
+              Se enviarán las credenciales de acceso a este correo.
+            </p>
+          )}
         </div>
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -206,8 +238,42 @@ export function UserForm({
       <div className="grid sm:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-            Usuario (Login)
+            Carnet de Identidad
           </label>
+          <div className="relative">
+            <CreditCard
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              size={18}
+            />
+            <input
+              type="text"
+              {...register("carnet", {
+                onChange: (e) => setCarnet(e.target.value),
+              })}
+              defaultValue={carnet}
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all text-sm dark:text-white border-transparent focus-visible:border-[#008080]"
+              placeholder="Ej. 1234567 LP"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+              Usuario (Login)
+            </label>
+            {!isEditing && (
+              <button
+                type="button"
+                onClick={handleAutoGenerateUsername}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#008080] hover:text-[#006666] dark:text-teal-400 transition-colors cursor-pointer"
+                title="Generar sugerencia de usuario (ej. ALECHIP123)"
+              >
+                <Sparkles size={13} />
+                <span>Generar sugerencia</span>
+              </button>
+            )}
+          </div>
           <div className="relative">
             <User
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -220,7 +286,7 @@ export function UserForm({
               })}
               defaultValue={username}
               className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white border-2"
-              placeholder="Opcional: se generará automáticamente"
+              placeholder="Ej. ALECHIP145 (opcional: se generará automáticamente)"
             />
           </div>
         </div>

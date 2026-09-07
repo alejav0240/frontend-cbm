@@ -8,5 +8,6 @@ export interface PostBlog {
   urlImagen?: string;
   tiempoLectura: string;
   estado: string;
+  tipo: "MARKDOWN" | "LATEX";
   fechaCreacion: Date;
 }

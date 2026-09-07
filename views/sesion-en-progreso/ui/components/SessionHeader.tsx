@@ -90,19 +90,19 @@ export function SessionHeader({
       role="banner"
       aria-label="Cabecera de sesión activa"
     >
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 py-3 lg:py-4">
+      <div className="max-w-screen-2xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-4 py-2.5 sm:py-3 lg:py-4">
           {/* Sección Izquierda - Información del Paciente */}
-          <div className="flex items-center gap-4 w-full lg:w-auto">
+          <div className="flex items-center gap-3 w-full sm:w-auto min-w-0">
             {/* Avatar con inicial y estado */}
             <div className="relative flex-shrink-0 group">
               <div
                 className={`
-                w-12 h-12 sm:w-14 sm:h-14 rounded-2xl 
+                w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl 
                 bg-gradient-to-br ${getInitialColor(activeSession.patientName)}
                 text-white flex items-center justify-center 
-                font-bold text-lg sm:text-xl
-                shadow-lg transition-transform duration-200
+                font-bold text-base sm:text-lg lg:text-xl
+                shadow-md sm:shadow-lg transition-transform duration-200
                 group-hover:scale-105
               `}
               >
@@ -111,43 +111,43 @@ export function SessionHeader({
               {/* Indicador de estado en vivo */}
               <div className="absolute -bottom-1 -right-1">
                 <div className="relative">
-                  <span className="block w-4 h-4 sm:w-5 sm:h-5 bg-green-500 border-2 border-white dark:border-[#0f0f0f] rounded-full shadow-sm" />
-                  <span className="absolute inset-0 block w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full animate-ping opacity-75" />
+                  <span className="block w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 bg-green-500 border-2 border-white dark:border-[#0f0f0f] rounded-full shadow-sm" />
+                  <span className="absolute inset-0 block w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 bg-green-500 rounded-full animate-ping opacity-75" />
                 </div>
               </div>
             </div>
 
             {/* Información del paciente */}
-            <div className="min-w-0 flex-1 lg:flex-none">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg sm:text-xl font-bold dark:text-white truncate">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg lg:text-xl font-bold dark:text-white truncate">
                   {activeSession.patientName}
                 </h2>
                 {/* Badge de sesión en vivo */}
-                <div className="flex items-center gap-1.5 bg-red-500/10 px-2.5 py-1 rounded-full flex-shrink-0">
-                  <span className="relative flex h-2 w-2">
+                <div className="flex items-center gap-1.5 bg-red-500/10 px-2 py-0.5 rounded-full flex-shrink-0">
+                  <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-red-500" />
                   </span>
-                  <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider">
+                  <span className="text-[9px] sm:text-[10px] font-bold text-red-500 uppercase tracking-wider">
                     En Vivo
                   </span>
                 </div>
               </div>
 
               {/* Meta información */}
-              <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex-wrap">
+              <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex-wrap">
                 <span className="flex items-center gap-1">
-                  <Calendar size={12} className="flex-shrink-0" />
+                  <Calendar size={11} className="flex-shrink-0" />
                   <span>Sesión #{activeSession.sessionNum}</span>
                 </span>
-                <span className="hidden xs:flex items-center gap-1">
-                  <User size={12} className="flex-shrink-0" />
-                  <span>{activeSession.therapist}</span>
+                <span className="flex items-center gap-1">
+                  <User size={11} className="flex-shrink-0" />
+                  <span className="truncate max-w-[110px] sm:max-w-none">{activeSession.therapist}</span>
                 </span>
                 {activeSession.sessionType && (
-                  <span className="hidden sm:flex items-center gap-1">
-                    <Users size={12} className="flex-shrink-0" />
+                  <span className="hidden md:flex items-center gap-1">
+                    <Users size={11} className="flex-shrink-0" />
                     <span>{activeSession.sessionType}</span>
                   </span>
                 )}
@@ -156,21 +156,21 @@ export function SessionHeader({
           </div>
 
           {/* Sección Derecha - Controles */}
-          <div className="flex items-center justify-between lg:justify-end gap-3 sm:gap-4 w-full lg:w-auto">
+          <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto">
             {/* Timer */}
-            <div className="flex items-center gap-3 px-3 py-1.5 bg-gray-50 dark:bg-white/5 rounded-xl">
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 py-1 bg-gray-50 dark:bg-white/5 rounded-xl">
+              <div className="flex items-center gap-1">
                 <Clock
-                  size={16}
+                  size={14}
                   className="text-[#008080] dark:text-teal-400"
                 />
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider hidden sm:inline">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider hidden md:inline">
                   Duración
                 </span>
               </div>
               <span
                 className={`
-                text-xl sm:text-2xl lg:text-3xl font-mono font-bold tabular-nums
+                text-lg sm:text-xl lg:text-2xl font-mono font-bold tabular-nums
                 ${!isActive ? "text-gray-400 dark:text-gray-500" : "dark:text-white"}
                 transition-colors duration-200
               `}
@@ -178,7 +178,7 @@ export function SessionHeader({
                 {formatTime(timer)}
               </span>
               {!isActive && (
-                <span className="text-[10px] font-medium text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full">
+                <span className="text-[9px] sm:text-[10px] font-medium text-orange-500 bg-orange-500/10 px-1.5 sm:px-2 py-0.5 rounded-full">
                   Pausado
                 </span>
               )}
@@ -244,27 +244,29 @@ export function SessionHeader({
                 )}
               </button>
 
-              {/* Botón Finalizar - Principal */}
+              {/* Botón Finalizar - Acción de Cierre Clínico */}
               <button
                 onClick={() => setShowFinishConfirm(true)}
                 className="
-                  px-4 sm:px-6 py-2.5 sm:py-3
-                  bg-red-500 hover:bg-red-600 active:scale-95
+                  px-3.5 sm:px-5 py-2.5 sm:py-3
+                  bg-gray-900 hover:bg-black dark:bg-white/10 dark:hover:bg-white/20
                   text-white font-bold rounded-xl
-                  transition-all duration-200
-                  shadow-lg shadow-red-500/30 hover:shadow-red-500/40
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#0f0f0f]
+                  border border-gray-700/50 dark:border-white/10
+                  transition-all duration-200 active:scale-95
+                  shadow-sm hover:shadow-md
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2
                   flex items-center gap-2
                 "
                 aria-label="Finalizar sesión"
               >
                 <Square
-                  size={16}
+                  size={15}
                   fill="currentColor"
-                  className="flex-shrink-0"
+                  className="text-rose-400 flex-shrink-0"
                 />
                 <span className="text-xs sm:text-sm font-bold uppercase tracking-wider">
                   <span className="hidden sm:inline">Finalizar</span>
+                  <span className="sm:inline hidden text-[10px] text-gray-400">Sesión</span>
                   <span className="sm:hidden">Fin</span>
                 </span>
               </button>

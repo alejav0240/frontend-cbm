@@ -147,15 +147,31 @@ export const useGrabacion = () => {
     return archivo;
   }, [archivoGrabacion, construirArchivoGrabacion, stream]);
 
+  const pausarGrabacion = useCallback(() => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state === "recording") {
+      recorder.pause();
+      toast.info("Grabación en pausa");
+    }
+  }, []);
+
+  const reanudarGrabacion = useCallback(() => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state === "paused") {
+      recorder.resume();
+      toast.success("Grabación reanudada");
+    }
+  }, []);
+
   const cambiarCamara = useCallback(
     async (deviceId: string) => {
       setSelectedDeviceId(deviceId);
-      if (estaGrabando || stream) {
-        stream?.getTracks().forEach((t) => t.stop());
+      if (estaGrabando) {
+        await detenerGrabacion();
         await iniciarGrabacion(deviceId);
       }
     },
-    [estaGrabando, stream, iniciarGrabacion],
+    [estaGrabando, detenerGrabacion, iniciarGrabacion],
   );
 
   return {
@@ -165,6 +181,8 @@ export const useGrabacion = () => {
     dispositivoSeleccionado,
     iniciarGrabacion,
     detenerGrabacion,
+    pausarGrabacion,
+    reanudarGrabacion,
     cambiarCamara,
     archivoGrabacion,
   };

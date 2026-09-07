@@ -10,3 +10,4 @@ export * from "./api/useUpdateUser";
 export * from "./api/useChangePassword";
 export * from "./lib/exportar-pdf";
 export * from "./lib/exportar-excel";
+export * from "./lib/generarUsername";

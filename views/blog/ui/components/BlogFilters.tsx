@@ -8,6 +8,7 @@ export interface BlogFiltros {
   busqueda: string;
   categoria: string;
   estado: string;
+  tipo: string;
 }
 
 type Orden = "recientes" | "antiguos" | "a-z" | "z-a";
@@ -30,9 +31,15 @@ const CATEGORIAS = [
 ];
 
 const ESTADOS = [
-  { value: "", label: "Todos" },
+  { value: "", label: "Todos los estados" },
   { value: "PUBLISHED", label: "Publicados" },
   { value: "DRAFT", label: "Borradores" },
+];
+
+const TIPOS = [
+  { value: "", label: "Todos los formatos" },
+  { value: "MARKDOWN", label: "Markdown" },
+  { value: "LATEX", label: "LaTeX" },
 ];
 
 const ORDENES: { value: Orden; label: string }[] = [
@@ -50,7 +57,7 @@ export function BlogFilters({
   totalResultado,
 }: BlogFiltersProps) {
   const hayFiltrosActivos =
-    filtros.busqueda || filtros.categoria || filtros.estado;
+    filtros.busqueda || filtros.categoria || filtros.estado || filtros.tipo;
 
   return (
     <motion.div
@@ -91,6 +98,20 @@ export function BlogFilters({
         </select>
 
         <select
+          value={filtros.tipo}
+          onChange={(e) =>
+            onFiltrosChange({ ...filtros, tipo: e.target.value })
+          }
+          className="px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-2 border-transparent focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
+        >
+          {TIPOS.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+
+        <select
           value={filtros.estado}
           onChange={(e) =>
             onFiltrosChange({ ...filtros, estado: e.target.value })
@@ -125,7 +146,7 @@ export function BlogFilters({
         {hayFiltrosActivos && (
           <button
             onClick={() =>
-              onFiltrosChange({ busqueda: "", categoria: "", estado: "" })
+              onFiltrosChange({ busqueda: "", categoria: "", estado: "", tipo: "" })
             }
             className="flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all flex-shrink-0"
           >

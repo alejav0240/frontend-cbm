@@ -9,6 +9,7 @@ interface PostsBlogFiltros {
   pageSize?: number;
   estado?: string;
   busqueda?: string;
+  tipo?: string;
 }
 
 export const usePostsBlog = (filtros: PostsBlogFiltros = {}) => {
@@ -17,6 +18,7 @@ export const usePostsBlog = (filtros: PostsBlogFiltros = {}) => {
     {
       variables: {
         status: filtros.estado,
+        type: filtros.tipo,
         page: filtros.page,
         pageSize: filtros.pageSize,
         search: filtros.busqueda || "",
@@ -28,10 +30,14 @@ export const usePostsBlog = (filtros: PostsBlogFiltros = {}) => {
   const posts = useMemo(() => {
     return (data?.blogPosts?.results || [])
       .filter((p): p is NonNullable<typeof p> => p != null)
-      .map((p) => ({
-        ...p,
-        fechaCreacion: new Date(p.fechaCreacion as string),
-      })) as unknown as PostBlog[];
+      .map((p) => {
+        const item = p as typeof p & { tipo?: string };
+        return {
+          ...item,
+          tipo: (item.tipo || "MARKDOWN").toUpperCase(),
+          fechaCreacion: new Date(item.fechaCreacion as string),
+        };
+      }) as unknown as PostBlog[];
   }, [data]);
 
   return {

@@ -63,9 +63,9 @@ export function PlanTab({
         </div>
       </div>
 
-      <div className="relative space-y-8 pt-4">
+      <div className="relative space-y-6 md:space-y-8 pt-4">
         {/* Vertical Line */}
-        <div className="absolute left-6 md:left-8 top-0 bottom-0 w-px bg-gray-200 dark:bg-white/10" />
+        <div className="absolute left-3.5 sm:left-6 md:left-8 top-0 bottom-0 w-px bg-gray-200 dark:bg-white/10" />
 
         {patientPlan.steps?.map((step, idx) => (
           <motion.div
@@ -77,11 +77,11 @@ export function PlanTab({
             <button
               type="button"
               onClick={() => toggleStep(step.id)}
-              className={`relative pl-16 md:pl-24 group cursor-pointer text-left w-full`}
+              className={`relative pl-9 sm:pl-16 md:pl-24 group cursor-pointer text-left w-full`}
             >
             {/* Node */}
             <div
-              className={`absolute left-4 md:left-6 top-0 w-4 h-4 md:w-5 md:h-5 rounded-full border-4 border-white dark:border-[#0a0a0a] z-10 transition-all duration-300 ${
+              className={`absolute left-2 sm:left-4 md:left-6 top-0 w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full border-2 sm:border-4 border-white dark:border-[#0a0a0a] z-10 transition-all duration-300 ${
                 (completedSteps || []).includes(step.id)
                   ? "bg-green-500 scale-125"
                   : "bg-gray-200 dark:bg-gray-800 group-hover:bg-[#008080]"
@@ -89,7 +89,7 @@ export function PlanTab({
             />
 
             <div
-              className={`p-6 md:p-8 rounded-[32px] border transition-all duration-500 ${
+              className={`p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] border transition-all duration-500 ${
                 (completedSteps || []).includes(step.id)
                   ? "bg-green-500/5 border-green-500/20 opacity-60"
                   : "bg-white dark:bg-white/2 border-gray-100 dark:border-white/5 hover:border-[#008080]/30 hover:shadow-xl hover:shadow-black/5"

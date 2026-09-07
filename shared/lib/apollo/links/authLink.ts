@@ -15,13 +15,19 @@ export const createAuthLink = () => {
     const context = operation.getContext();
     const existingHeaders = context.headers || {};
 
+    // Obtener token JWT si existe en localStorage o cookie
+    let token: string | null = null;
+    if (typeof window !== "undefined") {
+      token = localStorage.getItem("token");
+    }
+
     // Construir nuevos headers
     const headers: Record<string, string> = {
       ...existingHeaders,
       // CSRF para Django/DRF o similares
       ...(csrftoken && { "X-CSRFToken": csrftoken }),
-      // Si usas tokens Bearer en header (descomentar si aplica):
-      // ...(token && { 'Authorization': `Bearer ${token}` }),
+      // Bearer token si existe
+      ...(token && { Authorization: `JWT ${token}` }),
     };
 
     // Actualizar contexto de la operación

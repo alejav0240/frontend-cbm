@@ -32,6 +32,7 @@ export function BlogPage() {
     busqueda: "",
     categoria: "",
     estado: "",
+    tipo: "",
   });
   const [orden, setOrden] = useState<Orden>("recientes");
 
@@ -50,6 +51,7 @@ export function BlogPage() {
     pageSize: PAGE_SIZE,
     estado: filtros.estado || undefined,
     busqueda: busquedaDebounced || undefined,
+    tipo: filtros.tipo || undefined,
   });
 
   const { crearPost, creando } = useCrearPostBlog();
@@ -61,6 +63,12 @@ export function BlogPage() {
 
     if (filtros.categoria) {
       resultado = resultado.filter((p) => p.categoria === filtros.categoria);
+    }
+
+    if (filtros.tipo) {
+      resultado = resultado.filter(
+        (p) => p.tipo?.toUpperCase() === filtros.tipo.toUpperCase()
+      );
     }
 
     const sorted = [...resultado];
@@ -87,7 +95,7 @@ export function BlogPage() {
     }
 
     return sorted;
-  }, [posts, filtros.categoria, orden]);
+  }, [posts, filtros.categoria, filtros.tipo, orden]);
 
   const handleCrear = useCallback(
     async (datos: FormularioPostBlog) => {
@@ -101,6 +109,7 @@ export function BlogPage() {
           imageUrl: datos.urlImagen || undefined,
           readTime: datos.tiempoLectura || undefined,
           status: datos.estado,
+          type: datos.tipo,
         });
         toast.success("Artículo creado exitosamente");
         setModalCrearAbierto(false);
@@ -126,6 +135,7 @@ export function BlogPage() {
           imageUrl: datos.urlImagen || undefined,
           readTime: datos.tiempoLectura || undefined,
           status: datos.estado,
+          type: datos.tipo,
         });
         toast.success("Artículo actualizado exitosamente");
         setModalEditarAbierto(false);
@@ -156,6 +166,7 @@ export function BlogPage() {
                 imageUrl: postAEliminar.urlImagen || undefined,
                 readTime: postAEliminar.tiempoLectura || undefined,
                 status: postAEliminar.estado,
+                type: postAEliminar.tipo,
               });
               refetch();
               toast.success("Artículo restaurado");

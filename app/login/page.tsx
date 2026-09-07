@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -21,12 +21,22 @@ export default function Login() {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
 
+  // Si ya existe sesión en el cliente, redirigir inmediatamente a dashboard
+  useEffect(() => {
+    const hasToken = typeof window !== "undefined" && (!!localStorage.getItem("token") || document.cookie.includes("cbm_auth="));
+    if (hasToken) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
+
   const [login, { loading }] = useMutation(INICIO_SESION_MUTACION, {
     onCompleted: (data: unknown) => {
       const resultado = data as TokenAuthMutation;
       if (resultado.tokenAuth?.token) {
         localStorage.setItem("token", resultado.tokenAuth.token);
         localStorage.setItem("refreshToken", resultado.tokenAuth.refreshToken);
+        // Establecer cookie para middleware y SSR
+        document.cookie = `cbm_auth=1; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
         toast.success("¡Bienvenido de nuevo!");
         setIsNavigating(true);
         router.push("/dashboard");
