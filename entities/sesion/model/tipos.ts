@@ -24,6 +24,7 @@ export interface Sesion {
 
 export interface SesionNormalizada {
   id: string;
+  databaseId?: number;
   pacienteId: string | null;
   pacienteNombre: string;
   institucionNombre?: string;
@@ -54,4 +55,5 @@ export interface SesionFiltros {
   pageSize?: number;
   verCiclo?: boolean;
   busqueda?: string;
+  skip?: boolean;
 }

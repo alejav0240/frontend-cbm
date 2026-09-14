@@ -15,7 +15,7 @@ export function useActualizarEstadoSesion() {
   const actualizarEstado = async (id: string, sessionStatus: string) => {
     try {
       await actualizar({
-        variables: { id, sessionStatus },
+        variables: { id, sessionStatus: sessionStatus.toLowerCase() },
       });
       toast.success("Estado de sesión actualizado");
     } catch (err: unknown) {

@@ -50,7 +50,7 @@ export interface Exporter<T> {
     fileName: string,
   ): Promise<void>;
 
-  preview?(data: T[]): Promise<Blob>;
+  preview?(data: T[], columns?: ExportColumn<T>[]): Promise<Blob>;
 }
 
 // ==========================
@@ -145,7 +145,7 @@ interface GenericExportModalProps<T> {
   filters?: ExportFilter<T>[];
   /** Cantidad a mostrar en el resumen. Por defecto cuenta las filas. */
   summaryCount?: (rows: T[]) => number;
-  exporters: Exporter<T | void>[];
+  exporters: Exporter<T>[];
 }
 
 // ==========================
@@ -165,6 +165,9 @@ export default function GenericExportModal<T>({
 }: GenericExportModalProps<T>) {
   const [filterValues, setFilterValues] = useState<Record<string, FilterValue>>(
     {},
+  );
+  const [selectedColumnKeys, setSelectedColumnKeys] = useState<string[]>(
+    () => columns.map((column) => String(column.key)),
   );
 
   const [loading, setLoading] = useState<string | null>(null);
@@ -236,6 +239,8 @@ export default function GenericExportModal<T>({
   const filteredDataRef = useRef(filteredData);
 
   const exportersRef = useRef(exporters);
+  const columnsRef = useRef(columns);
+  const selectedColumnKeysRef = useRef(selectedColumnKeys);
 
   const [previewKey, setPreviewKey] = useState(0);
 
@@ -248,6 +253,7 @@ export default function GenericExportModal<T>({
       setPdfUrl(null);
     } else {
       setFilterValues({});
+      setSelectedColumnKeys(columns.map((column) => String(column.key)));
       setPreviewKey((k) => k + 1);
     }
   }
@@ -260,12 +266,23 @@ export default function GenericExportModal<T>({
     }
   }
 
+  const [prevSelectedColumnKeys, setPrevSelectedColumnKeys] =
+    useState(selectedColumnKeys);
+  if (selectedColumnKeys !== prevSelectedColumnKeys) {
+    setPrevSelectedColumnKeys(selectedColumnKeys);
+    if (isOpen) {
+      setPreviewKey((k) => k + 1);
+    }
+  }
+
   // Mantener los refs sincronizados con los valores más recientes,
   // fuera del render (dentro de un efecto).
   useEffect(() => {
     filteredDataRef.current = filteredData;
     exportersRef.current = exporters;
-  });
+    columnsRef.current = columns;
+    selectedColumnKeysRef.current = selectedColumnKeys;
+  }, [columns, exporters, filteredData, selectedColumnKeys]);
 
   // Actually generate the preview, reading latest data/exporters from refs.
   // Deps only include stable booleans/numbers so this effect never causes a loop.
@@ -273,7 +290,10 @@ export default function GenericExportModal<T>({
     if (!isOpen || previewKey === 0) return;
     let cancelled = false;
     const generate = async () => {
-      const data = filteredDataRef.current;
+        const data = filteredDataRef.current;
+        const exportColumns = columnsRef.current.filter((column) =>
+          selectedColumnKeysRef.current.includes(String(column.key)),
+        );
       if (data.length === 0) {
         setPdfUrl(null);
         return;
@@ -282,7 +302,7 @@ export default function GenericExportModal<T>({
       if (!pdfExporter?.preview) return;
       setIsPreviewLoading(true);
       try {
-        const blob = await pdfExporter.preview(data);
+        const blob = await pdfExporter.preview(data, exportColumns);
         if (cancelled) return;
         const url = URL.createObjectURL(blob);
         setPdfUrl(url);
@@ -296,16 +316,26 @@ export default function GenericExportModal<T>({
     return () => {
       cancelled = true;
     };
-  }, [isOpen, previewKey]);
+  }, [isOpen, previewKey, filteredData]);
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
 
   const handleExport = async (exporter: Exporter<T>) => {
     try {
       setLoading(exporter.id);
-      await exporter.execute(filteredData, columns, fileName);
+      await exporter.execute(filteredData, selectedColumns, fileName);
     } finally {
       setLoading(null);
     }
   };
+
+  const selectedColumns = columns.filter((column) =>
+    selectedColumnKeys.includes(String(column.key)),
+  );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="max-w-6xl">
@@ -405,6 +435,58 @@ export default function GenericExportModal<T>({
               )}
             </div>
           ))}
+
+          <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-white/5">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Columnas a exportar
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedColumnKeys(
+                    selectedColumnKeys.length === columns.length
+                      ? []
+                      : columns.map((column) => String(column.key)),
+                  )
+                }
+                className="text-[10px] font-bold text-[#008080] uppercase tracking-widest"
+              >
+                {selectedColumnKeys.length === columns.length
+                  ? "Quitar todas"
+                  : "Seleccionar todas"}
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {columns.map((column) => {
+                const key = String(column.key);
+                const checked = selectedColumnKeys.includes(key);
+
+                return (
+                  <label
+                    key={key}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() =>
+                        setSelectedColumnKeys((previous) =>
+                          checked
+                            ? previous.filter((selected) => selected !== key)
+                            : [...previous, key],
+                        )
+                      }
+                      className="accent-[#008080]"
+                    />
+                    <span className="text-xs text-gray-600 dark:text-gray-300">
+                      {column.label}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
 
           <div className="pt-4 border-t border-gray-100 dark:border-white/5">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">

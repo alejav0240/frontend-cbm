@@ -40,6 +40,7 @@ import ConfirmModal from "@/shared/ui/ConfirmModal";
 import GenericExportModal, {
   type ExportColumn,
   type Exporter,
+  type ExportFilter,
 } from "@/shared/ui/GenericExportModal";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -56,7 +57,7 @@ import {
 export const SesionesPage = () => {
   const router = useRouter();
 
-  const { filtros: urlFiltros, setFiltros } = useUrlFiltros([
+  const { filtros: urlFiltros, setFiltros, limpiar } = useUrlFiltros([
     "page",
     "q",
     "estado",
@@ -69,6 +70,7 @@ export const SesionesPage = () => {
   ] as const);
 
   const [modoVista, setModoVista] = useState<ModoVista>("lista");
+  const [mostrarExportar, setMostrarExportar] = useState(false);
   const paginaActual = Number(urlFiltros.page || "1");
   const [busqueda, setBusqueda] = useState(urlFiltros.q);
   const filtroEstado = urlFiltros.estado || "all";
@@ -117,6 +119,13 @@ export const SesionesPage = () => {
     refetch: refetchSesiones,
   } = useSesiones(filtrosConsulta);
 
+  const { sesiones: sesionesExportables } = useSesiones({
+    ...filtrosConsulta,
+    page: 1,
+    pageSize: 1000,
+    skip: !mostrarExportar,
+  });
+
   const {
     ciclos,
     total: totalCiclos,
@@ -133,7 +142,6 @@ export const SesionesPage = () => {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
-  const [mostrarExportar, setMostrarExportar] = useState(false);
   const [mostrarReprogramar, setMostrarReprogramar] = useState(false);
   const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
   const [mostrarCancelar, setMostrarCancelar] = useState(false);
@@ -154,7 +162,7 @@ export const SesionesPage = () => {
 
   const datosExportacion = useMemo<SesionExportarFila[]>(
     () =>
-      sesionesFiltradas.map((s) => ({
+      sesionesExportables.map((s) => ({
         id: s.id,
         numeroSesion: s.numeroSesion,
         pacienteNombre: s.pacienteNombre,
@@ -169,7 +177,7 @@ export const SesionesPage = () => {
         notas: s.notas,
         videoUrl: s.urlGrabacion,
       })),
-    [sesionesFiltradas],
+    [sesionesExportables],
   );
 
   const columnasExportacion: ExportColumn<SesionExportarFila>[] = useMemo(
@@ -184,6 +192,48 @@ export const SesionesPage = () => {
       { key: "estado", label: "Estado" },
       { key: "pago", label: "Pago" },
       { key: "duracion", label: "Duración" },
+      { key: "notas", label: "Notas" },
+      { key: "videoUrl", label: "Grabación" },
+    ],
+    [],
+  );
+
+  const filtrosExportacion: ExportFilter<SesionExportarFila>[] = useMemo(
+    () => [
+      { key: "pacienteNombre", label: "Paciente", type: "text" },
+      { key: "terapeuta", label: "Terapeuta", type: "text" },
+      { key: "fecha", label: "Rango de fechas", type: "date-range" },
+      {
+        key: "estado",
+        label: "Estado",
+        type: "select",
+        options: [
+          { value: "Completada", label: "Completada" },
+          { value: "Pendiente", label: "Pendiente" },
+          { value: "Confirmada", label: "Confirmada" },
+          { value: "Reprogramada", label: "Reprogramada" },
+          { value: "Cancelada", label: "Cancelada" },
+        ],
+      },
+      {
+        key: "pago",
+        label: "Pago",
+        type: "select",
+        options: [
+          { value: "Pagada", label: "Pagada" },
+          { value: "Pendiente", label: "Pendiente" },
+          { value: "Exenta", label: "Exenta" },
+        ],
+      },
+      {
+        key: "tipo",
+        label: "Tipo",
+        type: "select",
+        options: [
+          { value: "Individual", label: "Individual" },
+          { value: "Grupal", label: "Grupal" },
+        ],
+      },
     ],
     [],
   );
@@ -193,19 +243,19 @@ export const SesionesPage = () => {
       {
         id: "pdf",
         label: "Exportar PDF",
-        execute: async (data) => {
-          const doc = await generarSesionesPDF(data);
+        execute: async (data, columns) => {
+          const doc = await generarSesionesPDF(data, columns);
           doc.save(`reporte_sesiones_${Date.now()}.pdf`);
         },
-        preview: async (data) => {
-          return generarSesionesPDFPreview(data);
+        preview: async (data, columns) => {
+          return generarSesionesPDFPreview(data, columns);
         },
       },
       {
         id: "excel",
         label: "Exportar Excel",
-        execute: async (data) => {
-          await generarSesionesExcel(data);
+        execute: async (data, columns, fileName) => {
+          await generarSesionesExcel(data, fileName, columns);
         },
       },
     ],
@@ -295,7 +345,7 @@ export const SesionesPage = () => {
     async (nuevaFecha: string, nuevaHora: string) => {
       if (!sesionSeleccionada) return;
       try {
-        const fechaCompleta = `${nuevaFecha}T${nuevaHora}:00`;
+        const fechaCompleta = `${nuevaFecha}T${nuevaHora}:00-04:00`;
         await actualizarSesion(sesionSeleccionada.id, {
           sessionDate: fechaCompleta,
         });
@@ -387,6 +437,7 @@ export const SesionesPage = () => {
         completadas={stats.completadas}
         pendientes={stats.pendientes}
         canceladas={stats.canceladas}
+        mesActual={stats.mesActual}
       />
 
       {modoVista === "lista" && (
@@ -408,10 +459,17 @@ export const SesionesPage = () => {
             terapeutaOpciones={terapeutas.options}
             filtroPeriodo={filtroPeriodo}
             onPeriodoChange={(v) => setFiltros({ periodo: v, page: "1" })}
+            onPeriodoApply={(periodo, desde, hasta) =>
+              setFiltros({ periodo, desde, hasta, page: "1" })
+            }
             fechaDesde={fechaDesde}
             fechaHasta={fechaHasta}
             onFechaDesdeChange={(v) => setFiltros({ desde: v, page: "1" })}
             onFechaHastaChange={(v) => setFiltros({ hasta: v, page: "1" })}
+            onRangoChange={(desde, hasta) =>
+              setFiltros({ periodo: "all", desde, hasta, page: "1" })
+            }
+            onLimpiarFiltros={limpiar}
           />
 
           {cargando ? (
@@ -497,6 +555,7 @@ export const SesionesPage = () => {
         title="Exportar Sesiones"
         data={datosExportacion}
         columns={columnasExportacion}
+        filters={filtrosExportacion}
         fileName="reporte_sesiones"
         exporters={exporters}
       />

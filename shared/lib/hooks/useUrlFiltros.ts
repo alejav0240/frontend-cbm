@@ -36,6 +36,7 @@ export function useUrlFiltros<K extends string>(claves: readonly K[]) {
     (cambios: Partial<Record<K, string>>) => {
       const params = new URLSearchParams(searchParams.toString());
       for (const clave of claves) {
+        if (!(clave in cambios)) continue;
         const valor = cambios[clave];
         if (valor) params.set(clave, valor);
         else params.delete(clave);

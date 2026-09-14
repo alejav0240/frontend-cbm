@@ -6,19 +6,18 @@ import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 
 const ESTADO_OPCIONES = [
   { label: "Todos los estados", value: "all" },
-  { label: "Agendada", value: "AGENDADA", color: "bg-blue-500" },
-  { label: "Confirmada", value: "CONFIRMA", color: "bg-emerald-500" },
-  { label: "Completada", value: "COMPLETA", color: "bg-green-500" },
-  { label: "Reprogramada", value: "REPROGRAMA", color: "bg-orange-500" },
-  { label: "Cancelada", value: "CANCELADA", color: "bg-red-500" },
+  { label: "Agendada",     value: "agendada",    color: "bg-blue-500" },
+  { label: "Confirmada",   value: "confirma",    color: "bg-emerald-500" },
+  { label: "Completada",   value: "completa",    color: "bg-green-500" },
+  { label: "Reprogramada", value: "reprograma",  color: "bg-orange-500" },
+  { label: "Cancelada",    value: "cancelada",   color: "bg-red-500" },
 ];
 
 const ESTADO_PAGO_OPCIONES = [
   { label: "Todos los pagos", value: "all" },
-  { label: "Pagado", value: "PAID", color: "bg-green-500" },
-  { label: "Parcial", value: "PARTIAL", color: "bg-yellow-500" },
-  { label: "Pendiente", value: "PENDING", color: "bg-orange-500" },
-  { label: "Exento", value: "EXEMPT", color: "bg-purple-500" },
+  { label: "Pagado",    value: "paid",    color: "bg-green-500" },
+  { label: "Pendiente", value: "pending", color: "bg-orange-500" },
+  { label: "Exento",    value: "exempt",  color: "bg-purple-500" },
 ];
 
 const TIPO_OPCIONES = [
@@ -76,6 +75,13 @@ interface FiltrosSesionesProps {
   fechaHasta: string;
   onFechaDesdeChange: (value: string) => void;
   onFechaHastaChange: (value: string) => void;
+  onPeriodoApply?: (
+    periodo: string,
+    fechaDesde: string,
+    fechaHasta: string,
+  ) => void;
+  onRangoChange?: (fechaDesde: string, fechaHasta: string) => void;
+  onLimpiarFiltros?: () => void;
 }
 
 export function FiltrosSesiones({
@@ -96,17 +102,29 @@ export function FiltrosSesiones({
   fechaHasta,
   onFechaDesdeChange,
   onFechaHastaChange,
+  onPeriodoApply,
+  onRangoChange,
+  onLimpiarFiltros,
 }: FiltrosSesionesProps) {
   const aplicarPresete = (presete: string) => {
+    const rango =
+      presete === "all"
+        ? { fechaDesde: "", fechaHasta: "" }
+        : calcularRango(presete);
+
+    if (onPeriodoApply) {
+      onPeriodoApply(presete, rango.fechaDesde, rango.fechaHasta);
+      return;
+    }
+
     onPeriodoChange(presete);
     if (presete === "all") {
       onFechaDesdeChange("");
       onFechaHastaChange("");
       return;
     }
-    const { fechaDesde: fd, fechaHasta: fh } = calcularRango(presete);
-    onFechaDesdeChange(fd);
-    onFechaHastaChange(fh);
+    onFechaDesdeChange(rango.fechaDesde);
+    onFechaHastaChange(rango.fechaHasta);
   };
 
   const terapeutaOpcionesFinal = [
@@ -244,8 +262,12 @@ export function FiltrosSesiones({
             type="date"
             value={fechaDesde}
             onChange={(e) => {
-              onFechaDesdeChange(e.target.value);
-              onPeriodoChange("all");
+              if (onRangoChange) {
+                onRangoChange(e.target.value, fechaHasta);
+              } else {
+                onFechaDesdeChange(e.target.value);
+                onPeriodoChange("all");
+              }
             }}
             className="px-3 py-2.5 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent focus-visible:border-[#008080] focus-visible:ring-2 focus-visible:ring-[#008080]/10 outline-none transition-all text-sm dark:text-white text-gray-500 dark:text-gray-300"
           />
@@ -257,8 +279,12 @@ export function FiltrosSesiones({
             value={fechaHasta}
             min={fechaDesde || undefined}
             onChange={(e) => {
-              onFechaHastaChange(e.target.value);
-              onPeriodoChange("all");
+              if (onRangoChange) {
+                onRangoChange(fechaDesde, e.target.value);
+              } else {
+                onFechaHastaChange(e.target.value);
+                onPeriodoChange("all");
+              }
             }}
             className="px-3 py-2.5 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent focus-visible:border-[#008080] focus-visible:ring-2 focus-visible:ring-[#008080]/10 outline-none transition-all text-sm dark:text-white text-gray-500 dark:text-gray-300"
           />
@@ -285,6 +311,10 @@ export function FiltrosSesiones({
           ))}
           <button
             onClick={() => {
+              if (onLimpiarFiltros) {
+                onLimpiarFiltros();
+                return;
+              }
               onBusquedaChange("");
               onEstadoChange("all");
               onEstadoPagoChange("all");

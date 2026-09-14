@@ -22,11 +22,13 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
         sessionType: filtros.tipoSesion || "",
         dateFrom: filtros.fechaDesde || null,
         dateTo: filtros.fechaHasta || null,
+        includeNoDate: false,
         page: filtros.page || 1,
         pageSize: filtros.pageSize || 10,
         byCycles: filtros.verCiclo || false,
         search: filtros.busqueda || "",
       },
+      skip: filtros.skip,
       notifyOnNetworkStatusChange: true,
     },
   );
@@ -45,35 +47,56 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
             ? s.notas.join("\n")
             : s.notas || "Sin notas";
 
-          // SOLUCIÓN ESLINT ANY: Casteamos a 'string' en lugar de 'any' si existe el valor
-          const fechaObjeto = s.fechaSesion
-            ? new Date(s.fechaSesion as string)
-            : new Date();
-          const esFechaValida = !isNaN(fechaObjeto.getTime());
+          // Parseamos la fecha solo si existe y es válida.
+          // Usamos UTC explícito para evitar desfases de zona horaria:
+          // el backend envía DateTime con timezone (ej: "2026-08-15T10:00:00+00:00"),
+          // y new Date() lo interpreta correctamente en ISO 8601.
+          const fechaRaw = s.fechaSesion as string | null | undefined;
+          const fechaObjeto = fechaRaw ? new Date(fechaRaw) : null;
+          const esFechaValida =
+            fechaObjeto !== null && !isNaN(fechaObjeto.getTime());
+
+          const fechaMostrada = esFechaValida
+            ? new Intl.DateTimeFormat("es-ES", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                timeZone: "America/La_Paz",
+              }).format(fechaObjeto!)
+            : "Sin fecha";
+
+          const horaMostrada = esFechaValida
+            ? new Intl.DateTimeFormat("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: "America/La_Paz",
+              }).format(fechaObjeto!)
+            : "--:--";
+
+          const estadoMostradoMap: Record<string, string> = {
+            COMPLETA: "Completada",
+            AGENDADA: "Pendiente",
+            CONFIRMA: "Confirmada",
+            REPROGRAMA: "Reprogramada",
+            CANCELADA: "Cancelada",
+          };
+          const estadoNormalizado = String(s.estadoSesion ?? "").toUpperCase();
 
           return {
             id: s.id,
+            databaseId: (s as { databaseId?: number }).databaseId ?? undefined,
             pacienteId: s.paciente?.id || null,
             pacienteNombre: s.paciente?.fullName || "Sin paciente",
             institucionNombre:
               s.grupo?.institucion?.nombre || "Sin institución",
             numeroSesion: s.numeroSesion || 0,
-            fecha: esFechaValida
-              ? new Intl.DateTimeFormat("es-ES").format(fechaObjeto)
-              : "Fecha inválida",
-            hora: esFechaValida
-              ? new Intl.DateTimeFormat("es-ES", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }).format(fechaObjeto)
-              : "--:--",
-            estado: s.estadoSesion,
+            fecha: fechaMostrada,
+            hora: horaMostrada,
+            estado: estadoNormalizado,
             estadoMostrado:
-              s.estadoSesion === "COMPLETA"
-                ? "Completada"
-                : s.estadoSesion === "AGENDADA"
-                  ? "Pendiente"
-                  : "Cancelada",
+              estadoMostradoMap[estadoNormalizado] ??
+              s.estadoSesion ??
+              "Desconocido",
             pago: s.estadoPago,
             pagoMostrado: s.estadoPagoMostrado || "No procesado",
             // Blindamos el posible 'null' de duracionMinutos usando el operador nullish coalescing
@@ -85,6 +108,8 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
             videoStatus: s.videoStatus || "",
           };
         })
+        // Conservamos el orden descendente del backend: las sesiones nuevas primero.
+        .sort((a, b) => (b.databaseId ?? 0) - (a.databaseId ?? 0))
     );
   }, [data]);
 

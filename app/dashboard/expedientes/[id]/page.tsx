@@ -10,7 +10,15 @@ import { InformacionGeneral } from "@/entities/paciente/ui/InformacionGeneral";
 import { CuestionarioInicio } from "@/entities/paciente/ui/CuestionarioInicio";
 import { GraficoEvolucion } from "@/entities/paciente/ui/GraficoEvolucion";
 import { useRouter } from "next/navigation";
-import { Search, Loader2, FileText, FileDown } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  FileText,
+  FileDown,
+  UserRound,
+  BarChart3,
+  Repeat2,
+} from "lucide-react";
 import { useObtenerProgresoEscala } from "@/entities/paciente/api/useObtenerProgresoEscala";
 import AnalisDemuca from "@/entities/paciente/ui/AnalisDemuca";
 import { HistorialSesiones } from "@/entities/sesion/ui/HistorialSesiones";
@@ -35,6 +43,18 @@ import {
 } from "@/entities/sesion";
 
 type SessionData = SessionType;
+
+type ExpedienteTab = "general" | "analisis" | "ciclos";
+
+const expedienteTabs: {
+  id: ExpedienteTab;
+  label: string;
+  icon: typeof UserRound;
+}[] = [
+  { id: "general", label: "Información general", icon: UserRound },
+  { id: "analisis", label: "Análisis", icon: BarChart3 },
+  { id: "ciclos", label: "Ciclos", icon: Repeat2 },
+];
 
 type SesionDetallada = NonNullable<VerSesionQuery["session"]>;
 
@@ -149,6 +169,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     useState(false);
   const [mostrarCuestionario, setMostrarCuestionario] = useState(false);
   const [mostrarExportarClinico, setMostrarExportarClinico] = useState(false);
+  const [activeTab, setActiveTab] = useState<ExpedienteTab>("general");
 
   const [selectedSessionForAI, setSelectedSessionForAI] = useState<
     string | null
@@ -568,43 +589,95 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
         onExport={() => setMostrarExportarClinico(true)}
       />
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        <InformacionGeneral patient={paciente!} />
-        <CuestionarioInicio preguntas={preguntasNormalizadas!} />
+      <div
+        role="tablist"
+        aria-label="Secciones del expediente"
+        className="flex gap-1 bg-gray-100 dark:bg-white/5 p-1 rounded-2xl"
+      >
+        {expedienteTabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+
+          return (
+            <button
+              key={tab.id}
+              id={`expediente-tab-${tab.id}`}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`expediente-panel-${tab.id}`}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center justify-center gap-2 flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                isActive
+                  ? "bg-white dark:bg-[#111] text-[#008080] shadow-sm"
+                  : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              }`}
+            >
+              <Icon size={17} aria-hidden="true" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500">
-            <Search size={20} />
-          </div>
-          <h2 className="text-2xl font-bold dark:text-white serif">
-            Análisis Inteligente DEMUCA
-            <span className="text-purple-500 italic"> General</span>
-          </h2>
+      {activeTab === "general" && (
+        <div
+          id="expediente-panel-general"
+          role="tabpanel"
+          aria-labelledby="expediente-tab-general"
+          className="grid lg:grid-cols-2 gap-8"
+        >
+          <InformacionGeneral patient={paciente!} />
+          <CuestionarioInicio preguntas={preguntasNormalizadas!} />
         </div>
-        <AnalisDemuca dataDemuca={dataDemuca ?? []} />
-      </div>
+      )}
 
-      {/*<EriCimTablas eriData={dataEri?.scaleEvaluations} cimData={dataCIM?.scaleEvaluations}/>*/}
+      {activeTab === "analisis" && (
+        <div
+          id="expediente-panel-analisis"
+          role="tabpanel"
+          aria-labelledby="expediente-tab-analisis"
+          className="space-y-8"
+        >
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                <Search size={20} />
+              </div>
+              <h2 className="text-2xl font-bold dark:text-white serif">
+                Análisis Inteligente DEMUCA
+                <span className="text-purple-500 italic"> General</span>
+              </h2>
+            </div>
+            <AnalisDemuca dataDemuca={dataDemuca ?? []} />
+          </div>
+          <GraficoEvolucion progressData={datosEscalas} />
+        </div>
+      )}
 
-      {/* Inyección del componente gráfico mejorado */}
-      <GraficoEvolucion progressData={datosEscalas} />
-      <HistorialSesiones
-        patientSessions={sesiones ?? []}
-        currentPage={currentPage}
-        onPageChange={setSessionsPage}
-        cicloNumber={ciclo}
-        totalPages={totalPages}
-        onViewAIAnalysis={handleViewAIAnalysis}
-        onEditSession={handleEditSession}
-        onDeleteSession={(sessionId) => {
-          setSessionToDelete(String(sessionId));
-          setShowDeleteSessionConfirm(true);
-        }}
-        onViewDetails={handleViewSessionDetails}
-        onExport={handleExportSession}
-      />
+      {activeTab === "ciclos" && (
+        <div
+          id="expediente-panel-ciclos"
+          role="tabpanel"
+          aria-labelledby="expediente-tab-ciclos"
+        >
+          <HistorialSesiones
+            patientSessions={sesiones ?? []}
+            currentPage={currentPage}
+            onPageChange={setSessionsPage}
+            cicloNumber={ciclo}
+            totalPages={totalPages}
+            onViewAIAnalysis={handleViewAIAnalysis}
+            onEditSession={handleEditSession}
+            onDeleteSession={(sessionId) => {
+              setSessionToDelete(String(sessionId));
+              setShowDeleteSessionConfirm(true);
+            }}
+            onViewDetails={handleViewSessionDetails}
+            onExport={handleExportSession}
+          />
+        </div>
+      )}
 
       {/* Modal: Actualizar Información Clínica */}
       <Modal
