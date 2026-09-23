@@ -21,6 +21,7 @@ export default function DashboardLayout({
   const { setUsuario, setEstaCargando, estaCargando } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+  const esSesionEnProgreso = pathname === "/dashboard/sesion-en-progreso";
 
   const { data, loading, error } = useQuery<MeQuery>(CONSULTA_YO, {
     fetchPolicy: "network-only",
@@ -76,8 +77,17 @@ export default function DashboardLayout({
         <div data-onboarding-topbar>
           <Topbar />
         </div>
-        <div className="flex-1 lg:overflow-y-auto p-4 md:p-8 custom-scrollbar">
-          <div data-onboarding-page className="max-w-7xl mx-auto">
+        <div
+          className={`flex-1 min-h-0 ${
+            esSesionEnProgreso
+              ? "overflow-hidden p-0"
+              : "overflow-y-auto p-4 md:p-8 custom-scrollbar"
+          }`}
+        >
+          <div
+            data-onboarding-page
+            className={esSesionEnProgreso ? "h-full" : "max-w-7xl mx-auto"}
+          >
             {children}
           </div>
         </div>
