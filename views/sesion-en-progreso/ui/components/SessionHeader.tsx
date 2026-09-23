@@ -86,7 +86,7 @@ export function SessionHeader({
 
   return (
     <header
-      className="relative bg-white dark:bg-accent border-b border-gray-200 dark:border-white/5 sticky top-0 z-50 shadow-sm backdrop-blur-xl bg-white/80 dark:bg-[#0f0f0f]/80"
+      className="relative bg-white dark:bg-accent border-b border-gray-200 dark:border-white/5 sticky top-0 z-50 shadow-sm backdrop-blur-xl bg-white/80 dark:bg-[#0f0f0f]/80 pt-[env(safe-area-inset-top)]"
       role="banner"
       aria-label="Cabecera de sesión activa"
     >

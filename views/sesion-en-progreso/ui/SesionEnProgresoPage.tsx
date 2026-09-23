@@ -127,7 +127,7 @@ export const SesionEnProgresoPage = () => {
   const [draftRestaurado, setDraftRestaurado] = useState(false);
   const [tabActiva, setTabActiva] = useState<TabId>("plan");
   const [camaraAbierta, setCamaraAbierta] = useState(true);
-  const [mobileCameraOpen, setMobileCameraOpen] = useState(false);
+  const [mobileCameraOpen, setMobileCameraOpen] = useState(true);
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
