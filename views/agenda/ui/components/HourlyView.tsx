@@ -43,16 +43,10 @@ export function HourlyView({
       <div className="overflow-y-auto max-h-[600px] custom-scrollbar">
         {hours.map((hour) => {
           const ampm = hour >= 12 ? "PM" : "AM";
-          const displayHour = hour > 12 ? hour - 12 : hour;
+          const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+          // s.time viene en "HH:MM" (24h) — comparamos directamente
           const sessionsAtHour = getSessionsForSelectedDate().filter((s) => {
-            const sHour = parseInt(s.time.split(":")[0]);
-            const sAmpm = s.time.split(" ")[1];
-            const normalizedSHour =
-              sAmpm === "PM" && sHour !== 12
-                ? sHour + 12
-                : sAmpm === "AM" && sHour === 12
-                  ? 0
-                  : sHour;
+            const normalizedSHour = parseInt(s.time.split(":")[0], 10);
             return normalizedSHour === hour;
           });
 

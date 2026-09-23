@@ -40,7 +40,11 @@ export function InterventionPlanForm({
   });
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Nuevo Plan de Intervención">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Crear Plan de Intervención"
+    >
       <form
         onSubmit={handleSubmit((data) => onSubmit(data))}
         className="space-y-6"

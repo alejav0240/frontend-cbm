@@ -9,6 +9,7 @@ export const OBTENER_SESIONES = gql`
     $therapistId: ID
     $dateFrom: Date
     $dateTo: Date
+    $includeNoDate: Boolean
     $page: Int
     $pageSize: Int
     $byCycles: Boolean
@@ -22,6 +23,7 @@ export const OBTENER_SESIONES = gql`
       sessionType: $sessionType
       dateFrom: $dateFrom
       dateTo: $dateTo
+      includeNoDate: $includeNoDate
       byCycles: $byCycles
       page: $page
       pageSize: $pageSize
@@ -33,6 +35,7 @@ export const OBTENER_SESIONES = gql`
       totalPages
       sessions {
         id
+        databaseId
         fechaCreacion: createdAt
         duracionMinutos: durationMinutes
         numeroCiclo: cycleNumber

@@ -69,7 +69,7 @@ export function FormNuevaCita({
       therapistId: editingSession?.therapistId || "",
       sessionDate: defaultDate || editingSession?.date || today,
       sessionTime: defaultTime,
-      sessionType: editingSession?.type || "INDIVIDUAL",
+      sessionType: editingSession?.type || "individual",
       durationMinutes:
         editingSession?.durationMinutes ||
         parseDuration(editingSession?.duration || "") ||
@@ -120,7 +120,7 @@ export function FormNuevaCita({
 
   const handleFormSubmit = async (data: DatosCita) => {
     try {
-      const dateTime = `${data.sessionDate}T${data.sessionTime}:00`;
+      const dateTime = `${data.sessionDate}T${data.sessionTime}:00-04:00`;
       await onSubmit({ ...data, sessionDate: dateTime });
     } catch {
       toast.error(
@@ -225,8 +225,8 @@ export function FormNuevaCita({
             {...register("sessionType")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
           >
-            <option value="INDIVIDUAL">Individual</option>
-            <option value="GROUP">Grupal</option>
+            <option value="individual">Individual</option>
+            <option value="group">Grupal</option>
           </select>
           {errors.sessionType && (
             <p className="text-xs text-red-500">{errors.sessionType.message}</p>

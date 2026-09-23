@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useObtenerProgresoEscala } from "@/entities/paciente/api/useObtenerProgresoEscala";
 import AnalisDemuca from "@/entities/paciente/ui/AnalisDemuca";
+import { AnalisisIndividualPaciente } from "@/entities/paciente/ui/AnalisisIndividualPaciente";
 import { HistorialSesiones } from "@/entities/sesion/ui/HistorialSesiones";
 import type { SessionType } from "@/entities/sesion/ui/SessionCard";
 import { useObtenerProgresoSubEscala } from "@/entities/paciente/api/useObtenerProgresoSubEscala";
@@ -637,21 +638,16 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
           id="expediente-panel-analisis"
           role="tabpanel"
           aria-labelledby="expediente-tab-analisis"
-          className="space-y-8"
+          className="space-y-6"
         >
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500">
-                <Search size={20} />
-              </div>
-              <h2 className="text-2xl font-bold dark:text-white serif">
-                Análisis Inteligente DEMUCA
-                <span className="text-purple-500 italic"> General</span>
-              </h2>
-            </div>
-            <AnalisDemuca dataDemuca={dataDemuca ?? []} />
-          </div>
-          <GraficoEvolucion progressData={datosEscalas} />
+          {paciente && (
+            <AnalisisIndividualPaciente
+              paciente={paciente}
+              dataDemuca={dataDemuca ?? []}
+              datosEscalas={datosEscalas}
+              sesionesCount={sesionesCompletas?.length || sesiones?.length || 0}
+            />
+          )}
         </div>
       )}
 

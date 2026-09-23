@@ -190,12 +190,12 @@ export const InstitucionesPage = () => {
     }) => {
       if (!grupoSeleccionadoId) return;
       try {
-        const sessionDate = `${data.date}T${data.time}:00`;
+        const sessionDate = `${data.date}T${data.time}:00-04:00`;
         await crearSesionMut({
           variables: {
             therapistId: data.therapistId,
             sessionDate,
-            sessionType: "GROUP",
+            sessionType: "group",
             groupId: grupoSeleccionadoId,
             notes: data.notes,
           },

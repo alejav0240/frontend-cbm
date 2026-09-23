@@ -2,6 +2,24 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Allow 127.0.0.1 for local HMR cross-origin requests
+  allowedDevOrigins: ["127.0.0.1", "localhost:3000"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "1drv.ms",
+      },
+      {
+        protocol: "https",
+        hostname: "onedrive.live.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.sharepoint.com",
+      },
+    ],
+  },
   experimental: {
     optimizePackageImports: [
       "lucide-react",

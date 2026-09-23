@@ -31,7 +31,6 @@ export function InterventionPlanCard({
   onDeleteStep,
   onToggleStepCompletion,
 }: InterventionPlanCardProps) {
-  console.log("Rendering InterventionPlanCard for plan:", plan);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

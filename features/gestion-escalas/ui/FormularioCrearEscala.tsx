@@ -171,13 +171,14 @@ export function FormularioCrearEscala({
                   />
                   <input
                     type="number"
-                    value={newSubscale.maxScore}
-                    onChange={(e) =>
+                    value={Number.isNaN(newSubscale.maxScore) ? "" : newSubscale.maxScore}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
                       setNewSubscale({
                         ...newSubscale,
-                        maxScore: parseInt(e.target.value),
-                      })
-                    }
+                        maxScore: Number.isNaN(val) ? 0 : val,
+                      });
+                    }}
                     placeholder="Puntaje Máx"
                     className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus-visible:border-[#008080] outline-none text-xs dark:text-white"
                   />
@@ -259,13 +260,14 @@ export function FormularioCrearEscala({
                   />
                   <input
                     type="number"
-                    value={newValue.value}
-                    onChange={(e) =>
+                    value={Number.isNaN(newValue.value) ? "" : newValue.value}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
                       setNewValue({
                         ...newValue,
-                        value: parseInt(e.target.value),
-                      })
-                    }
+                        value: Number.isNaN(val) ? 0 : val,
+                      });
+                    }}
                     placeholder="Valor numérico"
                     className="w-full px-4 py-2 bg-white dark:bg-white/5 rounded-lg border-transparent focus-visible:border-[#008080] outline-none text-xs dark:text-white"
                   />

@@ -58,14 +58,15 @@ export const AgendaPage = () => {
 
   const hours = Array.from({ length: 13 }, (_, i) => i + 8);
 
-  const { sesiones, refetch } = useAgendaSessions({
+  const { sesiones, sesionesDia, sesionesSinFecha, refetch } = useAgendaSessions({
     month: selectedDate,
+    selectedDate,
   });
 
   const { crearSesion } = useCrearSesionAgenda();
   const { actualizarSesion } = useActualizarSesion();
 
-  const sessions = sesiones;
+  const sessions = sesionesDia;
   const filteredSessions = sesiones;
 
   const getSessionsForDay = useCallback(
@@ -78,13 +79,10 @@ export const AgendaPage = () => {
     [filteredSessions, selectedDate],
   );
 
+  // Para las vistas hourly/therapist usamos la query dedicada al día seleccionado
   const getSessionsForSelectedDate = useCallback(() => {
-    const year = selectedDate.getFullYear();
-    const month = (selectedDate.getMonth() + 1).toString().padStart(2, "0");
-    const day = selectedDate.getDate().toString().padStart(2, "0");
-    const dateStr = `${year}-${month}-${day}`;
-    return filteredSessions.filter((s) => s.date === dateStr);
-  }, [filteredSessions, selectedDate]);
+    return sesionesDia;
+  }, [sesionesDia]);
 
   const onSessionClick = useCallback((session: SesionAgenda) => {
     setSelectedSession(session);
@@ -236,7 +234,7 @@ export const AgendaPage = () => {
         await crearSesion({
           patientId: "",
           therapistId: data.testTherapist,
-          sessionDate: `${data.testDate}T${data.testTime}:00`,
+          sessionDate: `${data.testDate}T${data.testTime}:00-04:00`,
           sessionType: data.testType === "Grupal" ? "GROUP" : "INDIVIDUAL",
           durationMinutes: 45,
           notes: `Sesión de prueba — Paciente: ${data.testPatientName}, Tel: ${data.testFatherPhone}`,
@@ -280,14 +278,14 @@ export const AgendaPage = () => {
         }}
       />
       <div
-        className={`flex flex-col lg:flex-row gap-8 ${viewMode === "calendar" ? "block" : ""}`}
+        className={`flex flex-col lg:flex-row gap-8`}
       >
-        {viewMode !== "calendar" && (
-          <AgendaSidebar
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-          />
-        )}
+        <AgendaSidebar
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+          sesionesSinFecha={sesionesSinFecha}
+          onSessionClick={onSessionClick}
+        />
         <div className="flex-1 min-w-0">
           <AnimatePresence mode="wait">
             {viewMode === "calendar" ? (

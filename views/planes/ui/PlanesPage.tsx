@@ -2,11 +2,13 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { Search, Loader2, ClipboardList } from "lucide-react";
+import { Loader2, ClipboardList } from "lucide-react";
 import { InterventionPlanHeader } from "./components/InterventionPlanHeader";
 import { InterventionPlanCard } from "./components/InterventionPlanCard";
 import { InterventionPlanForm } from "./components/InterventionPlanForm";
 import { StepFormModal } from "./components/StepFormModal";
+import { InterventionPlanFilters } from "./components/InterventionPlanFilters";
+import { PlanExportModal } from "./components/PlanExportModal";
 import {
   usePlanesTratamiento,
   useCrearPlan,
@@ -44,6 +46,8 @@ function mapPasos(pasos: PasoPlan[]): PasoTarjeta[] {
 
 export const PlanesPage = () => {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Todos");
+  const [patientFilter, setPatientFilter] = useState("Todos");
   const [page, setPage] = useState(1);
   const busquedaDebounced = useDebounce(search, 500);
 
@@ -52,6 +56,7 @@ export const PlanesPage = () => {
       pagina: page,
       pageSize: 10,
       busqueda: busquedaDebounced || undefined,
+      pacienteId: patientFilter !== "Todos" ? patientFilter : undefined,
     });
 
   const { usuario } = useAuthStore();
@@ -68,36 +73,49 @@ export const PlanesPage = () => {
   const [showStepModal, setShowStepModal] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [editingStep, setEditingStep] = useState<PasoTarjeta | null>(null);
+  const [planToExport, setPlanToExport] = useState<PlanTarjeta | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{
     type: "plan" | "step";
     id: string;
   } | null>(null);
 
-  const cards = useMemo<PlanTarjeta[]>(
+  const rawCards = useMemo<PlanTarjeta[]>(
     () =>
-      planes.map((plan) => ({
-        ...plan,
-        patientName: plan.paciente.fullName,
-        objective: plan.objetivoPrincipal,
-        progress: plan.porcentajeProgreso,
-        status:
-          plan.estado === "ACTIVE"
-            ? "Activo"
-            : plan.estado === "COMPLETED"
-              ? "Finalizado"
-              : (plan.estado ?? "Activo"),
-        steps: mapPasos(plan.pasos ?? []),
-      })),
+      planes.map((plan) => {
+        const estadoFormateado =
+          plan.porcentajeProgreso === 100 || plan.estado === "COMPLETED" || plan.estado === "Finalizado"
+            ? "Finalizado"
+            : "En curso";
+        return {
+          ...plan,
+          patientName: plan.paciente?.fullName ?? "Paciente",
+          objective: plan.objetivoPrincipal,
+          progress: plan.porcentajeProgreso,
+          status: estadoFormateado,
+          steps: mapPasos(plan.pasos ?? []),
+        };
+      }),
     [planes],
   );
 
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearch(e.target.value);
-      setPage(1);
-    },
-    [],
-  );
+  const cards = useMemo(() => {
+    if (statusFilter === "Todos") return rawCards;
+    return rawCards.filter((c) => c.status === statusFilter);
+  }, [rawCards, statusFilter]);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
+
+  const handleStatusChange = useCallback((status: string) => {
+    setStatusFilter(status);
+  }, []);
+
+  const handlePatientChange = useCallback((patientId: string) => {
+    setPatientFilter(patientId);
+    setPage(1);
+  }, []);
 
   const handleCreatePlan = useCallback(
     async (data: DatosFormularioPlan) => {
@@ -201,19 +219,16 @@ export const PlanesPage = () => {
     <div className="space-y-8">
       <InterventionPlanHeader onNewPlan={() => setShowCreateModal(true)} />
 
-      <div className="relative">
-        <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-          size={20}
-        />
-        <input
-          type="text"
-          value={search}
-          onChange={handleSearchChange}
-          placeholder="Buscar por objetivo o paciente..."
-          className="w-full pl-12 pr-4 py-3 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
-        />
-      </div>
+      <InterventionPlanFilters
+        search={search}
+        onSearchChange={handleSearchChange}
+        statusFilter={statusFilter}
+        onStatusChange={handleStatusChange}
+        patientFilter={patientFilter}
+        onPatientChange={handlePatientChange}
+        patientOptions={patientOptions}
+        onSearchPatient={onSearchPatient}
+      />
 
       {cards.length === 0 ? (
         <div className="bg-white dark:bg-[#111] rounded-[32px] border border-gray-200 dark:border-white/5 p-12 text-center">
@@ -221,18 +236,23 @@ export const PlanesPage = () => {
             <ClipboardList size={40} />
           </div>
           <h2 className="text-xl font-bold dark:text-white mb-2">
-            {search ? "Sin resultados" : "Planes de Intervención"}
+            {search || statusFilter !== "Todos" || patientFilter !== "Todos"
+              ? "Sin resultados"
+              : "Planes de Intervención"}
           </h2>
           <p className="text-gray-400 max-w-md mx-auto">
-            {search
-              ? `No se encontraron planes que coincidan con "${search}"`
+            {search || statusFilter !== "Todos" || patientFilter !== "Todos"
+              ? "No se encontraron planes que coincidan con los filtros seleccionados."
               : "Crea el primer plan de intervención para comenzar."}
           </p>
         </div>
       ) : (
         <>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {total} plan{total !== 1 ? "es" : ""} en total
+            {cards.length} plan{cards.length !== 1 ? "es" : ""}{" "}
+            {statusFilter !== "Todos" || patientFilter !== "Todos"
+              ? "filtrados"
+              : `de ${total} en total`}
           </p>
 
           <div className="space-y-6">
@@ -245,7 +265,7 @@ export const PlanesPage = () => {
                 onToggleExpand={() =>
                   setExpandedPlanId(expandedPlanId === plan.id ? null : plan.id)
                 }
-                onExport={() => toast.success("Exportación iniciada")}
+                onExport={() => setPlanToExport(plan)}
                 onDelete={() => setDeleteConfirm({ type: "plan", id: plan.id })}
                 onAddStep={() => handleAddStep(plan.id)}
                 onEditStep={(step) => handleEditStep(plan.id, step)}
@@ -292,6 +312,12 @@ export const PlanesPage = () => {
         onSubmit={handleCreateStep}
         editingStepId={editingStep?.id ?? null}
         initialData={editingStep}
+      />
+
+      <PlanExportModal
+        isOpen={!!planToExport}
+        onClose={() => setPlanToExport(null)}
+        plan={planToExport}
       />
 
       <ConfirmModal

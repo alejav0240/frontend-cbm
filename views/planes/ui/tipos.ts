@@ -17,5 +17,7 @@ export interface PlanTarjeta {
   objective: string;
   progress: number;
   status: string;
+  fechaInicio?: string;
+  fechaFin?: string;
   steps: PasoTarjeta[];
 }
