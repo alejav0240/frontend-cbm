@@ -125,6 +125,11 @@ export function SearchableSelect<T extends SelectOption>({
     ? getLabel(selectedOption)
     : lastKnownLabel;
 
+  const notificarCambio = (nextValue: string) => {
+    onChange(nextValue);
+    triggerRef.current?.dispatchEvent(new Event("change", { bubbles: true }));
+  };
+
   const filteredOptions = React.useMemo(
     () =>
       (options || []).filter((opt) =>
@@ -181,7 +186,7 @@ export function SearchableSelect<T extends SelectOption>({
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     e.stopPropagation();
-                    onChange("");
+                    notificarCambio("");
                   }
                 }}
                 className="p-1 hover:bg-gray-200 dark:hover:bg-white/10 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors cursor-pointer"
@@ -274,14 +279,14 @@ export function SearchableSelect<T extends SelectOption>({
                               aria-selected={isSelected}
                               tabIndex={0}
                               onClick={() => {
-                                onChange(optValue);
+                                notificarCambio(optValue);
                                 setIsOpen(false);
                                 setSearchTerm("");
                               }}
                               onKeyDown={(e) => {
                                 if (e.key === "Enter" || e.key === " ") {
                                   e.preventDefault();
-                                  onChange(optValue);
+                                  notificarCambio(optValue);
                                   setIsOpen(false);
                                   setSearchTerm("");
                                 }

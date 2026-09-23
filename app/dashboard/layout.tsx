@@ -11,6 +11,7 @@ import { esTutor } from "@/shared/lib/permissions/permissions.config";
 import LoadingScreen from "@/shared/ui/LoadingScreen";
 import { Sidebar, Topbar } from "@/widgets/navegacion";
 import { reanudarSubidasPendientes } from "@/features/sesion-en-progreso/model/colaSubida";
+import { OnboardingTour } from "@/shared/lib/onboarding/OnboardingTour";
 
 export default function DashboardLayout({
   children,
@@ -63,12 +64,19 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-background flex transition-colors duration-500">
-      <Sidebar />
+      <div data-onboarding-sidebar>
+        <Sidebar />
+      </div>
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <Topbar />
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-          <div className="max-w-7xl mx-auto">{children}</div>
+        <div data-onboarding-topbar>
+          <Topbar />
         </div>
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+          <div data-onboarding-page className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </div>
+        <OnboardingTour />
       </main>
     </div>
   );

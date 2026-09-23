@@ -25,9 +25,11 @@ export const FiltrarPacientes = ({
   alCambiarEstado,
 }: FiltrarPacientesProps) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
+    <div data-onboarding-filters="" className="flex flex-col sm:flex-row gap-4">
       <div className="relative flex-1 group">
-        <label htmlFor="search-pacientes" className="sr-only">Buscar pacientes</label>
+        <label htmlFor="search-pacientes" className="sr-only">
+          Buscar pacientes
+        </label>
         <Search
           className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#008080] transition-colors"
           size={18}
@@ -35,6 +37,7 @@ export const FiltrarPacientes = ({
         <input
           id="search-pacientes"
           type="text"
+          data-onboarding-search=""
           placeholder="Buscar por nombre o carnet..."
           value={terminoBusqueda}
           onChange={(e) => alCambiarBusqueda(e.target.value)}

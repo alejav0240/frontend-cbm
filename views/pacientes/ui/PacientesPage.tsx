@@ -91,7 +91,7 @@ export const PacientesPage = () => {
         const uploadFormData = new FormData();
         uploadFormData.append("file", formData.photo);
 
-        const uploadResponse = await fetch("/api/upload", {
+        const uploadResponse = await fetch("/api/upload/foto", {
           method: "POST",
           body: uploadFormData,
         });

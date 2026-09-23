@@ -11,8 +11,14 @@ interface FormsTabsProps {
 
 export function FormsTabs({ activeTab, onTabChange }: FormsTabsProps) {
   return (
-    <div className="flex gap-2 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl w-fit">
+    <div
+      data-onboarding-tabs=""
+      role="tablist"
+      className="flex gap-2 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl w-fit"
+    >
       <button
+        role="tab"
+        aria-selected={activeTab === "templates"}
         onClick={() => onTabChange("templates")}
         className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
           activeTab === "templates"
@@ -23,6 +29,8 @@ export function FormsTabs({ activeTab, onTabChange }: FormsTabsProps) {
         Plantillas
       </button>
       <button
+        role="tab"
+        aria-selected={activeTab === "assignments"}
         onClick={() => onTabChange("assignments")}
         className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
           activeTab === "assignments"
@@ -33,6 +41,8 @@ export function FormsTabs({ activeTab, onTabChange }: FormsTabsProps) {
         Asignaciones
       </button>
       <button
+        role="tab"
+        aria-selected={activeTab === "responses"}
         onClick={() => onTabChange("responses")}
         className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
           activeTab === "responses"

@@ -31,20 +31,30 @@ export function MarketingTabs({
 }: MarketingTabsProps) {
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-center justify-between bg-white dark:bg-white/2 p-2 rounded-[28px] border border-gray-200 dark:border-white/5">
-      <div className="flex p-1 rounded-2xl w-full lg:w-auto">
+      <div
+        data-onboarding-tabs=""
+        role="tablist"
+        className="flex p-1 rounded-2xl w-full lg:w-auto"
+      >
         <button
+          role="tab"
+          aria-selected={activeTab === "dashboard"}
           onClick={() => setActiveTab("dashboard")}
           className={`flex-1 lg:flex-none px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === "dashboard" ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
         >
           Dashboard
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === "campaigns"}
           onClick={() => setActiveTab("campaigns")}
           className={`flex-1 lg:flex-none px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === "campaigns" ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
         >
           Campañas
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === "leads"}
           onClick={() => setActiveTab("leads")}
           className={`flex-1 lg:flex-none px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === "leads" ? "bg-[#008080] text-white shadow-lg shadow-[#008080]/20" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
         >
@@ -52,7 +62,10 @@ export function MarketingTabs({
         </button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-center">
+      <div
+        data-onboarding-filters=""
+        className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-center"
+      >
         <div className="relative w-full sm:w-64 group">
           <Search
             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#008080] transition-colors"
@@ -60,6 +73,7 @@ export function MarketingTabs({
           />
           <input
             type="text"
+            data-onboarding-search=""
             placeholder="Buscar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

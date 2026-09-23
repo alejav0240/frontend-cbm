@@ -13,9 +13,11 @@ export function UsersFilters({
   onSearchChange,
 }: UsersFiltersProps) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
+    <div data-onboarding-filters="" className="flex flex-col sm:flex-row gap-4">
       <div className="relative flex-1 group">
-        <label htmlFor="search-usuarios" className="sr-only">Buscar usuarios</label>
+        <label htmlFor="search-usuarios" className="sr-only">
+          Buscar usuarios
+        </label>
         <Search
           className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#008080] transition-colors"
           size={18}
@@ -23,6 +25,7 @@ export function UsersFilters({
         <input
           id="search-usuarios"
           type="text"
+          data-onboarding-search=""
           placeholder="Buscar usuarios por nombre, carnet o email..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}

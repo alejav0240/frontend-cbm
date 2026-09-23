@@ -38,6 +38,7 @@ export function PaymentsHeader({
           <span className="hidden sm:inline">Exportar</span>
         </button>
         <button
+          data-onboarding-action=""
           onClick={onAction}
           className="bg-[#008080] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#006666] transition-all flex items-center justify-center gap-2 shadow-lg"
         >

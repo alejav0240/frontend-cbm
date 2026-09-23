@@ -221,7 +221,10 @@ export const PagosPage = () => {
         <>
           <PaymentsStats payments={pagos} />
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div
+            data-onboarding-filters=""
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+          >
             <div className="flex gap-4 flex-wrap">
               {["Todos", "PAID", "PARTIAL", "PENDING"].map((estado) => (
                 <button

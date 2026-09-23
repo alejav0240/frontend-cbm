@@ -1,6 +1,179 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Driver.js comparte el lenguaje visual de la aplicación y conserva legibilidad en ambos temas. */
+.driverjs-theme {
+  --driverjs-theme-color: #008080;
+  --driverjs-popover-background: var(--background);
+  border-radius: 1rem;
+  background-color: var(--background);
+  color: var(--foreground);
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  box-shadow: 0 18px 45px rgb(0 0 0 / 18%), 0 0 0 1px rgb(255 255 255 / 6%);
+}
+
+.driverjs-theme .driver-popover-title {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.driverjs-theme .driver-popover-description {
+  color: color-mix(in srgb, var(--foreground) 72%, transparent);
+  line-height: 1.5;
+}
+
+.driverjs-theme .driver-popover-progress-text {
+  color: color-mix(in srgb, var(--foreground) 58%, transparent);
+}
+
+.driverjs-theme .driver-popover-footer-btn {
+  background-color: color-mix(in srgb, var(--foreground) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--foreground) 18%, transparent);
+  color: var(--foreground);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.driverjs-theme .driver-popover-footer-btn:hover,
+.driverjs-theme .driver-popover-footer-btn:focus-visible {
+  background-color: color-mix(in srgb, var(--driverjs-theme-color) 14%, transparent);
+  border-color: color-mix(in srgb, var(--driverjs-theme-color) 55%, transparent);
+  color: var(--driverjs-theme-color);
+}
+
+.driverjs-theme .driver-popover-footer-btn:active {
+  transform: translateY(1px);
+}
+
+.driverjs-theme button {
+  border-radius: 0.65rem;
+  text-shadow: none;
+}
+
+.driverjs-theme .driver-popover-next-btn {
+  background-color: #008080;
+  border-color: #008080;
+  color: white;
+}
+
+.driverjs-theme .driver-popover-next-btn:hover,
+.driverjs-theme .driver-popover-next-btn:focus-visible {
+  background-color: #006666;
+  border-color: #006666;
+  color: white;
+}
+
+.driverjs-theme .driver-popover-close-btn {
+  background: transparent;
+  color: color-mix(in srgb, var(--foreground) 52%, transparent);
+}
+
+.driverjs-theme .driver-popover-close-btn:hover,
+.driverjs-theme .driver-popover-close-btn:focus-visible {
+  background: color-mix(in srgb, var(--driverjs-theme-color) 12%, transparent);
+  color: var(--driverjs-theme-color);
+}
+
+.driverjs-theme .driver-popover-arrow {
+  border-color: var(--driverjs-popover-background);
+}
+
+.driverjs-theme .driver-popover-arrow-side-left {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+  border-left-color: var(--driverjs-popover-background);
+}
+
+.driverjs-theme .driver-popover-arrow-side-right {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-right-color: var(--driverjs-popover-background);
+}
+
+.driverjs-theme .driver-popover-arrow-side-top {
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-top-color: var(--driverjs-popover-background);
+}
+
+.driverjs-theme .driver-popover-arrow-side-bottom {
+  border-right-color: transparent;
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-bottom-color: var(--driverjs-popover-background);
+}
+
+.dark .driverjs-theme {
+  --driverjs-theme-color: #39d6d0;
+  --driverjs-theme-muted: #a8c4c4;
+  --driverjs-popover-background: #172f2f;
+  background: #172f2f;
+  color: #efffff;
+  border-color: #2d5a59;
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 48%),
+    0 0 0 1px rgb(105 226 220 / 10%);
+}
+
+.dark .driverjs-theme .driver-popover-title {
+  color: #efffff;
+}
+
+.dark .driverjs-theme .driver-popover-description {
+  color: #c4dddd;
+}
+
+.dark .driverjs-theme .driver-popover-progress-text {
+  color: var(--driverjs-theme-muted);
+}
+
+.dark .driverjs-theme .driver-popover-footer-btn {
+  background: #203d3d;
+  border-color: #3c6867;
+  color: #d7eeee;
+}
+
+.dark .driverjs-theme .driver-popover-footer-btn:hover,
+.dark .driverjs-theme .driver-popover-footer-btn:focus-visible {
+  background: #285252;
+  border-color: var(--driverjs-theme-color);
+  color: #efffff;
+}
+
+.dark .driverjs-theme .driver-popover-next-btn {
+  background: #14aaa5;
+  border-color: #14aaa5;
+  color: #062322;
+  font-weight: 700;
+}
+
+.dark .driverjs-theme .driver-popover-next-btn:hover,
+.dark .driverjs-theme .driver-popover-next-btn:focus-visible {
+  background: #39d6d0;
+  border-color: #39d6d0;
+  color: #062322;
+}
+
+.dark .driverjs-theme .driver-popover-close-btn {
+  color: #a8c4c4;
+}
+
+.dark .driverjs-theme .driver-popover-close-btn:hover,
+.dark .driverjs-theme .driver-popover-close-btn:focus-visible {
+  background: rgb(57 214 208 / 12%);
+  color: #efffff;
+}
+
+.dark .driverjs-theme .driver-popover-arrow {
+  border-color: #172f2f;
+}
+
 /* ===== TEMA Y VARIABLES ===== */
 @theme {
   --variant-dark: .dark &;

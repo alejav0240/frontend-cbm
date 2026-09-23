@@ -36,6 +36,7 @@ export function SearchInput({
       <input
         id={id}
         type="text"
+        data-onboarding-search=""
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
