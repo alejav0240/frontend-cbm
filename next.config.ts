@@ -4,6 +4,19 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // Allow 127.0.0.1 for local HMR cross-origin requests
   allowedDevOrigins: ["127.0.0.1", "localhost:3000"],
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Permissions-Policy",
+            value: "camera=(self), microphone=(self)",
+          },
+        ],
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

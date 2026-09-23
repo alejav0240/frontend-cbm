@@ -16,6 +16,8 @@ export const usePagos = (filtros: PagoFiltros) => {
         page: filtros.pagina,
         pageSize: filtros.pageSize,
       },
+      skip: filtros.skip,
+      nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     },
   );

@@ -1,6 +1,12 @@
 export function alertarFinSesion() {
   try {
-    const ctx = new AudioContext();
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    void ctx.resume();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = "sine";
@@ -13,6 +19,7 @@ export function alertarFinSesion() {
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.6);
+    osc.addEventListener("ended", () => void ctx.close());
   } catch {}
 
   if (typeof navigator !== "undefined" && navigator.vibrate) {

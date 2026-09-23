@@ -26,6 +26,7 @@ interface CameraPreviewProps {
   selectedDeviceId?: string;
   switchCamera?: (deviceId: string) => void;
   startRecording?: () => void;
+  recordingError?: string | null;
   onClose?: () => void;
   isMobile?: boolean;
 }
@@ -38,6 +39,7 @@ export function VistaCamara({
   selectedDeviceId = "",
   switchCamera = () => {},
   startRecording = () => {},
+  recordingError = null,
   onClose,
   isMobile = false,
 }: CameraPreviewProps) {
@@ -48,6 +50,7 @@ export function VistaCamara({
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const lastMeterUpdateRef = useRef(0);
 
   // Vincular stream al elemento de video
   useEffect(() => {
@@ -67,7 +70,10 @@ export function VistaCamara({
     if (audioTracks.length === 0) return;
 
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
       const audioCtx = new AudioCtx();
       audioContextRef.current = audioCtx;
 
@@ -83,6 +89,12 @@ export function VistaCamara({
       const dataArray = new Uint8Array(bufferLength);
 
       const updateMeter = () => {
+        const now = performance.now();
+        if (now - lastMeterUpdateRef.current < 120) {
+          animFrameRef.current = requestAnimationFrame(updateMeter);
+          return;
+        }
+        lastMeterUpdateRef.current = now;
         analyser.getByteFrequencyData(dataArray);
         let sum = 0;
         for (let i = 0; i < bufferLength; i++) {
@@ -94,6 +106,7 @@ export function VistaCamara({
         animFrameRef.current = requestAnimationFrame(updateMeter);
       };
 
+      void audioCtx.resume();
       animFrameRef.current = requestAnimationFrame(updateMeter);
     } catch (err) {
       console.warn("Audio meter no disponible:", err);
@@ -101,7 +114,10 @@ export function VistaCamara({
 
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+      if (
+        audioContextRef.current &&
+        audioContextRef.current.state !== "closed"
+      ) {
         void audioContextRef.current.close();
       }
     };
@@ -136,10 +152,11 @@ export function VistaCamara({
   }, [videoRef]);
 
   return (
-    <div className={`w-full h-full flex flex-col ${isMobile ? "p-2 sm:p-3" : "p-3 sm:p-5 lg:p-6"}`}>
+    <div
+      className={`w-full h-full flex flex-col ${isMobile ? "p-2 sm:p-3" : "p-3 sm:p-5 lg:p-6"}`}
+    >
       {/* Marco estilizado de alta gama */}
       <div className="relative flex-1 w-full h-full rounded-2xl sm:rounded-3xl lg:rounded-[32px] overflow-hidden bg-gradient-to-b from-zinc-900 via-zinc-950 to-black border border-white/10 shadow-2xl shadow-black/40 flex flex-col">
-        
         {/* Glow sutil en esquinas cuando está grabando */}
         {isRecording && (
           <div className="absolute inset-0 pointer-events-none z-10 ring-1 ring-inset ring-red-500/30 rounded-2xl sm:rounded-3xl lg:rounded-[32px] transition-all" />
@@ -185,7 +202,12 @@ export function VistaCamara({
                 className="hidden xs:flex items-center gap-1 px-2 py-1 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md"
                 title={`Nivel de Micrófono: ${nivelAudio}%`}
               >
-                <Volume2 size={12} className={nivelAudio > 10 ? "text-teal-400" : "text-zinc-500"} />
+                <Volume2
+                  size={12}
+                  className={
+                    nivelAudio > 10 ? "text-teal-400" : "text-zinc-500"
+                  }
+                />
                 <div className="w-10 sm:w-14 h-1.5 bg-white/10 rounded-full overflow-hidden flex items-center p-0.5">
                   <div
                     className={`h-full rounded-full transition-all duration-75 ${
@@ -211,7 +233,11 @@ export function VistaCamara({
                   aria-label="Cambiar dispositivo de video"
                 >
                   {videoDevices.map((device, idx) => (
-                    <option key={device.deviceId} value={device.deviceId} className="bg-zinc-900 text-white">
+                    <option
+                      key={device.deviceId}
+                      value={device.deviceId}
+                      className="bg-zinc-900 text-white"
+                    >
                       Cámara {idx + 1}
                     </option>
                   ))}
@@ -229,29 +255,48 @@ export function VistaCamara({
                     ? "bg-teal-500/20 border-teal-500/40 text-teal-300"
                     : "bg-black/50 border-white/10 text-zinc-300 hover:text-white"
                 } backdrop-blur-md`}
-                title={espejo ? "Modo Espejo Activado" : "Modo Espejo Desactivado"}
+                title={
+                  espejo ? "Modo Espejo Activado" : "Modo Espejo Desactivado"
+                }
                 aria-label="Alternar modo espejo"
               >
-                <RefreshCw size={14} className={espejo ? "rotate-180 transition-transform" : "transition-transform"} />
+                <RefreshCw
+                  size={14}
+                  className={
+                    espejo
+                      ? "rotate-180 transition-transform"
+                      : "transition-transform"
+                  }
+                />
               </button>
             )}
 
             {/* Picture-in-Picture */}
-            {stream && typeof document !== "undefined" && document.pictureInPictureEnabled && (
-              <button
-                type="button"
-                onClick={togglePiP}
-                className={`p-1.5 sm:p-2 rounded-xl border transition-all ${
-                  esPiPActivo
-                    ? "bg-teal-500/20 border-teal-500/40 text-teal-300"
-                    : "bg-black/50 border-white/10 text-zinc-300 hover:text-white"
-                } backdrop-blur-md`}
-                title={esPiPActivo ? "Salir de Ventana Flotante (PiP)" : "Ventana Flotante (PiP)"}
-                aria-label="Alternar Picture in Picture"
-              >
-                {esPiPActivo ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-              </button>
-            )}
+            {stream &&
+              typeof document !== "undefined" &&
+              document.pictureInPictureEnabled && (
+                <button
+                  type="button"
+                  onClick={togglePiP}
+                  className={`p-1.5 sm:p-2 rounded-xl border transition-all ${
+                    esPiPActivo
+                      ? "bg-teal-500/20 border-teal-500/40 text-teal-300"
+                      : "bg-black/50 border-white/10 text-zinc-300 hover:text-white"
+                  } backdrop-blur-md`}
+                  title={
+                    esPiPActivo
+                      ? "Salir de Ventana Flotante (PiP)"
+                      : "Ventana Flotante (PiP)"
+                  }
+                  aria-label="Alternar Picture in Picture"
+                >
+                  {esPiPActivo ? (
+                    <Minimize2 size={14} />
+                  ) : (
+                    <Maximize2 size={14} />
+                  )}
+                </button>
+              )}
 
             {/* Botón cerrar/colapsar si se provee */}
             {onClose && (
@@ -283,7 +328,8 @@ export function VistaCamara({
             <div
               className="absolute inset-0 opacity-10"
               style={{
-                backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)",
+                backgroundImage:
+                  "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)",
                 backgroundSize: "24px 24px",
               }}
             />
@@ -305,7 +351,10 @@ export function VistaCamara({
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10">
               <div className="relative mb-4">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-zinc-800/80 border border-white/10 flex items-center justify-center text-zinc-400 shadow-xl shadow-black/50">
-                  <VideoOff size={28} className="sm:w-8 sm:h-8 text-teal-400/80" />
+                  <VideoOff
+                    size={28}
+                    className="sm:w-8 sm:h-8 text-teal-400/80"
+                  />
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-zinc-900 border border-white/15 flex items-center justify-center text-zinc-400">
                   <ShieldCheck size={12} className="text-teal-400" />
@@ -316,8 +365,18 @@ export function VistaCamara({
                 Transmisión Segura Desconectada
               </h4>
               <p className="text-xs text-zinc-400 max-w-xs mb-6 leading-relaxed">
-                Inicia la cámara del dispositivo para observar la sesión y grabar la interacción clínica.
+                Inicia la cámara del dispositivo para observar la sesión y
+                grabar la interacción clínica.
               </p>
+
+              {recordingError && (
+                <p
+                  role="alert"
+                  className="text-[11px] text-red-300 max-w-xs mb-4 leading-relaxed"
+                >
+                  {recordingError}
+                </p>
+              )}
 
               <button
                 type="button"
@@ -361,14 +420,16 @@ export function VistaCamara({
                     duration: 0.45 + (i % 4) * 0.08,
                     ease: "easeInOut",
                   }}
-                  className="w-0.5 sm:w-1 bg-gradient-to-t from-red-500 to-rose-400 rounded-full h-2 origin-bottom"
+                  className="w-0.5 sm:w-1 bg-gradient-to-t from-red-500 to-rose-400 rounded-full h-2 origin-bottom motion-reduce:animate-none"
                 />
               ))}
             </div>
           ) : stream ? (
             <div className="flex items-center gap-1.5 text-zinc-400 text-[10px]">
               <Activity size={12} className="text-teal-400 animate-pulse" />
-              <span className="font-mono text-[10px] text-zinc-300">Feed en tiempo real</span>
+              <span className="font-mono text-[10px] text-zinc-300">
+                Feed en tiempo real
+              </span>
             </div>
           ) : null}
         </div>
@@ -376,4 +437,3 @@ export function VistaCamara({
     </div>
   );
 }
-

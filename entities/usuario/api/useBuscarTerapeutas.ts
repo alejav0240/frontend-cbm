@@ -12,7 +12,7 @@ type Option = { label: string; value: string };
 export function useBuscarTerapeutas() {
   const [buscar, { loading, error }] = useLazyQuery<BuscarTerapeutasQuery>(
     BUSCAR_TERAPEUTAS,
-    { fetchPolicy: "network-only" },
+    { fetchPolicy: "no-cache" },
   );
 
   const [options, setOptions] = useState<Option[]>([]);
@@ -50,9 +50,14 @@ export function useBuscarTerapeutas() {
 
   const onSearch = useCallback(
     (term: string) => {
-      const normalizado = term.trim().length < MIN_CHARS ? "" : term.trim();
+      const normalizado = term.trim();
 
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (normalizado.length < MIN_CHARS) {
+        requestIdRef.current += 1;
+        setOptions([]);
+        return;
+      }
       debounceRef.current = setTimeout(() => {
         void ejecutarBusqueda(normalizado);
       }, DEBOUNCE_MS);

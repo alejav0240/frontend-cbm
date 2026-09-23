@@ -13,4 +13,5 @@ export interface GastoFiltros {
   pagina: number;
   pageSize: number;
   busqueda?: string;
+  skip?: boolean;
 }

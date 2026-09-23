@@ -55,7 +55,8 @@ export { isOnedriveConfigured };
 
 export const causaDe = (error: unknown): string => {
   const causa = (error as { cause?: unknown })?.cause;
-  if (causa instanceof Error && causa.message) return ` (causa: ${causa.message})`;
+  if (causa instanceof Error && causa.message)
+    return ` (causa: ${causa.message})`;
   return "";
 };
 
@@ -97,7 +98,8 @@ export const buildRecordingPath = (metadata: UploadMetadata) => {
     ? new Date(metadata.grabadoEn)
     : new Date();
   const safeDate = Number.isNaN(recordedAt.getTime()) ? new Date() : recordedAt;
-  const fileName = `${formatDateForFile(safeDate)}.webm`;
+  const extension = metadata.contentType.includes("mp4") ? "mp4" : "webm";
+  const fileName = `${formatDateForFile(safeDate)}.${extension}`;
 
   return posix.join(ROOT_FOLDER, patientFolder, cycleFolder, fileName);
 };
@@ -178,7 +180,8 @@ export const createShareLink = async (accessToken: string, itemId: string) => {
   return data.link?.webUrl ?? null;
 };
 
-export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export const delay = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 export const sendChunk = async (
   uploadUrl: string,
@@ -232,7 +235,11 @@ export const sendChunk = async (
 
 export const getAccessTokenAndSession = async (
   metadata: UploadMetadata,
-): Promise<{ accessToken: string; itemPath: string; session: UploadSession }> => {
+): Promise<{
+  accessToken: string;
+  itemPath: string;
+  session: UploadSession;
+}> => {
   const refreshToken = await fetchRefreshTokenFromBackend();
   if (!refreshToken) {
     throw new OneDriveNotConfiguredError("No hay refresh token de OneDrive");
@@ -495,12 +502,7 @@ export const saveLocal = async (
   relativePath: string,
   fallbackReason?: string,
 ): Promise<UploadResult> => {
-  const localPath = join(
-    process.cwd(),
-    "uploads",
-    "guardadas",
-    relativePath,
-  );
+  const localPath = join(process.cwd(), "uploads", "guardadas", relativePath);
   await mkdir(dirname(localPath), { recursive: true });
   await writeFile(localPath, body);
 

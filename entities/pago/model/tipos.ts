@@ -29,4 +29,5 @@ export interface PagoFiltros {
   busqueda?: string;
   pagina: number;
   pageSize: number;
+  skip?: boolean;
 }

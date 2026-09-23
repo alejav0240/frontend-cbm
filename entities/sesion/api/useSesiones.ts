@@ -29,6 +29,7 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
         search: filtros.busqueda || "",
       },
       skip: filtros.skip,
+      nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     },
   );

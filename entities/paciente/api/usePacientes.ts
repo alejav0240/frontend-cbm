@@ -17,6 +17,8 @@ export const usePacientes = (filtros?: PacienteFiltro) => {
             ? undefined
             : filtros?.status?.toLowerCase(),
       },
+      skip: filtros?.skip,
+      nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     },
   );

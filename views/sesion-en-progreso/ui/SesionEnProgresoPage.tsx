@@ -112,7 +112,8 @@ export const SesionEnProgresoPage = () => {
     !!sesion && isActive,
     sesion?.inicio ? new Date(sesion.inicio) : undefined,
   );
-  const grabacion = useGrabacion();
+  const grabacion = useGrabacion(sesion?.id);
+  const { estaGrabando, pausarGrabacion } = grabacion;
 
   const [notas, setNotas] = useState("");
   const [showFinishModal, setShowFinishModal] = useState(false);
@@ -136,6 +137,20 @@ export const SesionEnProgresoPage = () => {
     window.addEventListener("resize", checkIsDesktop);
     return () => window.removeEventListener("resize", checkIsDesktop);
   }, []);
+
+  // Safari pauses media capture when the tab is backgrounded or the screen locks.
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden" && estaGrabando) {
+        pausarGrabacion();
+        setIsActive(false);
+        toast.info("Grabación pausada mientras la pantalla está bloqueada.");
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
+  }, [estaGrabando, pausarGrabacion]);
   const alertaEnviadaRef = useRef(false);
   const mobileVideoRef = useRef<HTMLVideoElement>(null);
   const desktopVideoRef = useRef<HTMLVideoElement>(null);
@@ -161,11 +176,16 @@ export const SesionEnProgresoPage = () => {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed.notas !== undefined) setNotas(parsed.notas);
-          if (Array.isArray(parsed.completedSteps)) setCompletedSteps(parsed.completedSteps);
-          if (Array.isArray(parsed.selectedResources)) setSelectedResources(parsed.selectedResources);
-          if (Array.isArray(parsed.selectedScales)) setSelectedScales(parsed.selectedScales);
-          if (Array.isArray(parsed.selectedForms)) setSelectedForms(parsed.selectedForms);
-          if (parsed.formResponses && typeof parsed.formResponses === "object") setFormResponses(parsed.formResponses);
+          if (Array.isArray(parsed.completedSteps))
+            setCompletedSteps(parsed.completedSteps);
+          if (Array.isArray(parsed.selectedResources))
+            setSelectedResources(parsed.selectedResources);
+          if (Array.isArray(parsed.selectedScales))
+            setSelectedScales(parsed.selectedScales);
+          if (Array.isArray(parsed.selectedForms))
+            setSelectedForms(parsed.selectedForms);
+          if (parsed.formResponses && typeof parsed.formResponses === "object")
+            setFormResponses(parsed.formResponses);
           if (parsed.savedAt) setUltimoGuardado(new Date(parsed.savedAt));
           toast.info("Borrador de sesión recuperado automáticamente.");
         }
@@ -203,7 +223,16 @@ export const SesionEnProgresoPage = () => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [notas, completedSteps, selectedResources, selectedScales, selectedForms, formResponses, sesion?.id, draftRestaurado]);
+  }, [
+    notas,
+    completedSteps,
+    selectedResources,
+    selectedScales,
+    selectedForms,
+    formResponses,
+    sesion?.id,
+    draftRestaurado,
+  ]);
 
   // Sincronizar pausa de sesión con grabación
   const handleToggleActive = useCallback(
@@ -600,11 +629,13 @@ export const SesionEnProgresoPage = () => {
           addedAt: Date.now(),
         },
         (progreso) => {
-          const mb = Math.max(1, Math.round(progreso.bytesCargados / 1024 / 1024));
-          toast.loading(
-            `Subiendo la grabación (${mb} MB enviados)…`,
-            { id: toastId },
+          const mb = Math.max(
+            1,
+            Math.round(progreso.bytesCargados / 1024 / 1024),
           );
+          toast.loading(`Subiendo la grabación (${mb} MB enviados)…`, {
+            id: toastId,
+          });
         },
       ).then((resultado) => {
         toast.dismiss(toastId);
@@ -933,7 +964,7 @@ export const SesionEnProgresoPage = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-[100] bg-[#f8fafc] dark:bg-[#050505] flex flex-col"
+      className="fixed inset-0 z-[100] bg-[#f8fafc] dark:bg-[#050505] flex flex-col pb-[env(safe-area-inset-bottom)]"
     >
       <SessionHeader
         activeSession={activeSession}
@@ -983,6 +1014,7 @@ export const SesionEnProgresoPage = () => {
         overflow-y-auto
         lg:overflow-hidden
         overscroll-contain
+        min-h-0
     "
       >
         <motion.section
@@ -1021,6 +1053,7 @@ export const SesionEnProgresoPage = () => {
                 selectedDeviceId={grabacion.dispositivoSeleccionado}
                 switchCamera={grabacion.cambiarCamara}
                 startRecording={grabacion.iniciarGrabacion}
+                recordingError={grabacion.errorGrabacion}
                 onClose={() => setMobileCameraOpen(false)}
                 isMobile={true}
               />
@@ -1049,7 +1082,9 @@ export const SesionEnProgresoPage = () => {
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] text-teal-600 dark:text-teal-400">Expandir</span>
+                <span className="text-[11px] text-teal-600 dark:text-teal-400">
+                  Expandir
+                </span>
               </button>
             )}
           </div>
@@ -1072,6 +1107,7 @@ export const SesionEnProgresoPage = () => {
                 selectedDeviceId={grabacion.dispositivoSeleccionado}
                 switchCamera={grabacion.cambiarCamara}
                 startRecording={grabacion.iniciarGrabacion}
+                recordingError={grabacion.errorGrabacion}
                 onClose={() => setCamaraAbierta(false)}
               />
             ) : (

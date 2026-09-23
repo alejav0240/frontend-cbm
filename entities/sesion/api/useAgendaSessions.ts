@@ -6,8 +6,10 @@ import { ObtenerSesionesQuery } from "@/shared/api/generated/graphql";
 
 export interface UseAgendaSessionsProps {
   month: Date;
-  selectedDate?: Date;  // fecha seleccionada para las vistas por hora/terapeuta
+  selectedDate?: Date; // fecha seleccionada para las vistas por hora/terapeuta
   therapistId?: string;
+  range?: "month" | "today";
+  skip?: boolean;
 }
 
 function formatTime(isoString: string): string {
@@ -17,7 +19,7 @@ function formatTime(isoString: string): string {
     // Bolivia es UTC-4, mostramos la hora local del sistema
     // getUTCHours - 4 = hora Bolivia
     const utcH = date.getUTCHours();
-    const boliviaH = ((utcH - 4) + 24) % 24;
+    const boliviaH = (utcH - 4 + 24) % 24;
     const m = String(date.getUTCMinutes()).padStart(2, "0");
     return `${String(boliviaH).padStart(2, "0")}:${m}`;
   } catch {
@@ -30,7 +32,7 @@ function formatDate(isoString: string): string {
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return "";
     // Convertimos a hora Bolivia (UTC-4) para obtener el día correcto
-    const boliviaMs = date.getTime() - (4 * 60 * 60 * 1000);
+    const boliviaMs = date.getTime() - 4 * 60 * 60 * 1000;
     const boliviaDate = new Date(boliviaMs);
     const y = boliviaDate.getUTCFullYear();
     const m = String(boliviaDate.getUTCMonth() + 1).padStart(2, "0");
@@ -43,13 +45,19 @@ function formatDate(isoString: string): string {
 
 function mapStatus(status: string): string {
   switch (status) {
-    case "COMPLETA":   return "Completada";
-    case "AGENDADA":   return "Pendiente";
+    case "COMPLETA":
+      return "Completada";
+    case "AGENDADA":
+      return "Pendiente";
     case "CONFIRMA":
-    case "CONFIRMADA": return "Confirmada";
-    case "CANCELADA":  return "Cancelada";
-    case "REPROGRAMA": return "Reprogramada";
-    default:           return status;
+    case "CONFIRMADA":
+      return "Confirmada";
+    case "CANCELADA":
+      return "Cancelada";
+    case "REPROGRAMA":
+      return "Reprogramada";
+    default:
+      return status;
   }
 }
 
@@ -82,20 +90,30 @@ export function useAgendaSessions({
   month,
   selectedDate,
   therapistId,
+  range = "month",
+  skip = false,
 }: UseAgendaSessionsProps) {
+  const todayStr = useMemo(() => {
+    const year = month.getFullYear();
+    const monthNumber = String(month.getMonth() + 1).padStart(2, "0");
+    const day = String(month.getDate()).padStart(2, "0");
+    return `${year}-${monthNumber}-${day}`;
+  }, [month]);
 
   // ── Rango 3 meses: mes anterior, actual y siguiente ──────────────────────
   const dateFrom3m = useMemo(() => {
     // Primer día del mes anterior
+    if (range === "today") return todayStr;
     const d = new Date(Date.UTC(month.getFullYear(), month.getMonth() - 1, 1));
     return d.toISOString().split("T")[0];
-  }, [month]);
+  }, [month, range, todayStr]);
 
   const dateTo3m = useMemo(() => {
     // Último día del mes siguiente
+    if (range === "today") return todayStr;
     const d = new Date(Date.UTC(month.getFullYear(), month.getMonth() + 2, 0));
     return d.toISOString().split("T")[0];
-  }, [month]);
+  }, [month, range, todayStr]);
 
   // Query 1: sesiones con fecha en ventana de 3 meses (para calendario)
   const query3m = useQuery<ObtenerSesionesQuery>(OBTENER_SESIONES, {
@@ -105,9 +123,11 @@ export function useAgendaSessions({
       dateTo: dateTo3m,
       includeNoDate: false,
       page: 1,
-      pageSize: 500,
+      pageSize: range === "today" ? 50 : 500,
       byCycles: false,
     },
+    skip,
+    nextFetchPolicy: "cache-first",
     notifyOnNetworkStatusChange: true,
   });
 
@@ -120,6 +140,8 @@ export function useAgendaSessions({
       pageSize: 50,
       byCycles: false,
     },
+    skip: skip || range === "today",
+    nextFetchPolicy: "cache-first",
     notifyOnNetworkStatusChange: true,
   });
 
@@ -144,7 +166,8 @@ export function useAgendaSessions({
       pageSize: 100,
       byCycles: false,
     },
-    skip: !dateStr,
+    skip: skip || !dateStr || range === "today",
+    nextFetchPolicy: "cache-first",
     notifyOnNetworkStatusChange: true,
   });
 
@@ -159,8 +182,10 @@ export function useAgendaSessions({
         const d = new Date(s.fechaSesion as string);
         if (isNaN(d.getTime())) return false;
         // Comparamos en hora Bolivia (UTC-4)
-        const boliviaMs = d.getTime() - (4 * 60 * 60 * 1000);
+        const boliviaMs = d.getTime() - 4 * 60 * 60 * 1000;
         const boliviaDate = new Date(boliviaMs);
+        if (range === "today")
+          return formatDate(s.fechaSesion as string) === todayStr;
         return (
           boliviaDate.getUTCFullYear() === month.getFullYear() &&
           boliviaDate.getUTCMonth() === month.getMonth()
@@ -171,7 +196,7 @@ export function useAgendaSessions({
         const cmp = a.date.localeCompare(b.date);
         return cmp !== 0 ? cmp : a.time.localeCompare(b.time);
       });
-  }, [query3m.data, month]);
+  }, [query3m.data, month, range, todayStr]);
 
   // ── Todas las sesiones de los 3 meses (para HourlyView / TherapistView) ──
   // Incluye cualquier fecha del rango, no solo el mes actual
@@ -179,12 +204,10 @@ export function useAgendaSessions({
     const raw = (query3m.data?.sessions?.sessions ?? []).filter(
       (s): s is NonNullable<typeof s> => s !== null && !!s.fechaSesion,
     );
-    return raw
-      .map(mapToSesionAgenda)
-      .sort((a, b) => {
-        const cmp = a.date.localeCompare(b.date);
-        return cmp !== 0 ? cmp : a.time.localeCompare(b.time);
-      });
+    return raw.map(mapToSesionAgenda).sort((a, b) => {
+      const cmp = a.date.localeCompare(b.date);
+      return cmp !== 0 ? cmp : a.time.localeCompare(b.time);
+    });
   }, [query3m.data]);
 
   // ── Sesiones del día seleccionado (query dedicada) ───────────────────────
@@ -202,22 +225,20 @@ export function useAgendaSessions({
     const raw = (querySinFecha.data?.sessions?.sessions ?? []).filter(
       (s): s is NonNullable<typeof s> => s !== null,
     );
-    return raw
-      .filter((s) => !s.fechaSesion)
-      .map(mapToSesionAgenda);
+    return raw.filter((s) => !s.fechaSesion).map(mapToSesionAgenda);
   }, [querySinFecha.data]);
 
   const refetch = () => {
     query3m.refetch();
-    querySinFecha.refetch();
+    if (range !== "today") querySinFecha.refetch();
     if (dateStr) queryDia.refetch();
   };
 
   return {
-    sesiones,            // mes actual → CalendarView
-    todasSesiones3m,     // 3 meses → para búsquedas/filtros si se necesita
-    sesionesDia,         // día seleccionado → HourlyView / TherapistView
-    sesionesSinFecha,    // sin fecha → sidebar panel
+    sesiones, // mes actual → CalendarView
+    todasSesiones3m, // 3 meses → para búsquedas/filtros si se necesita
+    sesionesDia, // día seleccionado → HourlyView / TherapistView
+    sesionesSinFecha, // sin fecha → sidebar panel
     cargando: query3m.loading,
     cargandoDia: queryDia.loading,
     error: query3m.error,

@@ -15,12 +15,16 @@ export const useGastos = (filtros: GastoFiltros) => {
         pageSize: filtros.pageSize,
         search: filtros.busqueda || "",
       },
+      skip: filtros.skip,
+      nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     },
   );
 
   const gastos = useMemo(() => {
-    return (data?.expenses?.results || []).filter(Boolean) as unknown as Gasto[];
+    return (data?.expenses?.results || []).filter(
+      Boolean,
+    ) as unknown as Gasto[];
   }, [data]);
 
   return {

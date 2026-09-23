@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export const useTemporizador = (
   estaActivo: boolean = true,
@@ -10,12 +10,20 @@ export const useTemporizador = (
     }
     return 0;
   });
+  const ultimoTickRef = useRef<number | null>(null);
 
   useEffect(() => {
     let intervalo: ReturnType<typeof setInterval> | undefined;
     if (estaActivo) {
+      ultimoTickRef.current = Date.now();
       intervalo = setInterval(() => {
-        setSegundos((s) => s + 1);
+        const ahora = Date.now();
+        const transcurridos = Math.max(
+          0,
+          Math.floor((ahora - (ultimoTickRef.current ?? ahora)) / 1000),
+        );
+        if (transcurridos > 0) setSegundos((s) => s + transcurridos);
+        ultimoTickRef.current = ahora;
       }, 1000);
     }
     return () => clearInterval(intervalo);

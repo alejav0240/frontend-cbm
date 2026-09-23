@@ -24,6 +24,7 @@ export default function DashboardLayout({
 
   const { data, loading, error } = useQuery<MeQuery>(CONSULTA_YO, {
     fetchPolicy: "network-only",
+    nextFetchPolicy: "cache-first",
   });
 
   useEffect(() => {
@@ -54,7 +55,11 @@ export default function DashboardLayout({
   }, [loading, error, data, router]);
 
   useEffect(() => {
-    if (data?.me && esTutor(data.me.role?.name) && pathname !== "/dashboard/portal-familiar") {
+    if (
+      data?.me &&
+      esTutor(data.me.role?.name) &&
+      pathname !== "/dashboard/portal-familiar"
+    ) {
       router.replace("/dashboard/portal-familiar");
     }
   }, [data, pathname, router]);
@@ -63,15 +68,15 @@ export default function DashboardLayout({
   if (error || !data?.me) return null;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-background flex transition-colors duration-500">
+    <div className="min-h-[100dvh] bg-[#f8fafc] dark:bg-background flex transition-colors duration-500">
       <div data-onboarding-sidebar>
         <Sidebar />
       </div>
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 h-[100dvh] overflow-hidden">
         <div data-onboarding-topbar>
           <Topbar />
         </div>
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+        <div className="flex-1 lg:overflow-y-auto p-4 md:p-8 custom-scrollbar">
           <div data-onboarding-page className="max-w-7xl mx-auto">
             {children}
           </div>

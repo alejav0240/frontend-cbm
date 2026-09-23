@@ -24,7 +24,7 @@ class ExcesoDeTamañoError extends Error {
 }
 
 export async function POST(request: NextRequest) {
-  const filePath = join(getQueueDir(), `${randomUUID()}.webm`);
+  let filePath: string | null = null;
   try {
     const sessionId = request.headers.get("x-session-id")?.trim();
     if (!sessionId) {
@@ -38,7 +38,10 @@ export async function POST(request: NextRequest) {
     // no creamos un duplicado (evita re-subidas al reabrir la pestaña).
     if (enIngesta.has(sessionId)) {
       return NextResponse.json(
-        { success: true, message: "Ya hay una subida en curso para esta sesión." },
+        {
+          success: true,
+          message: "Ya hay una subida en curso para esta sesión.",
+        },
         { status: 200 },
       );
     }
@@ -57,7 +60,10 @@ export async function POST(request: NextRequest) {
     const contentLength = Number(request.headers.get("content-length") || 0);
     if (contentLength > MAX_INGEST_BYTES) {
       return NextResponse.json(
-        { success: false, message: "La grabación supera el tamaño máximo permitido." },
+        {
+          success: false,
+          message: "La grabación supera el tamaño máximo permitido.",
+        },
         { status: 413 },
       );
     }
@@ -72,12 +78,13 @@ export async function POST(request: NextRequest) {
     const metadata: UploadMetadata = {
       pacienteId: request.headers.get("x-paciente-id")?.trim() ?? "",
       pacienteNombre: request.headers.get("x-paciente-nombre")?.trim() ?? "",
-      numeroCiclo:
-        request.headers.get("x-numero-ciclo")?.trim() || "sin-ciclo",
+      numeroCiclo: request.headers.get("x-numero-ciclo")?.trim() || "sin-ciclo",
       grabadoEn: request.headers.get("x-grabado-en")?.trim() ?? "",
-      contentType:
-        request.headers.get("content-type")?.trim() || "video/webm",
+      contentType: request.headers.get("content-type")?.trim() || "video/webm",
     };
+
+    const extension = metadata.contentType.includes("mp4") ? "mp4" : "webm";
+    filePath = join(getQueueDir(), `${randomUUID()}.${extension}`);
 
     enIngesta.add(sessionId);
 
@@ -116,8 +123,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, uploadId: id });
   } catch (error) {
     try {
-      const { rm } = await import("fs/promises");
-      await rm(filePath, { force: true });
+      if (filePath) {
+        const { rm } = await import("fs/promises");
+        await rm(filePath, { force: true });
+      }
     } catch {}
     const esExceso = error instanceof ExcesoDeTamañoError;
     const message =

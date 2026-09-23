@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { motion } from "motion/react";
@@ -8,7 +9,6 @@ import { Play } from "lucide-react";
 import { useAuthStore } from "@/shared/model/useAuthStore";
 import {
   useSesiones,
-  useSesionesStats,
   useCiclosPacientes,
   useAgendaSessions,
 } from "@/entities/sesion";
@@ -18,16 +18,39 @@ import { useGastos } from "@/entities/gasto";
 import { useSesionActivaStore } from "@/entities/sesion";
 import { useCan } from "@/shared/ui/components/PermissionGuard";
 import { OverviewStats } from "./components/OverviewStats";
-import { OverviewSessionTrends } from "./components/OverviewSessionTrends";
 import { OverviewDailySessions } from "./components/OverviewDailySessions";
 import { OverviewQuickActions } from "./components/OverviewQuickActions";
 import { OverviewActivityFeed } from "./components/OverviewActivityFeed";
 import { OverviewClinicalAlerts } from "./components/OverviewClinicalAlerts";
-import { OverviewFinancialBalance } from "./components/OverviewFinancialBalance";
-import { OverviewGrowth } from "./components/OverviewGrowth";
-import { OverviewDistributions } from "./components/OverviewDistributions";
 import { OverviewCycleProgress } from "./components/OverviewCycleProgress";
+import { DeferredRender } from "@/shared/ui/DeferredRender";
 import { CheckCircle, History, AlertTriangle } from "lucide-react";
+
+const OverviewSessionTrends = dynamic(
+  () =>
+    import("./components/OverviewSessionTrends").then(
+      (mod) => mod.OverviewSessionTrends,
+    ),
+  { ssr: false },
+);
+const OverviewFinancialBalance = dynamic(
+  () =>
+    import("./components/OverviewFinancialBalance").then(
+      (mod) => mod.OverviewFinancialBalance,
+    ),
+  { ssr: false },
+);
+const OverviewGrowth = dynamic(
+  () => import("./components/OverviewGrowth").then((mod) => mod.OverviewGrowth),
+  { ssr: false },
+);
+const OverviewDistributions = dynamic(
+  () =>
+    import("./components/OverviewDistributions").then(
+      (mod) => mod.OverviewDistributions,
+    ),
+  { ssr: false },
+);
 
 const MESES = [
   "Ene",
@@ -60,6 +83,15 @@ export const DashboardPage = () => {
   const { setSesion } = useSesionActivaStore();
   const onedriveToastMostrado = useRef(false);
 
+  const verPacientes = useCan("pacientes:view");
+  const crearPacientes = useCan("pacientes:add");
+  const verSesiones = useCan("sesiones:view");
+  const crearSesiones = useCan("sesiones:add");
+  const verAgenda = useCan("agenda:view");
+  const verPagos = useCan("pagos:view");
+  const crearPagos = useCan("pagos:add");
+  const crearEvaluaciones = useCan("evaluaciones:add");
+
   useEffect(() => {
     if (onedriveToastMostrado.current || typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
@@ -79,33 +111,29 @@ export const DashboardPage = () => {
   }, [router]);
 
   const { sesiones, cargando: cargandoSesiones } = useSesiones({
-    pageSize: 50,
+    pageSize: 10,
+    skip: !verSesiones,
   });
   const { total: totalPacientes, cargando: cargandoPacientes } = usePacientes({
     pageSize: 1,
     search: "",
+    skip: !verPacientes,
   });
   const { ciclos, cargando: cargandoCiclos } = useCiclosPacientes({
     pageSize: 50,
+    skip: !verSesiones,
   });
-  const { cargando: cargandoStats } = useSesionesStats();
-  const { pagos } = usePagos({ pagina: 1, pageSize: 100 });
-  const { gastos } = useGastos({ pagina: 1, pageSize: 100 });
+  const { pagos } = usePagos({ pagina: 1, pageSize: 100, skip: !verPagos });
+  const { gastos } = useGastos({ pagina: 1, pageSize: 100, skip: !verPagos });
 
   const hoy = useMemo(() => new Date(), []);
-  const { sesiones: agendaHoy } = useAgendaSessions({ month: hoy });
+  const { sesiones: agendaHoy } = useAgendaSessions({
+    month: hoy,
+    range: "today",
+    skip: !verAgenda && !verSesiones,
+  });
 
-  const verPacientes = useCan("pacientes:view");
-  const crearPacientes = useCan("pacientes:add");
-  const verSesiones = useCan("sesiones:view");
-  const crearSesiones = useCan("sesiones:add");
-  const verAgenda = useCan("agenda:view");
-  const verPagos = useCan("pagos:view");
-  const crearPagos = useCan("pagos:add");
-  const crearEvaluaciones = useCan("evaluaciones:add");
-
-  const cargando =
-    cargandoSesiones || cargandoPacientes || cargandoCiclos || cargandoStats;
+  const cargando = cargandoSesiones || cargandoPacientes || cargandoCiclos;
 
   const sesionesHoy = useMemo(() => {
     const hoyStr = hoy.toISOString().split("T")[0];
@@ -390,7 +418,11 @@ export const DashboardPage = () => {
 
       {(verSesiones || verAgenda) && (
         <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-          {verSesiones && <OverviewSessionTrends data={sessionTrendsData} />}
+          {verSesiones && (
+            <DeferredRender className="lg:col-span-2">
+              <OverviewSessionTrends data={sessionTrendsData} />
+            </DeferredRender>
+          )}
           <OverviewQuickActions
             onAction={handleQuickAction}
             showPatients={crearPacientes}
@@ -419,24 +451,36 @@ export const DashboardPage = () => {
             />
           )}
           {verPacientes && <OverviewClinicalAlerts />}
-          {verSesiones && <OverviewActivityFeed activities={recentActivities} />}
+          {verSesiones && (
+            <OverviewActivityFeed activities={recentActivities} />
+          )}
         </div>
       )}
 
       {(verPagos || verPacientes) && (
         <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-          {verPagos && <OverviewFinancialBalance data={financialData} />}
-          {verPacientes && <OverviewGrowth data={growthData} />}
+          {verPagos && (
+            <DeferredRender className="lg:col-span-2">
+              <OverviewFinancialBalance data={financialData} />
+            </DeferredRender>
+          )}
+          {verPacientes && (
+            <DeferredRender>
+              <OverviewGrowth data={growthData} />
+            </DeferredRender>
+          )}
         </div>
       )}
 
       {(verPacientes || verSesiones) && (
         <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
           {verPacientes && (
-            <OverviewDistributions
-              conditionData={conditionData}
-              cycleStatusData={cycleStatusData}
-            />
+            <DeferredRender className="contents">
+              <OverviewDistributions
+                conditionData={conditionData}
+                cycleStatusData={cycleStatusData}
+              />
+            </DeferredRender>
           )}
           {verSesiones && (
             <OverviewCycleProgress

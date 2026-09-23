@@ -1,5 +1,5 @@
 // app/layout.tsx
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { MainProvider } from "@/config/providers/main-provider";
 import { Inter, Playfair_Display } from "next/font/google";
@@ -61,6 +61,14 @@ export const metadata: Metadata = {
     icon: "/logocortoicono.png",
     apple: "/logocortoicono.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-visual",
+  themeColor: "#f8fafc",
 };
 
 export default function RootLayout({

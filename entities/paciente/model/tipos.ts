@@ -24,6 +24,7 @@ export interface PacienteFiltro {
   search: string;
   page?: number;
   pageSize?: number;
+  skip?: boolean;
 }
 
 export interface PacienteDetalles extends Paciente {

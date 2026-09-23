@@ -34,6 +34,7 @@ export interface CicloPacienteFiltros {
   pageSize?: number;
   search?: string;
   therapistId?: string;
+  skip?: boolean;
 }
 
 export const useCiclosPacientes = (filtros: CicloPacienteFiltros = {}) => {
@@ -45,6 +46,8 @@ export const useCiclosPacientes = (filtros: CicloPacienteFiltros = {}) => {
         search: filtros.search || undefined,
         therapistId: filtros.therapistId || undefined,
       },
+      skip: filtros.skip,
+      nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     });
 

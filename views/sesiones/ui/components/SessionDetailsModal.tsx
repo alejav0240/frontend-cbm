@@ -92,7 +92,9 @@ export function SessionDetailsModal({
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full">
                 {session.recordingUrl?.includes(".mp3")
                   ? "Audio MP3"
-                  : "Video WEBM"}
+                  : session.recordingUrl?.includes(".mp4")
+                    ? "Video MP4"
+                    : "Video WEBM"}
               </span>
             </div>
 
@@ -112,7 +114,14 @@ export function SessionDetailsModal({
                 </div>
               ) : (
                 <video controls className="w-full h-full object-contain">
-                  <source src={session.recordingUrl} type="video/webm" />
+                  <source
+                    src={session.recordingUrl}
+                    type={
+                      session.recordingUrl?.includes(".mp4")
+                        ? "video/mp4"
+                        : "video/webm"
+                    }
+                  />
                   Tu navegador no soporta el elemento de video.
                 </video>
               )}
