@@ -415,7 +415,7 @@ export const Sidebar = () => {
             <motion.aside
                 initial={false}
                 animate={{width: sidebarWidth}}
-                className="bg-white/80 dark:bg-accent/80 backdrop-blur-2xl border-r border-gray-200 dark:border-white/5 flex flex-col sticky top-0 h-screen overflow-hidden z-50 hidden md:flex"
+                className="bg-white/80 dark:bg-accent/80 backdrop-blur-2xl border-r border-gray-200 dark:border-white/5 flex flex-col sticky top-0 h-[100dvh] overflow-hidden z-50 hidden md:flex"
             >
                 {/* Cabecera */}
                 <div
@@ -494,7 +494,7 @@ export const Sidebar = () => {
                             const diff = touchStartXRef.current - e.changedTouches[0].clientX;
                             if (diff > 80) setMenuMovilAbierto(false);
                         }}
-                        className="fixed top-0 left-0 h-screen w-[280px] bg-white dark:bg-accent flex flex-col z-50 shadow-2xl md:hidden"
+                        className="fixed top-0 left-0 h-[100dvh] w-[280px] bg-white dark:bg-accent flex flex-col z-50 shadow-2xl md:hidden"
                     >
                         {/* Cabecera */}
                         <div className="px-4 py-5 md:px-8 md:py-8 flex items-center justify-between">
