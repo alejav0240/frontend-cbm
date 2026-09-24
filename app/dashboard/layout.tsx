@@ -73,7 +73,7 @@ export default function DashboardLayout({
       <div data-onboarding-sidebar>
         <Sidebar />
       </div>
-      <main className="flex-1 flex flex-col min-w-0 h-[100dvh] overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 h-[80dvh] overflow-hidden">
         <div data-onboarding-topbar>
           <Topbar />
         </div>
