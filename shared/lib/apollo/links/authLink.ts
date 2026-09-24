@@ -15,9 +15,12 @@ export const createAuthLink = () => {
     const context = operation.getContext();
     const existingHeaders = context.headers || {};
 
-    // Obtener token JWT si existe en localStorage o cookie
+    // Refresh uses the httpOnly refresh cookie and must not carry a stale access token.
     let token: string | null = null;
-    if (typeof window !== "undefined") {
+    if (
+      typeof window !== "undefined" &&
+      operation.operationName !== "RefreshToken"
+    ) {
       token = localStorage.getItem("token");
     }
 

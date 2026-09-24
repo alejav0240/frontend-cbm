@@ -105,7 +105,11 @@ export function TablaSesiones({
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white dark:bg-[#111] rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden"
+    >
       <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
@@ -195,12 +199,13 @@ export function TablaSesiones({
                   >
                     {sesion.estadoMostrado}
                   </span>
-                  {!sesion.urlGrabacion && sesion.videoStatus === "subiendo" && (
-                    <span className="mt-2 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400 bg-teal-500/10">
-                      <Loader2 size={11} className="animate-spin" />
-                      Subiendo
-                    </span>
-                  )}
+                  {!sesion.urlGrabacion &&
+                    sesion.videoStatus === "subiendo" && (
+                      <span className="mt-2 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400 bg-teal-500/10">
+                        <Loader2 size={11} className="animate-spin" />
+                        Subiendo
+                      </span>
+                    )}
                   {!sesion.urlGrabacion && sesion.videoStatus === "fallo" && (
                     <span className="mt-2 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400 bg-red-500/10">
                       <AlertCircle size={11} />

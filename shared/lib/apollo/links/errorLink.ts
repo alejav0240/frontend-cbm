@@ -65,11 +65,24 @@ export const createErrorLink = () => {
           fetchPolicy: "network-only",
         })
         .then((response) => {
-          TokenManager.handleRefreshSuccess(
-            (response.data as {
-              refreshToken?: { payload?: string; refreshExpiresIn?: number };
-            } | null | undefined)?.refreshToken,
+          const refreshed = TokenManager.handleRefreshSuccess(
+            (
+              response.data as
+                | {
+                    refreshToken?: {
+                      token?: string;
+                      refreshToken?: string;
+                      payload?: string;
+                      refreshExpiresIn?: number;
+                    };
+                  }
+                | null
+                | undefined
+            )?.refreshToken,
           );
+          if (!refreshed) {
+            throw new Error("Refresh response did not include an access token");
+          }
           flushRefreshQueue(true);
           forward(operation).subscribe(observer);
         })

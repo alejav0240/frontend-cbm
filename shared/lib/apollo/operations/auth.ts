@@ -1,17 +1,12 @@
 import { gql } from "@apollo/client";
 
-/**
- * Mutación para refresh de token
- * Ajusta los campos según la respuesta de tu backend
- */
 export const REFRESH_TOKEN_MUTATION = gql`
   mutation RefreshToken {
     refreshToken {
+      token
+      refreshToken
       payload
       refreshExpiresIn
-      # Agrega aquí otros campos que devuelva tu backend:
-      # token
-      # user { id email }
     }
   }
 `;

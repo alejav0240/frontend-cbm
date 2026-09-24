@@ -324,12 +324,18 @@ export const SesionEnProgresoPage = () => {
     if (!planActivo) return null;
     return {
       mainObjective: planActivo.objetivoPrincipal,
+      startDate: planActivo.fechaInicio,
+      endDate: planActivo.fechaFin,
+      status: planActivo.estado,
+      patientName: planActivo.paciente.fullName,
       progressPercent: planActivo.porcentajeProgreso,
       steps: (planActivo.pasos || []).map((paso) => ({
         id: paso.id,
         moment: paso.momento,
+        orderIndex: paso.indiceOrden,
         objective: paso.objetivo,
         focus: paso.enfoque,
+        approach: paso.abordaje,
         musicalResources: paso.recursosMusicales,
         musicalEmphasis: paso.enfasisMusical,
         mltMethod: paso.metodoMlt,

@@ -2,7 +2,15 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import { Target, CheckCircle2, Music, Layers } from "lucide-react";
+import {
+  Target,
+  CheckCircle2,
+  Music,
+  Layers,
+  CalendarDays,
+  UserRound,
+  Route,
+} from "lucide-react";
 import type { PlanTratamientoActivo } from "../model/tipos";
 
 interface PlanTabProps {
@@ -10,6 +18,12 @@ interface PlanTabProps {
   completedSteps: string[];
   toggleStep: (id: string) => void;
 }
+
+const formatearFecha = (fecha: string): string =>
+  new Intl.DateTimeFormat("es-BO", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(new Date(`${fecha}T00:00:00Z`));
 
 export function PlanTab({
   patientPlan,
@@ -41,18 +55,40 @@ export function PlanTab({
       className="max-w-4xl mx-auto space-y-12"
     >
       <div className="sticky top-0 bg-white dark:bg-accent z-20 pb-4 -mx-4 md:-mx-8 px-4 md:px-8">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#008080]/10 flex items-center justify-center text-[#008080]">
-            <Target size={24} />
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-12 h-12 rounded-2xl bg-[#008080]/10 flex items-center justify-center text-[#008080]">
+              <Target size={24} />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-2xl font-bold dark:text-white serif">
+                {patientPlan.mainObjective}
+              </h3>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
+                Estrategia de Intervención Activa
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-2xl font-bold dark:text-white serif">
-              {patientPlan.mainObjective}
-            </h3>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
-              Estrategia de Intervención Activa
-            </p>
-          </div>
+          <span
+            className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+              patientPlan.status === "Finalizado"
+                ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                : "bg-[#008080]/10 text-[#008080]"
+            }`}
+          >
+            {patientPlan.status}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+          <span className="flex items-center gap-1.5">
+            <UserRound size={13} className="text-[#008080]" />
+            {patientPlan.patientName}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <CalendarDays size={13} className="text-[#008080]" />
+            {formatearFecha(patientPlan.startDate)}
+            {patientPlan.endDate && ` - ${formatearFecha(patientPlan.endDate)}`}
+          </span>
         </div>
         <div className="h-1 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
           <motion.div
@@ -79,91 +115,95 @@ export function PlanTab({
               onClick={() => toggleStep(step.id)}
               className={`relative pl-9 sm:pl-16 md:pl-24 group cursor-pointer text-left w-full`}
             >
-            {/* Node */}
-            <div
-              className={`absolute left-2 sm:left-4 md:left-6 top-0 w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full border-2 sm:border-4 border-white dark:border-[#0a0a0a] z-10 transition-all duration-300 ${
-                (completedSteps || []).includes(step.id)
-                  ? "bg-green-500 scale-125"
-                  : "bg-gray-200 dark:bg-gray-800 group-hover:bg-[#008080]"
-              }`}
-            />
+              {/* Node */}
+              <div
+                className={`absolute left-2 sm:left-4 md:left-6 top-0 w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full border-2 sm:border-4 border-white dark:border-[#0a0a0a] z-10 transition-all duration-300 ${
+                  (completedSteps || []).includes(step.id)
+                    ? "bg-green-500 scale-125"
+                    : "bg-gray-200 dark:bg-gray-800 group-hover:bg-[#008080]"
+                }`}
+              />
 
-            <div
-              className={`p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] border transition-all duration-500 ${
-                (completedSteps || []).includes(step.id)
-                  ? "bg-green-500/5 border-green-500/20 opacity-60"
-                  : "bg-white dark:bg-white/2 border-gray-100 dark:border-white/5 hover:border-[#008080]/30 hover:shadow-xl hover:shadow-black/5"
-              }`}
-            >
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black text-[#008080] uppercase tracking-widest bg-[#008080]/10 px-2 py-0.5 rounded">
-                      Momento {step.moment}
-                    </span>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                      {step.durationMinutes} MINUTOS
-                    </span>
-                  </div>
-                  <h4
-                    className={`text-lg md:text-xl font-bold serif ${(completedSteps || []).includes(step.id) ? "text-green-600 line-through" : "dark:text-white"}`}
-                  >
-                    {step.objective}
-                  </h4>
-                  <p
-                    className={`text-sm font-medium text-[#008080] ${(completedSteps || []).includes(step.id) ? "line-through" : ""}`}
-                  >
-                    Foco: {step.focus}
-                  </p>
-                </div>
-                {(completedSteps || []).includes(step.id) && (
-                  <div className="flex items-center gap-2 text-green-500 bg-green-500/10 px-4 py-2 rounded-2xl self-start">
-                    <CheckCircle2 size={16} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">
-                      Completado
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                    Recursos & Énfasis
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <Music
-                        size={14}
-                        className="text-[#008080] mt-0.5 shrink-0"
-                      />
-                      <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
-                        {step.musicalResources}
-                      </p>
+              <div
+                className={`p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] border transition-all duration-500 ${
+                  (completedSteps || []).includes(step.id)
+                    ? "bg-green-500/5 border-green-500/20 opacity-60"
+                    : "bg-white dark:bg-white/2 border-gray-100 dark:border-white/5 hover:border-[#008080]/30 hover:shadow-xl hover:shadow-black/5"
+                }`}
+              >
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-black text-[#008080] uppercase tracking-widest bg-[#008080]/10 px-2 py-0.5 rounded">
+                        Paso {step.orderIndex}: {step.moment}
+                      </span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        {step.durationMinutes} MINUTOS
+                      </span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <Layers
-                        size={14}
-                        className="text-[#008080] mt-0.5 shrink-0"
-                      />
-                      <p className="text-xs italic text-gray-500 leading-relaxed">
-                        {step.musicalEmphasis}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                    Metodología (MLT)
-                  </p>
-                  <div className="p-4 bg-gray-50 dark:bg-white/2 rounded-2xl border border-gray-100 dark:border-white/5">
-                    <p className="text-xs font-medium dark:text-gray-300 leading-relaxed">
-                      {step.mltMethod}
+                    <h4
+                      className={`text-lg md:text-xl font-bold serif ${(completedSteps || []).includes(step.id) ? "text-green-600 line-through" : "dark:text-white"}`}
+                    >
+                      {step.objective}
+                    </h4>
+                    <p
+                      className={`text-sm font-medium text-[#008080] ${(completedSteps || []).includes(step.id) ? "line-through" : ""}`}
+                    >
+                      Foco: {step.focus}
+                    </p>
+                    <p className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+                      <Route size={13} className="text-[#008080] shrink-0" />
+                      {step.approach}
                     </p>
                   </div>
+                  {(completedSteps || []).includes(step.id) && (
+                    <div className="flex items-center gap-2 text-green-500 bg-green-500/10 px-4 py-2 rounded-2xl self-start">
+                      <CheckCircle2 size={16} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">
+                        Completado
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                      Recursos & Énfasis
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2">
+                        <Music
+                          size={14}
+                          className="text-[#008080] mt-0.5 shrink-0"
+                        />
+                        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+                          {step.musicalResources}
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Layers
+                          size={14}
+                          className="text-[#008080] mt-0.5 shrink-0"
+                        />
+                        <p className="text-xs italic text-gray-500 leading-relaxed">
+                          {step.musicalEmphasis}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                      Metodología (MLT)
+                    </p>
+                    <div className="p-4 bg-gray-50 dark:bg-white/2 rounded-2xl border border-gray-100 dark:border-white/5">
+                      <p className="text-xs font-medium dark:text-gray-300 leading-relaxed">
+                        {step.mltMethod}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
             </button>
           </motion.div>
         ))}

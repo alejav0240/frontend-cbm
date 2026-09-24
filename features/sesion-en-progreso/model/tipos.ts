@@ -44,9 +44,11 @@ export interface MappedFormTemplate {
 export interface PasoPlanActivo {
   id: string;
   moment: string;
+  orderIndex: number;
   durationMinutes: number;
   objective: string;
   focus: string;
+  approach: string;
   musicalResources: string;
   musicalEmphasis: string;
   mltMethod: string;
@@ -54,6 +56,10 @@ export interface PasoPlanActivo {
 
 export interface PlanTratamientoActivo {
   mainObjective: string;
+  startDate: string;
+  endDate?: string;
+  status: string;
+  patientName: string;
   progressPercent: number;
   steps: PasoPlanActivo[] | null;
 }

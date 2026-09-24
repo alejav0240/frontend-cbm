@@ -11,15 +11,20 @@ export const TokenManager = {
    * Procesa la respuesta exitosa del refresh token
    */
   handleRefreshSuccess: (payload?: {
+    token?: string;
+    refreshToken?: string;
     payload?: string;
     refreshExpiresIn?: number;
     [key: string]: unknown;
-  }): void => {
-    if (payload?.payload) {
-      console.debug("[TokenManager] Token refreshed successfully");
-    } else {
-      console.debug("[TokenManager] Session refreshed via httpOnly cookie");
+  }): boolean => {
+    if (!payload?.token || !isBrowser()) return false;
+
+    localStorage.setItem("token", payload.token);
+    if (payload.refreshToken) {
+      localStorage.setItem("refreshToken", payload.refreshToken);
     }
+    console.debug("[TokenManager] Token refreshed successfully");
+    return true;
   },
 
   /**
