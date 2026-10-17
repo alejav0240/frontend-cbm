@@ -186,6 +186,7 @@ export const AgendaPage = () => {
         id: session.id,
         pacienteId: session.patientId || "",
         pacienteNombre: session.patientName,
+        numeroCiclo: session.cycleNumber,
         inicio: new Date(),
       });
       router.push("/dashboard/sesion-en-progreso");

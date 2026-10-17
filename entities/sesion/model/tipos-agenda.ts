@@ -2,6 +2,7 @@ export interface SesionAgenda {
   id: string;
   patientName: string;
   patientId?: string;
+  cycleNumber?: number | null;
   therapistId?: string;
   time: string;
   status: string;

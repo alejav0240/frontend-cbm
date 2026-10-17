@@ -27,6 +27,7 @@ export interface SesionNormalizada {
   databaseId?: number;
   pacienteId: string | null;
   pacienteNombre: string;
+  numeroCiclo?: number | null;
   institucionNombre?: string;
   numeroSesion: number;
   fecha: string;

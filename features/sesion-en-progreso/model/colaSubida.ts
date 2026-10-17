@@ -8,6 +8,7 @@ export type GrabacionPendiente = {
   archivo: File;
   pacienteId: string;
   pacienteNombre: string;
+  numeroCiclo?: number | null;
   grabadoEn: string;
   addedAt: number;
 };
@@ -130,7 +131,10 @@ const subirGrabacionAlServidor = (
     xhr.setRequestHeader("x-session-id", item.sessionId);
     xhr.setRequestHeader("x-paciente-id", item.pacienteId);
     xhr.setRequestHeader("x-paciente-nombre", item.pacienteNombre);
-    xhr.setRequestHeader("x-numero-ciclo", "sin-ciclo");
+    xhr.setRequestHeader(
+      "x-numero-ciclo",
+      item.numeroCiclo == null ? "sin-ciclo" : String(item.numeroCiclo),
+    );
     xhr.setRequestHeader("x-grabado-en", item.grabadoEn);
 
     xhr.upload.onprogress = (e) => {

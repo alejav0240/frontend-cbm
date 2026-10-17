@@ -300,6 +300,7 @@ export const SesionesPage = () => {
         id: sesion.id,
         pacienteId: sesion.pacienteId || "",
         pacienteNombre: sesion.pacienteNombre,
+        numeroCiclo: sesion.numeroCiclo,
         inicio: new Date(),
       });
       router.push("/dashboard/sesion-en-progreso");

@@ -5,6 +5,7 @@ interface SesionActiva {
   id: string;
   pacienteId: string;
   pacienteNombre: string;
+  numeroCiclo?: number | null;
   inicio: Date;
 }
 

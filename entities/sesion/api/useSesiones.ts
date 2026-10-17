@@ -88,6 +88,7 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
             databaseId: (s as { databaseId?: number }).databaseId ?? undefined,
             pacienteId: s.paciente?.id || null,
             pacienteNombre: s.paciente?.fullName || "Sin paciente",
+            numeroCiclo: s.numeroCiclo,
             institucionNombre:
               s.grupo?.institucion?.nombre || "Sin institución",
             numeroSesion: s.numeroSesion || 0,

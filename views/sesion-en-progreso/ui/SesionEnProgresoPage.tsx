@@ -631,6 +631,7 @@ export const SesionEnProgresoPage = () => {
           archivo,
           pacienteId,
           pacienteNombre: sesion.pacienteNombre,
+          numeroCiclo: sesion.numeroCiclo,
           grabadoEn: new Date().toISOString(),
           addedAt: Date.now(),
         },

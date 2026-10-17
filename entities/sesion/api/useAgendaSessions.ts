@@ -72,6 +72,7 @@ function mapToSesionAgenda(s: NonNullable<RawSession>): SesionAgenda {
     databaseId: (s as { databaseId?: number }).databaseId ?? undefined,
     patientId: s.paciente?.id || undefined,
     patientName: s.paciente?.fullName || "Sin paciente",
+    cycleNumber: s.numeroCiclo,
     therapistId: s.terapeuta?.id || undefined,
     time: fechaStr ? formatTime(fechaStr) : "--:--",
     status: mapStatus(s.estadoSesion),
