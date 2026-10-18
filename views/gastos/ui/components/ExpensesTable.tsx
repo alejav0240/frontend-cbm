@@ -39,7 +39,7 @@ export function ExpensesTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table data-onboarding-list="" className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50/50 dark:bg-white/2">
               <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">

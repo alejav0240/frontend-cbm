@@ -28,7 +28,7 @@ export function AgendaHeader({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold dark:text-white serif">
+        <h1 data-onboarding-header="" className="text-3xl font-bold dark:text-white serif">
           Agenda <span className="text-[#008080] italic">Semanal</span>
         </h1>
         <p className="text-gray-500 dark:text-gray-400">
@@ -36,7 +36,7 @@ export function AgendaHeader({
         </p>
       </motion.div>
       <div className="flex flex-wrap items-center gap-4">
-        <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-2xl shadow-inner">
+        <div data-onboarding-tabs="" className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-2xl shadow-inner">
           <button
             onClick={() => setViewMode("calendar")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${viewMode === "calendar" ? "bg-white dark:bg-[#1a1a1a] text-[#008080] shadow-sm" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"}`}
@@ -76,6 +76,7 @@ export function AgendaHeader({
             <span className="hidden lg:inline">Sesión de Prueba</span>
           </button>
           <button
+            data-onboarding-action=""
             onClick={() => setShowForm(true)}
             className="bg-[#008080] text-white px-6 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all flex items-center gap-2 shadow-lg"
           >

@@ -29,7 +29,7 @@ export function OverviewHeader({
         animate={{ opacity: 1, x: 0 }}
         className="mb-8 md:mb-12"
       >
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold dark:text-white serif tracking-tight mb-2">
+        <h1 data-onboarding-header="" className="text-3xl md:text-4xl lg:text-5xl font-bold dark:text-white serif tracking-tight mb-2">
           Hola, <span className="text-[#008080]">Terapeuta</span>
         </h1>
         <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 max-w-2xl">

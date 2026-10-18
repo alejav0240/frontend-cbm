@@ -11,6 +11,7 @@
 - [ESTADO_PROYECTO.md](./ESTADO_PROYECTO.md) — Estado del proyecto y módulos
 - [PROJECT_TREE.md](./PROJECT_TREE.md) — Árbol de archivos del proyecto
 - [plan-validacion-formularios](./plan-validacion-formularios/README.md) — Validación de formularios
+- [PLAN_CASOS_PRUEBA.md](./PLAN_CASOS_PRUEBA.md) — Plan maestro de flujos e interacciones
 - [DEPLOY_BACKEND.md](./DEPLOY_BACKEND.md) — Despliegue del backend en VPS
 - [DEPLOY_FRONTEND.md](./DEPLOY_FRONTEND.md) — Despliegue del frontend en VPS
 

@@ -19,7 +19,7 @@ export function InstitutionsHeader({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold dark:text-white serif">
+        <h1 data-onboarding-header="" className="text-3xl font-bold dark:text-white serif">
           Instituciones{" "}
           <span className="text-[#008080] italic">y Convenios</span>
         </h1>

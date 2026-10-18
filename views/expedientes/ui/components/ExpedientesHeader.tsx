@@ -9,7 +9,7 @@ export function ExpedientesHeader() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold dark:text-white serif">
+        <h1 data-onboarding-header="" className="text-3xl font-bold dark:text-white serif">
           Expedientes <span className="text-[#008080] italic">Clínicos</span>
         </h1>
         <p className="text-gray-500 dark:text-gray-400">

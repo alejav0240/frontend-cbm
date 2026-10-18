@@ -69,7 +69,7 @@ export default function DashboardLayout({
   if (error || !data?.me) return null;
 
   return (
-    <div className="h-[100dvh] overflow-hidden bg-[#f8fafc] dark:bg-background flex transition-colors duration-500">
+    <div className="overflow-hidden bg-[#f8fafc] dark:bg-background flex transition-colors duration-500">
       {!esSesionEnProgreso && (
         <div data-onboarding-sidebar>
           <Sidebar />

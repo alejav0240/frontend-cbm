@@ -48,7 +48,7 @@ export function CoursesTable({
         className="bg-white dark:bg-[#111] rounded-[40px] border border-gray-200 dark:border-white/5 shadow-xl shadow-black/5 overflow-hidden"
       >
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table data-onboarding-list="" className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50 dark:bg-white/2 border-b border-gray-100 dark:border-white/5">
                 <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">

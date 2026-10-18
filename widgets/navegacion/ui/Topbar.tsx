@@ -10,6 +10,7 @@ import {
   ChevronDown,
   UserCircle,
   Settings,
+  CircleHelp,
 } from "lucide-react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -58,6 +59,11 @@ export const Topbar = () => {
   const navigateTo = (path: string) => {
     setShowProfileMenu(false);
     router.push(path);
+  };
+
+  const repetirOnboarding = () => {
+    setShowProfileMenu(false);
+    window.dispatchEvent(new Event("cbm:repetir-onboarding"));
   };
 
   return (
@@ -164,6 +170,13 @@ export const Topbar = () => {
                 >
                   <Settings size={16} />
                   Configuración
+                </button>
+                <button
+                  onClick={repetirOnboarding}
+                  className="flex items-center gap-3 w-full px-5 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                >
+                  <CircleHelp size={16} />
+                  Ver guía de esta página
                 </button>
               </div>
 

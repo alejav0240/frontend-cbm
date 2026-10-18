@@ -22,7 +22,7 @@ export function UsersHeader({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl font-bold dark:text-white serif">
+          <h1 data-onboarding-header="" className="text-3xl font-bold dark:text-white serif">
             Gestión de <span className="text-[#008080] italic">Usuarios</span>
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
@@ -32,6 +32,7 @@ export function UsersHeader({
         </motion.div>
         <div className="flex items-center gap-4">
           <button
+            data-onboarding-action=""
             onClick={onCreateClick}
             className="bg-[#008080] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#006666] transition-all flex items-center justify-center gap-2 shadow-lg"
           >
@@ -41,7 +42,7 @@ export function UsersHeader({
         </div>
       </div>
 
-      <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-2xl w-fit">
+      <div data-onboarding-tabs="" className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-2xl w-fit">
         <button
           onClick={() => setActiveTab("PERSONAL")}
           className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-xs transition-all ${

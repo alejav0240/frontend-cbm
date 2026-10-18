@@ -28,7 +28,7 @@ export function SessionsHeader({
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-2xl md:text-3xl font-bold dark:text-white serif">
+          <h1 data-onboarding-header="" className="text-2xl md:text-3xl font-bold dark:text-white serif">
             Ciclos y <span className="text-[#008080] italic">Sesiones</span>
           </h1>
           {totalSesiones > 0 && (

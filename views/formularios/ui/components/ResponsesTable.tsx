@@ -24,7 +24,7 @@ export function ResponsesTable({
   return (
     <div className="bg-white dark:bg-[#111] rounded-[40px] border border-gray-200 dark:border-white/5 overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table data-onboarding-list="" className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/2">
               <th className="px-8 py-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">

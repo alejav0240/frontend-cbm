@@ -15,7 +15,7 @@ export function ScalesHeader({ onAddScale }: ScalesHeaderProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold dark:text-white serif">
+        <h1 data-onboarding-header="" className="text-3xl font-bold dark:text-white serif">
           Escalas de <span className="text-[#008080] italic">Evaluación</span>
         </h1>
         <p className="text-gray-500 dark:text-gray-400">
@@ -23,6 +23,7 @@ export function ScalesHeader({ onAddScale }: ScalesHeaderProps) {
         </p>
       </motion.div>
       <button
+        data-onboarding-action=""
         onClick={onAddScale}
         className="bg-[#008080] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#006666] transition-all flex items-center justify-center gap-2 shadow-lg"
       >

@@ -12,7 +12,7 @@ export function InventoryHeader({ onAdd, onExport }: InventoryHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-bold dark:text-white tracking-tight serif">
+        <h1 data-onboarding-header="" className="text-3xl font-bold dark:text-white tracking-tight serif">
           Inventario de <span className="text-[#008080]">Instrumentos</span>
         </h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">

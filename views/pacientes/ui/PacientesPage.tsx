@@ -189,14 +189,19 @@ export const PacientesPage = () => {
 
   return (
     <div className="space-y-8">
-      <EstadisticasPacientes
-        totalPacientes={total}
-        datosCrecimiento={datosCrecimientoLimpios}
-      />
+      <div data-onboarding-stats="">
+        <EstadisticasPacientes
+          totalPacientes={total}
+          datosCrecimiento={datosCrecimientoLimpios}
+        />
+      </div>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold dark:text-white">
+          <h1
+            data-onboarding-header=""
+            className="text-2xl font-bold dark:text-white"
+          >
             Gestión de Pacientes
           </h1>
           <p className="text-gray-400 text-sm">
@@ -214,6 +219,7 @@ export const PacientesPage = () => {
             </button>
           </div>
           <button
+            data-onboarding-action=""
             onClick={() => setMostrarFormulario(true)}
             className="flex items-center gap-2 px-5 py-3 bg-[#008080] text-white rounded-2xl text-sm font-bold hover:bg-[#006666] transition-all shadow-lg shadow-[#008080]/20"
           >
@@ -233,7 +239,10 @@ export const PacientesPage = () => {
         alCambiarEstado={(v) => setFiltros({ estado: v, page: "1" })}
       />
 
-      <div className="bg-white dark:bg-[#111] rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
+      <div
+        data-onboarding-list=""
+        className="bg-white dark:bg-[#111] rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden"
+      >
         <TablaPacientes
           pacientes={pacientes}
           alVerPerfil={manejarVerPerfil}

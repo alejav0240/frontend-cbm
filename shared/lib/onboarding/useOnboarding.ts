@@ -1,15 +1,15 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
   CONSULTA_ONBOARDING_VISTA,
   MARCAR_ONBOARDING_VISTA,
 } from "@/shared/api/onboarding";
 import { useAuthStore } from "@/shared/model/useAuthStore";
-import { obtenerPasosOnboarding } from "./config";
-import type { PasoOnboarding } from "./tipos";
+import { obtenerClaveOnboarding, obtenerPasosOnboarding } from "./config";
+import type { PasoOnboarding, RolOnboarding } from "./tipos";
 
 interface OnboardingViewQuery {
   onboardingView: {
@@ -17,6 +17,19 @@ interface OnboardingViewQuery {
     completedAt: string;
   } | null;
 }
+
+const selectoresPorRol: Record<RolOnboarding, string> = {
+  header: "[data-onboarding-header], h1, h2",
+  stats: "[data-onboarding-stats], [data-kpi]",
+  accion: "[data-onboarding-action]",
+  busqueda:
+    "[data-onboarding-search], input[type='search'], input[placeholder*='Buscar' i]",
+  filtros: "[data-onboarding-filters], [role='combobox'], select",
+  lista: "[data-onboarding-list], table, [role='table'], [role='list']",
+  tabs: "[data-onboarding-tabs], [role='tablist'], [role='tab']",
+  modal: "[data-onboarding-modal], [role='dialog'][aria-modal='true']",
+  extra: "[data-onboarding-extra]",
+};
 
 const prepararAnclasDeVista = (pasos: PasoOnboarding[]) => {
   const pagina = document.querySelector<HTMLElement>("[data-onboarding-page]");
@@ -41,28 +54,10 @@ const prepararAnclasDeVista = (pasos: PasoOnboarding[]) => {
     );
   };
 
-  const grids = Array.from(pagina.querySelectorAll<HTMLElement>("div.grid"));
-  const botones = Array.from(
-    pagina.querySelectorAll<HTMLButtonElement>("button"),
-  );
-  const textoBoton = (boton: HTMLButtonElement) =>
-    boton.textContent?.trim().toLowerCase() || "";
-  const esAccionPrincipal = (boton: HTMLButtonElement) =>
-    /crear|nuevo|iniciar|agregar|añadir|registrar|generar|guardar|inscribir/.test(
-      textoBoton(boton),
-    );
-
   const anclas: Record<string, HTMLElement | undefined> = {
     header: primerElemento(["[data-onboarding-header]", "h1", "h2"]),
-    stats:
-      primerElemento([
-        "[data-onboarding-stats]",
-        "[data-kpi]",
-        "[class*='grid-cols-']",
-      ]) || grids[0],
-    accion:
-      primerElemento(["[data-onboarding-action]"]) ||
-      botones.find((boton) => visible(boton) && esAccionPrincipal(boton)),
+    stats: primerElemento(["[data-onboarding-stats]", "[data-kpi]"]),
+    accion: primerElemento(["[data-onboarding-action]"]),
     busqueda: primerElemento([
       "[data-onboarding-search]",
       "input[type='search']",
@@ -79,21 +74,7 @@ const prepararAnclasDeVista = (pasos: PasoOnboarding[]) => {
       "[role='table']",
       "[role='list']",
     ]),
-    tabs:
-      primerElemento([
-        "[data-onboarding-tabs]",
-        "[role='tablist']",
-        "[role='tab']",
-      ]) ||
-      Array.from(pagina.querySelectorAll<HTMLElement>("div, nav")).find(
-        (contenedor) => {
-          if (!visible(contenedor)) return false;
-          const botonesVisibles = Array.from(contenedor.children).filter(
-            (hijo) => hijo instanceof HTMLButtonElement && visible(hijo),
-          );
-          return botonesVisibles.length >= 2 && botonesVisibles.length <= 6;
-        },
-      ),
+    tabs: primerElemento(["[data-onboarding-tabs]", "[role='tablist']"]),
     extra: primerElemento(["[data-onboarding-extra]"]),
     modal: primerElemento([
       "[data-onboarding-modal]",
@@ -105,7 +86,23 @@ const prepararAnclasDeVista = (pasos: PasoOnboarding[]) => {
     elemento?.setAttribute(`data-onboarding-step-${rol}`, "");
   });
 
-  return pasos.map((paso) => ({ ...paso, skipMissingElement: true }));
+  return pasos
+    .filter((paso) => {
+      const rol = paso.data?.rol as RolOnboarding | undefined;
+      if (rol === "modal") return Boolean(anclas.accion);
+      if (rol && paso.waitForElement) return true;
+      if (rol) return Boolean(anclas[rol]);
+      return Boolean(document.querySelector(paso.element));
+    })
+    .map((paso) => {
+      const rol = paso.data?.rol as RolOnboarding | undefined;
+      return {
+        ...paso,
+        element:
+          rol && paso.waitForElement ? selectoresPorRol[rol] : paso.element,
+        skipMissingElement: true,
+      };
+    });
 };
 
 export const useOnboarding = () => {
@@ -113,15 +110,20 @@ export const useOnboarding = () => {
   const usuarioId = useAuthStore((estado) => estado.usuario?.id);
   const tourActivoRef = useRef(false);
   const rutaMarcadaRef = useRef<string | null>(null);
+  const [vistaARepetir, setVistaARepetir] = useState<string | null>(null);
+  const claveVista = useMemo(
+    () => (pathname ? obtenerClaveOnboarding(pathname) : null),
+    [pathname],
+  );
   const pasos = useMemo(
     () => (pathname ? obtenerPasosOnboarding(pathname) : null),
     [pathname],
   );
-  const habilitado = Boolean(pathname && usuarioId && pasos);
-  const { data, loading } = useQuery<OnboardingViewQuery>(
+  const habilitado = Boolean(claveVista && usuarioId && pasos);
+  const { data, loading, error } = useQuery<OnboardingViewQuery>(
     CONSULTA_ONBOARDING_VISTA,
     {
-      variables: { viewKey: pathname || "" },
+      variables: { viewKey: claveVista || "" },
       skip: !habilitado,
       fetchPolicy: "network-only",
     },
@@ -129,14 +131,28 @@ export const useOnboarding = () => {
   const [marcarVista] = useMutation(MARCAR_ONBOARDING_VISTA);
 
   useEffect(() => {
+    const repetirTour = () => {
+      if (!claveVista) return;
+      rutaMarcadaRef.current = null;
+      setVistaARepetir(claveVista);
+    };
+
+    window.addEventListener("cbm:repetir-onboarding", repetirTour);
+    return () =>
+      window.removeEventListener("cbm:repetir-onboarding", repetirTour);
+  }, [claveVista]);
+
+  useEffect(() => {
     if (
       !habilitado ||
       !pathname ||
+      !claveVista ||
       !usuarioId ||
       !pasos ||
       loading ||
-      data?.onboardingView ||
-      rutaMarcadaRef.current === pathname ||
+      error ||
+      (data?.onboardingView && vistaARepetir !== claveVista) ||
+      rutaMarcadaRef.current === claveVista ||
       tourActivoRef.current
     ) {
       return;
@@ -148,12 +164,20 @@ export const useOnboarding = () => {
           drive: () => void;
           destroy: () => void;
           moveNext: () => void;
+          refresh: () => void;
         }
       | undefined;
     let limpiarInteraccion = () => {};
-    let interaccionCompletada = false;
-    const tourCompletado = { current: false };
+    let limpiarTimer = () => {};
+    const tourFinalizado = { current: false };
+    const destruido = { current: false };
     const modalAbiertoPorTour = { current: false };
+
+    const destruirTour = () => {
+      if (destruido.current) return;
+      destruido.current = true;
+      instancia?.destroy();
+    };
 
     const cerrarModalSeguro = () => {
       if (!modalAbiertoPorTour.current) return;
@@ -189,7 +213,7 @@ export const useOnboarding = () => {
         steps: pasosDisponibles,
         onHighlighted: (elemento, paso, opciones) => {
           limpiarInteraccion();
-          interaccionCompletada = !paso.data?.interaccion;
+          limpiarTimer();
 
           if (!elemento || !paso.data?.interaccion) return;
 
@@ -206,45 +230,62 @@ export const useOnboarding = () => {
             ) {
               return;
             }
-            interaccionCompletada = true;
             if (paso.data?.rol === "accion") {
               modalAbiertoPorTour.current = true;
             }
             limpiarInteraccion();
-            window.setTimeout(() => opciones.driver.moveNext(), 180);
+            opciones.driver.moveNext();
+            // El click puede modificar el layout antes de que Driver.js mida el siguiente paso.
+            const timer = window.setTimeout(() => opciones.driver.refresh(), 0);
+            limpiarTimer = () => window.clearTimeout(timer);
           };
           document.addEventListener(tipo, evento, true);
           limpiarInteraccion = () =>
             document.removeEventListener(tipo, evento, true);
         },
         onNextClick: (_elemento, paso, opciones) => {
-          if (paso.data?.interaccion && !interaccionCompletada) return;
+          if (paso.data?.interaccion) return;
           opciones.driver.moveNext();
         },
         onPrevClick: (_elemento, _paso, opciones) => {
           limpiarInteraccion();
+          limpiarTimer();
           cerrarModalSeguro();
           opciones.driver.movePrevious();
         },
-        onCloseClick: (_elemento, _paso, opciones) => {
+        onCloseClick: (_elemento, _paso, _opciones) => {
           limpiarInteraccion();
+          limpiarTimer();
           cerrarModalSeguro();
-          opciones.driver.destroy();
+          tourFinalizado.current = true;
+          destruirTour();
         },
-        onDoneClick: (_elemento, _paso, opciones) => {
-          tourCompletado.current = true;
+        onDoneClick: (_elemento, _paso, _opciones) => {
+          tourFinalizado.current = true;
           cerrarModalSeguro();
-          opciones.driver.destroy();
+          destruirTour();
         },
         onDeselected: (_elemento, paso) => {
           if (paso.data?.rol === "modal") cerrarModalSeguro();
         },
+        onDestroyStarted: () => {
+          // Driver.js también destruye el tour con Escape o al pulsar el fondo.
+          // No guardamos esos cierres cuando el componente se desmonta al navegar.
+          if (!cancelado) tourFinalizado.current = true;
+          destruirTour();
+        },
         onDestroyed: () => {
           limpiarInteraccion();
+          limpiarTimer();
           cerrarModalSeguro();
-          if (tourCompletado.current) {
-            rutaMarcadaRef.current = pathname;
-            void marcarVista({ variables: { viewKey: pathname } });
+          if (tourFinalizado.current) {
+            rutaMarcadaRef.current = claveVista;
+            setVistaARepetir(null);
+            // Si falla la persistencia no reiniciamos el tour en esta sesión.
+            // La siguiente visita volverá a consultar al backend.
+            void marcarVista({ variables: { viewKey: claveVista } }).catch(
+              () => undefined,
+            );
           }
           tourActivoRef.current = false;
         },
@@ -257,8 +298,20 @@ export const useOnboarding = () => {
     return () => {
       cancelado = true;
       limpiarInteraccion();
-      instancia?.destroy();
+      limpiarTimer();
+      destruirTour();
       tourActivoRef.current = false;
     };
-  }, [data, habilitado, loading, marcarVista, pathname, pasos, usuarioId]);
+  }, [
+    claveVista,
+    data,
+    error,
+    habilitado,
+    loading,
+    marcarVista,
+    pathname,
+    pasos,
+    usuarioId,
+    vistaARepetir,
+  ]);
 };

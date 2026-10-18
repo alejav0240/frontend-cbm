@@ -19,7 +19,7 @@ export function MarketingHeader({
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
       >
-        <h1 className="text-4xl font-light dark:text-white serif tracking-tight">
+        <h1 data-onboarding-header="" className="text-4xl font-light dark:text-white serif tracking-tight">
           Marketing{" "}
           <span className="text-[#008080] italic font-medium">
             Intelligence

@@ -9,8 +9,22 @@ export interface PasoOnboarding {
   waitForElement?: number;
   skipMissingElement?: boolean;
   interaccion?: "click" | "input" | "change";
-  data?: Record<string, unknown>;
+  data?: {
+    rol?: RolOnboarding;
+    interaccion?: "click" | "input" | "change";
+  };
 }
+
+export type RolOnboarding =
+  | "header"
+  | "stats"
+  | "accion"
+  | "busqueda"
+  | "filtros"
+  | "lista"
+  | "tabs"
+  | "modal"
+  | "extra";
 
 export interface ConfiguracionOnboarding {
   titulo: string;

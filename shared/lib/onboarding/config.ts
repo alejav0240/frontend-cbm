@@ -1,15 +1,10 @@
-import type { ConfiguracionOnboarding, PasoOnboarding } from "./tipos";
+import type {
+  ConfiguracionOnboarding,
+  PasoOnboarding,
+  RolOnboarding,
+} from "./tipos";
 
-type RolAncla =
-  | "header"
-  | "stats"
-  | "accion"
-  | "busqueda"
-  | "filtros"
-  | "lista"
-  | "tabs"
-  | "modal"
-  | "extra";
+type RolAncla = RolOnboarding;
 
 interface ConfiguracionVista extends ConfiguracionOnboarding {
   anclas: RolAncla[];
@@ -284,9 +279,8 @@ const pasoDeAncla = (
       side: rol === "accion" || rol === "busqueda" ? "bottom" : "top",
       align: "start",
     },
-    waitForElement: ["stats", "lista", "extra"].includes(rol)
-      ? 3000
-      : undefined,
+    // Las listas y los modales pueden renderizarse después de la vista inicial.
+    waitForElement: rol === "lista" ? 3000 : rol === "modal" ? 5000 : undefined,
     skipMissingElement: true,
     interaccion:
       rol === "accion" && configuracion.anclas.includes("modal")
@@ -339,4 +333,18 @@ export const obtenerPasosOnboarding = (
     (ruta) => ruta !== "/dashboard" && pathname.startsWith(`${ruta}/`),
   );
   return rutaBase ? pasosParaVista(vistas[rutaBase]) : null;
+};
+
+export const obtenerClaveOnboarding = (pathname: string): string | null => {
+  if (vistas[pathname]) return pathname;
+
+  const detalle = Object.keys(vistasDetalle).find((prefijo) =>
+    pathname.startsWith(prefijo),
+  );
+  if (detalle) return `${detalle}:id`;
+
+  const rutaBase = Object.keys(vistas).find(
+    (ruta) => ruta !== "/dashboard" && pathname.startsWith(`${ruta}/`),
+  );
+  return rutaBase ?? null;
 };
