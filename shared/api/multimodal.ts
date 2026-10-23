@@ -31,7 +31,7 @@ export async function analizarVideoMultimodal(
   const csrfToken = getCookie("csrftoken");
   if (csrfToken) headers["X-CSRFToken"] = csrfToken;
 
-  const respuesta = await fetch(`${baseUrl}/api/multimodal/analizar-video/`, {
+  const respuesta = await fetch(`${baseUrl}/api/pipeline-multimodal/analizar-video/`, {
     method: "POST",
     body: formulario,
     credentials: "include",
