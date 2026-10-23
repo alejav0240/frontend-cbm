@@ -59,3 +59,38 @@ export async function analizarVideoMultimodal(
   }
   return cuerpo;
 }
+
+export type TrabajoAnalisisMultimodal = {
+  status: "queued" | "processing" | "completed" | "failed";
+  job_id: string;
+  session_id: string;
+  result?: RespuestaAnalisisMultimodal;
+  error?: string;
+};
+
+export async function crearTrabajoAnalisisMultimodal(
+  video: File,
+  sessionId?: string,
+): Promise<TrabajoAnalisisMultimodal> {
+  await ensureCsrfToken();
+  const formulario = new FormData();
+  formulario.append("video", video, video.name);
+  if (sessionId) formulario.append("session_id", sessionId);
+  const csrfToken = getCookie("csrftoken");
+  const respuesta = await fetch("/api/multimodal/trabajos/", {
+    method: "POST",
+    body: formulario,
+    credentials: "include",
+    headers: csrfToken ? { "X-CSRFToken": csrfToken } : undefined,
+  });
+  const cuerpo = (await respuesta.json()) as TrabajoAnalisisMultimodal;
+  if (!respuesta.ok) throw new ErrorAnalisisMultimodal(cuerpo.error || "No se pudo encolar el análisis.", respuesta.status);
+  return cuerpo;
+}
+
+export async function consultarTrabajoAnalisisMultimodal(jobId: string): Promise<TrabajoAnalisisMultimodal> {
+  const respuesta = await fetch(`/api/multimodal/trabajos/${jobId}/`, { credentials: "include" });
+  const cuerpo = (await respuesta.json()) as TrabajoAnalisisMultimodal;
+  if (!respuesta.ok) throw new ErrorAnalisisMultimodal(cuerpo.error || "No se pudo consultar el análisis.", respuesta.status);
+  return cuerpo;
+}
