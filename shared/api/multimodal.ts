@@ -26,12 +26,12 @@ export async function analizarVideoMultimodal(
   formulario.append("video", video, video.name);
   if (sessionId) formulario.append("session_id", sessionId);
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const baseUrl = "";
   const headers: Record<string, string> = {};
   const csrfToken = getCookie("csrftoken");
   if (csrfToken) headers["X-CSRFToken"] = csrfToken;
 
-  const respuesta = await fetch(`${baseUrl}/api/pipeline-multimodal/analizar-video/`, {
+  const respuesta = await fetch(`${baseUrl}/api/multimodal/analizar/`, {
     method: "POST",
     body: formulario,
     credentials: "include",
