@@ -12,7 +12,8 @@
     "test:ui": "playwright test --ui",
     "report": "playwright show-report",
     "codegen": "graphql-codegen --config codegen.ts",
-    "format": "prettier --write \"**/*.{ts,tsx,css,json}\""
+    "format": "prettier --write \"**/*.{ts,tsx,css,json}\"",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@apollo/client": "^4.2.0",
