@@ -2,17 +2,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { MainProvider } from "@/config/providers/main-provider";
-import { Inter, Playfair_Display } from "next/font/google";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-serif",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -80,7 +69,7 @@ export default function RootLayout({
     // suppressHydrationWarning es obligatorio al usar next-themes
     <html
       lang="es"
-      className={`${inter.variable} ${playfair.variable}`}
+      className="font-sans"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
     >
