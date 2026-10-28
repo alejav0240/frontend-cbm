@@ -1,5 +1,6 @@
-import { stat } from "fs/promises";
-import { readFile } from "fs/promises";
+import { openAsBlob } from "fs";
+import { readFile, stat } from "fs/promises";
+import { basename } from "path";
 import { getOnedriveConfig } from "@/app/api/onedrive/lib";
 import {
   UploadResult,
@@ -33,8 +34,8 @@ const MARCAR_EN_PROGRESO_MUTATION = `
 `;
 
 const COMPLETAR_MUTATION = `
-  mutation CompletarSubidaSesion($sessionId: ID!, $videoUrl: String, $storage: String, $ok: Boolean!, $message: String, $jobId: String) {
-    completarSubidaSesion(sessionId: $sessionId, videoUrl: $videoUrl, storage: $storage, ok: $ok, message: $message, jobId: $jobId) {
+  mutation CompletarSubidaSesion($sessionId: ID!, $videoUrl: String, $storage: String, $ok: Boolean!, $message: String, $jobId: String, $pipelineJobId: String) {
+    completarSubidaSesion(sessionId: $sessionId, videoUrl: $videoUrl, storage: $storage, ok: $ok, message: $message, jobId: $jobId, pipelineJobId: $pipelineJobId) {
       success
     }
   }
@@ -107,6 +108,36 @@ const llamarMutacion = async (
   return leerDataMutacion(response);
 };
 
+const encolarPipeline = async (job: PendingJob) => {
+  if (process.env.MULTIMODAL_PIPELINE_ENABLED === "false" || job.pipelineJobId) return;
+
+  const { backendUrl, serviceKey } = getOnedriveConfig();
+  const formulario = new FormData();
+  formulario.append(
+    "video",
+    await openAsBlob(job.file, { type: job.metadata.contentType }),
+    basename(job.file),
+  );
+  formulario.append("session_id", job.sessionId);
+  const headers: Record<string, string> = { "X-Request-ID": job.id };
+  const pipelineKey = process.env.MULTIMODAL_SERVICE_KEY || serviceKey;
+  if (pipelineKey) headers["X-Service-Key"] = pipelineKey;
+
+  const response = await fetch(`${backendUrl}/api/pipeline-multimodal/trabajos/`, {
+    method: "POST",
+    body: formulario,
+    headers,
+    cache: "no-store",
+    signal: AbortSignal.timeout(120_000),
+  });
+  const body = (await response.json()) as { job_id?: string; error?: string };
+  if (!response.ok || !body.job_id) {
+    throw new Error(body.error || `No se pudo encolar el pipeline (${response.status}).`);
+  }
+  job.pipelineJobId = body.job_id;
+  await enqueueJob(job);
+};
+
 const marcarSubiendo = async (sessionId: string) => {
   try {
     await llamarMutacion(MARCAR_EN_PROGRESO_MUTATION, { sessionId });
@@ -127,6 +158,7 @@ const procesarJob = async (job: PendingJob) => {
 
   let resultado: UploadResult;
   try {
+    await encolarPipeline(job);
     try {
       resultado = await uploadToOnedriveFile(job.file, job.metadata);
     } catch (error) {
@@ -141,6 +173,7 @@ const procesarJob = async (job: PendingJob) => {
       storage: resultado.storage,
       ok: true,
       jobId: job.id,
+      pipelineJobId: job.pipelineJobId,
     });
 
     await deleteJobFile(job);
@@ -165,6 +198,7 @@ const procesarJob = async (job: PendingJob) => {
           ok: false,
           message: `No se pudo subir la grabación de la sesión. ${mensaje}`,
           jobId: job.id,
+          pipelineJobId: job.pipelineJobId,
         });
       } catch (notifError) {
         console.error(

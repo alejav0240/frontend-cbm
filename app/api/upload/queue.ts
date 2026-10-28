@@ -15,6 +15,7 @@ export type PendingJob = {
   createdAt: string;
   processingStartedAt?: number;
   lastError?: string;
+  pipelineJobId?: string;
 };
 
 const QUEUE_DIR = join(process.cwd(), "uploads", "pending");

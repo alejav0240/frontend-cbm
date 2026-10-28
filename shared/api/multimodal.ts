@@ -94,3 +94,69 @@ export async function consultarTrabajoAnalisisMultimodal(jobId: string): Promise
   if (!respuesta.ok) throw new ErrorAnalisisMultimodal(cuerpo.error || "No se pudo consultar el análisis.", respuesta.status);
   return cuerpo;
 }
+
+export async function consultarResultadoAnalisisMultimodal(
+  sessionId: string,
+): Promise<RespuestaAnalisisMultimodal> {
+  const respuesta = await fetch(
+    `/api/multimodal/resultados/${encodeURIComponent(sessionId)}`,
+    { credentials: "include", cache: "no-store" },
+  );
+  const cuerpo = (await respuesta.json()) as RespuestaAnalisisMultimodal;
+  if (!respuesta.ok && respuesta.status !== 202) {
+    throw new ErrorAnalisisMultimodal(
+      typeof cuerpo.error === "string" ? cuerpo.error : "No se pudo consultar el resultado.",
+      respuesta.status,
+    );
+  }
+  return cuerpo;
+}
+
+export async function actualizarDemucaAnalisisMultimodal(
+  sessionId: string,
+  demuca: Record<string, unknown>,
+): Promise<RespuestaAnalisisMultimodal> {
+  await ensureCsrfToken();
+  const csrfToken = getCookie("csrftoken");
+  const respuesta = await fetch(
+    `/api/multimodal/resultados/${encodeURIComponent(sessionId)}/demuca`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
+      },
+      body: JSON.stringify({ demuca }),
+    },
+  );
+  const cuerpo = (await respuesta.json()) as RespuestaAnalisisMultimodal;
+  if (!respuesta.ok) {
+    throw new ErrorAnalisisMultimodal(
+      typeof cuerpo.error === "string" ? cuerpo.error : "No se pudo guardar el DEMUCA.",
+      respuesta.status,
+    );
+  }
+  return cuerpo;
+}
+
+export async function esperarTrabajoAnalisisMultimodal(
+  jobId: string,
+  opciones: { intervaloMs?: number; timeoutMs?: number } = {},
+): Promise<TrabajoAnalisisMultimodal> {
+  const intervaloMs = opciones.intervaloMs ?? 3000;
+  const timeoutMs = opciones.timeoutMs ?? 15 * 60 * 1000;
+  const inicio = Date.now();
+
+  while (true) {
+    const trabajo = await consultarTrabajoAnalisisMultimodal(jobId);
+    if (trabajo.status === "completed" || trabajo.status === "failed") return trabajo;
+    if (Date.now() - inicio >= timeoutMs) {
+      throw new ErrorAnalisisMultimodal(
+        "El análisis multimodal excedió el tiempo de espera.",
+        408,
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervaloMs));
+  }
+}
