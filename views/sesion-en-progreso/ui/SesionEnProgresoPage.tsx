@@ -14,7 +14,10 @@ import {
   WorkspaceSesion,
 } from "@/features/sesion-en-progreso";
 import { subirEnSegundoPlano } from "@/features/sesion-en-progreso/model/colaSubida";
-import { analizarVideoMultimodal } from "@/shared/api/multimodal";
+import {
+  crearTrabajoAnalisisMultimodal,
+  esperarTrabajoAnalisisMultimodal,
+} from "@/shared/api/multimodal";
 import { useSesionActivaStore, ACTUALIZAR_SESION } from "@/entities/sesion";
 import {
   usePlanesTratamiento,
@@ -655,7 +658,11 @@ export const SesionEnProgresoPage = () => {
         }
         toast.success("La grabación se subió correctamente.");
         try {
-          await analizarVideoMultimodal(archivo, sessionId);
+          const trabajo = await crearTrabajoAnalisisMultimodal(archivo, sessionId);
+          const resultado = await esperarTrabajoAnalisisMultimodal(trabajo.job_id);
+          if (resultado.status === "failed") {
+            throw new Error(resultado.error || "El análisis multimodal falló.");
+          }
           toast.success("El análisis multimodal quedó disponible.");
         } catch (error) {
           const mensaje = error instanceof Error ? error.message : "No se pudo analizar el video.";
@@ -1033,6 +1040,7 @@ export const SesionEnProgresoPage = () => {
     "
       >
         <motion.section
+          data-onboarding-extra=""
           initial={false}
           animate={{
             width: isDesktop ? (camaraAbierta ? "50%" : "56px") : "100%",

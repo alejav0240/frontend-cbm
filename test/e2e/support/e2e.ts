@@ -59,18 +59,16 @@ export async function fillSearchableSelect(
   search: string,
   option: string | RegExp,
 ) {
-  const select = page
-    .getByText(label, { exact: typeof label === "string" })
-    .locator("..")
-    .locator(".cursor-pointer")
-    .first();
+  const labelText = typeof label === "string" ? label : label.source;
+  const selectName = /paciente|cliente/i.test(labelText)
+    ? /Buscar paciente/i
+    : /terapeuta/i.test(labelText)
+      ? /Seleccionar terapeuta/i
+      : label;
+  const select = page.getByRole("combobox", { name: selectName }).first();
   await select.click({ force: true });
   await page.getByPlaceholder("Buscar...").fill(search);
-  await page
-    .locator("div.cursor-pointer")
-    .filter({ hasText: option })
-    .first()
-    .click({ force: true });
+  await page.getByRole("option").filter({ hasText: option }).first().click({ force: true });
   await expect(page.getByPlaceholder("Buscar...")).not.toBeVisible();
   return select;
 }

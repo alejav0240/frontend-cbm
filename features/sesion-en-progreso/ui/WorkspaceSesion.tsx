@@ -122,7 +122,11 @@ export const WorkspaceSesion = ({
   return (
     <div className="flex-1 flex flex-col bg-white dark:bg-accent min-h-0">
       {/* Tabs */}
-      <div role="tablist" className="flex border-b border-gray-100 dark:border-white/5 sticky top-0 bg-white dark:bg-accent z-10">
+      <div
+        data-onboarding-tabs=""
+        role="tablist"
+        className="flex border-b border-gray-100 dark:border-white/5 sticky top-0 bg-white dark:bg-accent z-10"
+      >
         {tabs.map((tab) => (
           <button
             key={tab.id}

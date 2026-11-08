@@ -23,6 +23,7 @@ export function OverviewActivityFeed({
 }: OverviewActivityFeedProps) {
   return (
     <motion.div
+      data-onboarding-list=""
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}

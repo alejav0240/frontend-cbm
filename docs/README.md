@@ -12,6 +12,8 @@
 - [PROJECT_TREE.md](./PROJECT_TREE.md) — Árbol de archivos del proyecto
 - [plan-validacion-formularios](./plan-validacion-formularios/README.md) — Validación de formularios
 - [PLAN_CASOS_PRUEBA.md](./PLAN_CASOS_PRUEBA.md) — Plan maestro de flujos e interacciones
+- [FLUJOS_RUTAS.md](./FLUJOS_RUTAS.md) — Flujos de navegación y acciones por ruta
+- [MANUAL_USUARIO.md](./MANUAL_USUARIO.md) — Manual operativo para usuarios del sistema
 - [DEPLOY_BACKEND.md](./DEPLOY_BACKEND.md) — Despliegue del backend en VPS
 - [DEPLOY_FRONTEND.md](./DEPLOY_FRONTEND.md) — Despliegue del frontend en VPS
 

@@ -123,20 +123,24 @@ export const MiPerfilPage = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold dark:text-white">Mi Perfil</h1>
+        <h1 data-onboarding-header="" className="text-2xl font-bold dark:text-white">Mi Perfil</h1>
         <p className="text-gray-400 text-sm">
           Visualiza y administra tu información personal
         </p>
       </div>
 
       {/* InformaciónPersonal */}
-      <div className="bg-white dark:bg-[#111] p-8 rounded-[32px] border border-gray-200 dark:border-white/5">
+      <div
+        data-onboarding-list=""
+        className="bg-white dark:bg-[#111] p-8 rounded-[32px] border border-gray-200 dark:border-white/5"
+      >
         <div className="flex items-start justify-between mb-8">
           <h3 className="text-lg font-bold dark:text-white">
             Información Personal
           </h3>
           {!editando && (
             <button
+              data-onboarding-action=""
               onClick={() => setEditando(true)}
               className="px-5 py-2.5 bg-[#008080] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#008080]/20 hover:bg-[#006666] transition-colors"
             >
@@ -346,7 +350,10 @@ export const MiPerfilPage = () => {
       </div>
 
       {/* CambiarContraseña */}
-      <div className="bg-white dark:bg-[#111] p-8 rounded-[32px] border border-gray-200 dark:border-white/5">
+      <div
+        data-onboarding-extra=""
+        className="bg-white dark:bg-[#111] p-8 rounded-[32px] border border-gray-200 dark:border-white/5"
+      >
         <h3 className="text-lg font-bold dark:text-white mb-6 flex items-center gap-3">
           <Key size={20} className="text-[#008080]" />
           Cambiar Contraseña

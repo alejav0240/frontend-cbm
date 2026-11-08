@@ -62,6 +62,7 @@ export function OverviewHeader({
           </p>
         </div>
         <button
+          data-onboarding-action=""
           onClick={() =>
             onStartSession?.(
               nextSession || {
