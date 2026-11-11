@@ -133,9 +133,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const checkSession = () => {
-      const token = localStorage.getItem("token");
-      const hasCookie = document.cookie.includes("cbm_auth=");
-      setHasClientSession(!!token || hasCookie || estaAutenticado || !!usuario);
+      setHasClientSession(estaAutenticado || !!usuario);
     };
     checkSession();
   }, [estaAutenticado, usuario]);

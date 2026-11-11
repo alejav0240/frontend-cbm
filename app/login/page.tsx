@@ -12,7 +12,6 @@ import { useMutation } from "@apollo/client/react";
 import MusicalNotes from "@/shared/ui/MusicalNotes";
 import { useTheme } from "next-themes";
 import { INICIO_SESION_MUTACION } from "@/shared/api/auth";
-import type { TokenAuthMutation } from "@/shared/api/generated/graphql";
 import { esquemaLogin, DatosFormularioLogin } from "@/shared/lib/esquemas-auth";
 
 export default function Login() {
@@ -21,22 +20,17 @@ export default function Login() {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
 
-  // Si ya existe sesión en el cliente, redirigir inmediatamente a dashboard
+  // La sesión vive en cookies HttpOnly; el dashboard valida CONSULTA_YO.
   useEffect(() => {
-    const hasToken = typeof window !== "undefined" && (!!localStorage.getItem("token") || document.cookie.includes("cbm_auth="));
-    if (hasToken) {
-      router.replace("/dashboard");
-    }
+    router.prefetch("/dashboard");
   }, [router]);
 
   const [login, { loading }] = useMutation(INICIO_SESION_MUTACION, {
     onCompleted: (data: unknown) => {
-      const resultado = data as TokenAuthMutation;
-      if (resultado.tokenAuth?.token) {
-        localStorage.setItem("token", resultado.tokenAuth.token);
-        localStorage.setItem("refreshToken", resultado.tokenAuth.refreshToken);
-        // Establecer cookie para middleware y SSR
-        document.cookie = `cbm_auth=1; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+      const resultado = data as {
+        tokenAuth?: { user?: { username?: string } | null } | null;
+      };
+      if (resultado.tokenAuth) {
         toast.success("¡Bienvenido de nuevo!");
         setIsNavigating(true);
         router.push("/dashboard");

@@ -4,3 +4,13 @@ allowBuilds:
   unrs-resolver: true
 minimumReleaseAgeExclude:
   - zustand@5.0.14
+  - brace-expansion@1.1.22
+overrides:
+  baseline-browser-mapping: 2.11.35
+  brace-expansion@1.1.15: 1.1.22
+  browserslist: 4.29.5
+  dompurify: 3.4.17
+  katex: 0.19.1
+  nanoid@3.3.12: 3.3.20
+  nanoid@5.1.11: 5.1.16
+  source-map-js: 1.2.2

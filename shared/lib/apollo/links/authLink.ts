@@ -4,7 +4,7 @@ import { getCookie } from "../utils/csrf";
 /**
  * Middleware que inyecta headers de autenticación en cada request
  * - CSRF token desde cookies
- * - (Opcional) Authorization header si usas tokens en memoria
+ * - La autenticación se transporta mediante cookies HttpOnly.
  */
 export const createAuthLink = () => {
   return new ApolloLink((operation: Operation, forward) => {
@@ -15,22 +15,11 @@ export const createAuthLink = () => {
     const context = operation.getContext();
     const existingHeaders = context.headers || {};
 
-    // Refresh uses the httpOnly refresh cookie and must not carry a stale access token.
-    let token: string | null = null;
-    if (
-      typeof window !== "undefined" &&
-      operation.operationName !== "RefreshToken"
-    ) {
-      token = localStorage.getItem("token");
-    }
-
     // Construir nuevos headers
     const headers: Record<string, string> = {
       ...existingHeaders,
       // CSRF para Django/DRF o similares
       ...(csrftoken && { "X-CSRFToken": csrftoken }),
-      // Bearer token si existe
-      ...(token && { Authorization: `JWT ${token}` }),
     };
 
     // Actualizar contexto de la operación
