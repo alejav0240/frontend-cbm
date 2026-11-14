@@ -13,6 +13,10 @@ const headersFor = (request: NextRequest) => {
   if (serviceKey) headers["X-Service-Key"] = serviceKey;
   const requestId = request.headers.get("X-Request-ID");
   if (requestId) headers["X-Request-ID"] = requestId;
+  for (const name of ["cookie", "origin", "referer", "x-csrftoken"]) {
+    const value = request.headers.get(name);
+    if (value) headers[name === "x-csrftoken" ? "X-CSRFToken" : name] = value;
+  }
   return headers;
 };
 

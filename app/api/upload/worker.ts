@@ -112,6 +112,7 @@ const encolarPipeline = async (job: PendingJob) => {
   if (process.env.MULTIMODAL_PIPELINE_ENABLED === "false" || job.pipelineJobId) return;
 
   const { backendUrl, serviceKey } = getOnedriveConfig();
+  const csrf = await obtenerTokenCsrf(backendUrl);
   const formulario = new FormData();
   formulario.append(
     "video",
@@ -122,6 +123,10 @@ const encolarPipeline = async (job: PendingJob) => {
   const headers: Record<string, string> = { "X-Request-ID": job.id };
   const pipelineKey = process.env.MULTIMODAL_SERVICE_KEY || serviceKey;
   if (pipelineKey) headers["X-Service-Key"] = pipelineKey;
+  headers["X-CSRFToken"] = csrf.token;
+  headers.Cookie = csrf.cookie;
+  headers.Origin = new URL(backendUrl).origin;
+  headers.Referer = `${backendUrl.replace(/\/$/, "")}/`;
 
   const response = await fetch(`${backendUrl}/api/pipeline-multimodal/trabajos/`, {
     method: "POST",
