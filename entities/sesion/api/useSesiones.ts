@@ -41,6 +41,24 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
       data.sessions.sessions
         // 1. Filtramos los elementos null que puedan venir en el array del backend
         .filter((s): s is NonNullable<typeof s> => s !== null)
+        // El backend pagina por databaseId, pero la vista es cronológica. Ordenar
+        // por databaseId hacía que sesiones antiguas aparecieran antes que las
+        // próximas cuando se habían creado/importado en distinto orden.
+        .sort((a, b) => {
+          const fechaA = a.fechaSesion
+            ? Date.parse(a.fechaSesion as string)
+            : Number.NEGATIVE_INFINITY;
+          const fechaB = b.fechaSesion
+            ? Date.parse(b.fechaSesion as string)
+            : Number.NEGATIVE_INFINITY;
+
+          if (fechaA !== fechaB) return fechaB - fechaA;
+
+          return (
+            ((b as { databaseId?: number }).databaseId ?? 0) -
+            ((a as { databaseId?: number }).databaseId ?? 0)
+          );
+        })
         // 2. Transformamos y normalizamos directamente a 'SesionNormalizada'
         .map((s) => {
           // Aseguramos de manera segura que las notas sean un string plano antes de asignarlo
@@ -110,8 +128,6 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
             videoStatus: s.videoStatus || "",
           };
         })
-        // Conservamos el orden descendente del backend: las sesiones nuevas primero.
-        .sort((a, b) => (b.databaseId ?? 0) - (a.databaseId ?? 0))
     );
   }, [data]);
 

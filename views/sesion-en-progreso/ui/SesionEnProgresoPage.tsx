@@ -14,10 +14,6 @@ import {
   WorkspaceSesion,
 } from "@/features/sesion-en-progreso";
 import { subirEnSegundoPlano } from "@/features/sesion-en-progreso/model/colaSubida";
-import {
-  crearTrabajoAnalisisMultimodal,
-  esperarTrabajoAnalisisMultimodal,
-} from "@/shared/api/multimodal";
 import { useSesionActivaStore, ACTUALIZAR_SESION } from "@/entities/sesion";
 import {
   usePlanesTratamiento,
@@ -657,17 +653,7 @@ export const SesionEnProgresoPage = () => {
           return;
         }
         toast.success("La grabación se subió correctamente.");
-        try {
-          const trabajo = await crearTrabajoAnalisisMultimodal(archivo, sessionId);
-          const resultado = await esperarTrabajoAnalisisMultimodal(trabajo.job_id);
-          if (resultado.status === "failed") {
-            throw new Error(resultado.error || "El análisis multimodal falló.");
-          }
-          toast.success("El análisis multimodal quedó disponible.");
-        } catch (error) {
-          const mensaje = error instanceof Error ? error.message : "No se pudo analizar el video.";
-          toast.warning(`La grabación está guardada, pero el análisis falló: ${mensaje}`);
-        }
+        toast.info("El análisis multimodal fue encolado y se procesará en segundo plano.");
       });
     }
     actualizarPasoGuardado("iniciar-subida", "completed");

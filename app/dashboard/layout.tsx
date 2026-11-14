@@ -67,13 +67,13 @@ export default function DashboardLayout({
   if (error || !data?.me) return null;
 
   return (
-    <div className="overflow-hidden bg-[#f8fafc] dark:bg-background flex transition-colors duration-500">
+    <div className="h-[100dvh] min-h-0 overflow-hidden bg-[#f8fafc] dark:bg-background flex transition-colors duration-500">
       {!esSesionEnProgreso && (
         <div data-onboarding-sidebar>
           <Sidebar />
         </div>
       )}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 min-h-0 h-full overflow-hidden">
         {!esSesionEnProgreso && (
           <div data-onboarding-topbar>
             <Topbar />
