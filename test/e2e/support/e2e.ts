@@ -14,9 +14,15 @@ export async function loginAsAdmin(page: Page) {
   await page.getByRole("button", { name: /Iniciar Sesión/i }).click();
   await page.waitForURL(/\/dashboard/, { timeout: 15_000 });
   await expect(page.getByRole("main")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Cerrar Sesión/i }),
+  ).toBeVisible({ timeout: 30_000 });
 }
 
 export async function logout(page: Page) {
+  await expect(
+    page.getByRole("button", { name: /Cerrar Sesión/i }),
+  ).toBeVisible({ timeout: 30_000 });
   await page.getByRole("button", { name: /Cerrar Sesión/i }).click();
   await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
 }

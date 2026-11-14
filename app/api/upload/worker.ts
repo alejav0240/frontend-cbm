@@ -22,6 +22,27 @@ const JOB_STALE_MS = 30 * 60 * 1000;
 const RETENCION_DIAS = 7;
 const DIA_MS = 24 * 60 * 60 * 1000;
 
+const leerJsonRespuesta = async <T>(response: Response, contexto: string) => {
+  const contentType = response.headers.get("content-type") || "";
+  const texto = await response.text();
+
+  if (!contentType.toLowerCase().includes("application/json")) {
+    const esHtml = /<\s*!doctype\s+html|<\s*html[\s>]/i.test(texto);
+    throw new Error(
+      `${contexto} devolvió ${esHtml ? "HTML" : "una respuesta no JSON"} (HTTP ${response.status}). ` +
+        "Revisá BACKEND_API_URL y que el endpoint exista.",
+    );
+  }
+
+  try {
+    return JSON.parse(texto) as T;
+  } catch {
+    throw new Error(
+      `${contexto} devolvió JSON inválido (HTTP ${response.status}).`,
+    );
+  }
+};
+
 const backoffMs = (attempts: number) =>
   Math.min(60_000 * 2 ** (attempts - 1), 3_600_000);
 
@@ -64,9 +85,15 @@ const postMutacion = async (
 };
 
 const leerDataMutacion = async (response: Response) => {
-  const data = (await response.json()) as {
+  const data = await leerJsonRespuesta<{
     errors?: { message?: string }[];
-  };
+  }>(response, "La mutación GraphQL");
+  if (!response.ok) {
+    throw new Error(
+      data.errors?.[0]?.message ||
+        `La mutación GraphQL falló (HTTP ${response.status}).`,
+    );
+  }
   if (data.errors?.length) {
     throw new Error(data.errors[0]?.message || "Error en mutación de subida");
   }
@@ -135,7 +162,10 @@ const encolarPipeline = async (job: PendingJob) => {
     cache: "no-store",
     signal: AbortSignal.timeout(120_000),
   });
-  const body = (await response.json()) as { job_id?: string; error?: string };
+  const body = await leerJsonRespuesta<{
+    job_id?: string;
+    error?: string;
+  }>(response, "El endpoint del pipeline multimodal");
   if (!response.ok || !body.job_id) {
     throw new Error(body.error || `No se pudo encolar el pipeline (${response.status}).`);
   }
@@ -163,7 +193,16 @@ const procesarJob = async (job: PendingJob) => {
 
   let resultado: UploadResult;
   try {
-    await encolarPipeline(job);
+    try {
+      await encolarPipeline(job);
+    } catch (error) {
+      // The analysis pipeline is auxiliary: it must not prevent the recording
+      // from reaching OneDrive, R2, or local storage.
+      console.warn(
+        `[upload-worker] No se pudo encolar el pipeline para ${job.id}; se continúa con el almacenamiento:`,
+        error,
+      );
+    }
     try {
       resultado = await uploadToOnedriveFile(job.file, job.metadata);
     } catch (error) {
@@ -264,7 +303,10 @@ export const procesarSubidasPendientes = async () => {
     await recuperarJobsColgados();
     const jobs = await listJobs();
     const pendientes = jobs
-      .filter((j) => j.status !== "processing" && j.nextAttemptAt <= Date.now())
+      // A definitive failure must remain stopped until the user explicitly
+      // retries it. Processing failed jobs here creates an endless loop of
+      // backend notifications and repeated error toasts after every login.
+      .filter((j) => j.status === "pending" && j.nextAttemptAt <= Date.now())
       .sort((a, b) => a.nextAttemptAt - b.nextAttemptAt);
 
     for (const job of pendientes) {

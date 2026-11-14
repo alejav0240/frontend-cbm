@@ -18,7 +18,10 @@ export const getOnedriveConfig = (): OnedriveConfig => ({
   clientSecret: process.env.ONEDRIVE_CLIENT_SECRET ?? "",
   serviceKey: process.env.ONEDRIVE_SERVICE_KEY ?? "",
   backendUrl:
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
+    (process.env.BACKEND_API_URL ?? process.env.NEXT_PUBLIC_API_URL)?.replace(
+      /\/$/,
+      "",
+    ) ??
     "http://localhost:8000",
 });
 
