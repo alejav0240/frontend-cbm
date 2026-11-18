@@ -66,7 +66,11 @@ type ScaleEvalSesion = SesionDetallada["scaleEvaluations"][number] & {
   scale?: { name?: string | null } | null;
 };
 type SubscaleRespSesion = ScaleEvalSesion["subscaleResponses"][number] & {
-  subscale?: { name?: string | null } | null;
+  subscale?: {
+    name?: string | null;
+    category?: string | null;
+    maxValue?: number | null;
+  } | null;
 };
 type ValueRespSesion =
   SesionDetallada["scaleEvaluations"][number]["valueResponses"][number];
@@ -1030,57 +1034,160 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                   </h4>
                   <div className="grid md:grid-cols-2 gap-4">
                     {sesionDetallada.scaleEvaluations.map(
-                      (evalData: ScaleEvalSesion) => (
-                        <div
-                          key={evalData.id}
-                          className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 space-y-2"
-                        >
-                          <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800/60 pb-2">
-                            <span className="text-sm font-bold dark:text-white font-sans">
-                              {evalData.scale?.name || "Escala"}
-                            </span>
-                            <span className="text-xs font-extrabold text-[#008080] bg-teal-500/10 px-2 py-1 rounded-full font-sans">
-                              Puntuación: {evalData.totalScore}/10
-                            </span>
-                          </div>
+                      (evalData: ScaleEvalSesion) => {
+                        const respuestas = evalData.subscaleResponses ?? [];
+                        const maxScore = respuestas.reduce(
+                          (total, response) =>
+                            total + (response.subscale?.maxValue ?? 0),
+                          0,
+                        );
+                        const score = evalData.totalScore ?? 0;
+                        const percentage =
+                          maxScore > 0
+                            ? Math.round((score / maxScore) * 100)
+                            : 0;
+                        const groupedResponses = respuestas.reduce<
+                          Record<string, SubscaleRespSesion[]>
+                        >((groups, response) => {
+                          const category =
+                            response.subscale?.category || "General";
+                          groups[category] ??= [];
+                          groups[category].push(response);
+                          return groups;
+                        }, {});
 
-                          <div className="space-y-1 pt-1">
-                            {evalData.subscaleResponses &&
-                              evalData.subscaleResponses.map(
-                                (r: SubscaleRespSesion, idx: number) => (
-                                  <div
-                                    key={idx}
-                                    className="flex justify-between text-xs text-gray-500 font-sans"
-                                  >
-                                    <span>
-                                      {r.subscale?.name || "Subescala"}
+                        return (
+                          <div
+                            key={evalData.id}
+                            className="overflow-hidden rounded-2xl border border-purple-200/70 bg-gradient-to-br from-purple-50/80 via-white to-slate-50 dark:border-purple-400/20 dark:from-purple-500/10 dark:via-zinc-900 dark:to-zinc-900"
+                          >
+                            <div className="border-b border-purple-200/60 px-5 py-4 dark:border-purple-400/15">
+                              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="rounded-lg bg-purple-500/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-200">
+                                      DEMUCA
                                     </span>
-                                    <span className="font-semibold">
-                                      {r.score} (máx:{" "}
-                                      {r.subscale?.maxValue || 10})
+                                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                                      Resultado provisional
                                     </span>
                                   </div>
-                                ),
+                                  <h5 className="mt-2 text-base font-bold text-slate-900 dark:text-white font-sans">
+                                    {evalData.scale?.name || "Escala DEMUCA"}
+                                  </h5>
+                                  <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
+                                    {respuestas.length} indicadores · requiere revisión profesional
+                                  </p>
+                                </div>
+
+                                <div className="min-w-[180px] rounded-xl border border-purple-200/70 bg-white/80 px-4 py-3 dark:border-purple-400/15 dark:bg-white/5">
+                                  <div className="flex items-end justify-between gap-3">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                      Puntaje total
+                                    </span>
+                                    <span className="text-2xl font-black text-purple-700 dark:text-purple-200">
+                                      {score}
+                                      <span className="text-sm font-semibold text-gray-400">
+                                        {" "}
+                                        / {maxScore}
+                                      </span>
+                                    </span>
+                                  </div>
+                                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-purple-100 dark:bg-purple-950/60">
+                                    <div
+                                      className="h-full rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all"
+                                      style={{ width: `${percentage}%` }}
+                                    />
+                                  </div>
+                                  <p className="mt-1 text-right text-[10px] font-semibold text-purple-600 dark:text-purple-300">
+                                    {percentage}% del máximo
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="grid gap-3 p-4 md:grid-cols-2">
+                              {Object.entries(groupedResponses).map(
+                                ([category, categoryResponses]) => {
+                                  const categoryScore = categoryResponses.reduce(
+                                    (total, response) => total + response.score,
+                                    0,
+                                  );
+                                  const categoryMax = categoryResponses.reduce(
+                                    (total, response) =>
+                                      total +
+                                      (response.subscale?.maxValue ?? 0),
+                                    0,
+                                  );
+
+                                  return (
+                                    <div
+                                      key={category}
+                                      className="rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-zinc-800 dark:bg-white/[0.03]"
+                                    >
+                                      <div className="mb-2 flex items-center justify-between gap-3">
+                                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-200">
+                                          {category}
+                                        </span>
+                                        <span className="shrink-0 rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-bold text-purple-700 dark:text-purple-200">
+                                          {categoryScore}/{categoryMax}
+                                        </span>
+                                      </div>
+                                      <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
+                                        {categoryResponses.map(
+                                          (
+                                            response: SubscaleRespSesion,
+                                            responseIndex: number,
+                                          ) => (
+                                            <div
+                                              key={`${response.subscale?.name || "subscale"}-${responseIndex}`}
+                                              className="flex min-w-0 items-center justify-between gap-2 text-xs"
+                                            >
+                                              <span className="truncate text-gray-500 dark:text-zinc-400">
+                                                {response.subscale?.name ||
+                                                  "Subescala"}
+                                              </span>
+                                              <span className="shrink-0 font-bold text-slate-700 dark:text-zinc-200">
+                                                {response.score}/
+                                                {response.subscale?.maxValue ?? 0}
+                                              </span>
+                                            </div>
+                                          ),
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                },
                               )}
+                            </div>
+
                             {evalData.valueResponses &&
-                              evalData.valueResponses.map(
-                                (v: ValueRespSesion, idx: number) => (
-                                  <div
-                                    key={idx}
-                                    className="flex justify-between text-xs text-gray-500 font-sans"
-                                  >
-                                    <span>
-                                      {v.scaleValue?.label || "Indicador"}
-                                    </span>
-                                    <span className="font-semibold">
-                                      {v.scaleValue?.value || "—"}
-                                    </span>
+                              evalData.valueResponses.length > 0 && (
+                                <div className="border-t border-purple-200/60 px-5 py-3 dark:border-purple-400/15">
+                                  <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                    Valores cualitativos
+                                  </p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {evalData.valueResponses.map(
+                                      (valueResponse: ValueRespSesion) => (
+                                        <span
+                                          key={valueResponse.id}
+                                          className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs text-slate-600 dark:bg-white/5 dark:text-zinc-300"
+                                        >
+                                          {valueResponse.scaleValue?.label}:{" "}
+                                          <strong>
+                                            {valueResponse.scaleValue?.value ??
+                                              "—"}
+                                          </strong>
+                                        </span>
+                                      ),
+                                    )}
                                   </div>
-                                ),
+                                </div>
                               )}
                           </div>
-                        </div>
-                      ),
+                        );
+                      },
                     )}
                   </div>
                 </div>

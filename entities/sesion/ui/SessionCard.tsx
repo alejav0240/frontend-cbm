@@ -15,6 +15,7 @@ import {
   FolderOpen,
   Package,
   Activity,
+  Sparkles,
   ChevronRight,
   ExternalLink,
   FileText,
@@ -44,6 +45,8 @@ interface ScaleEvaluationValueResponseType {
 interface ScaleEvaluationSubscaleResponseType {
   subscale: {
     name: string;
+    category?: string | null;
+    maxValue?: number | null;
   };
   score: number;
 }
@@ -79,6 +82,113 @@ interface SessionInventoryType {
 
 interface Therapist {
   fullname: string;
+}
+
+function DemucaEvaluationCard({
+  evaluation,
+}: {
+  evaluation: ScaleEvaluationType;
+}) {
+  const responses = evaluation.subscaleResponses ?? [];
+  const maxScore = responses.reduce(
+    (total, response) => total + (response.subscale.maxValue ?? 0),
+    0,
+  );
+  const score = evaluation.totalScore ?? 0;
+  const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+  const groupedResponses = responses.reduce<
+    Record<string, ScaleEvaluationSubscaleResponseType[]>
+  >((groups, response) => {
+    const category = response.subscale.category || "General";
+    groups[category] ??= [];
+    groups[category].push(response);
+    return groups;
+  }, {});
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-purple-200/70 bg-gradient-to-br from-purple-50/80 via-white to-slate-50 dark:border-purple-400/20 dark:from-purple-500/10 dark:via-zinc-900 dark:to-zinc-900">
+      <div className="border-b border-purple-200/60 px-4 py-4 dark:border-purple-400/15">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <Sparkles size={14} className="text-purple-600 dark:text-purple-300" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-200">
+                Evaluación DEMUCA
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] text-gray-500 dark:text-zinc-400">
+              {responses.length} indicadores · resultado provisional
+            </p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="text-2xl font-black text-purple-700 dark:text-purple-200">
+              {score}
+              <span className="text-sm font-semibold text-gray-400">
+                {" "}
+                / {maxScore}
+              </span>
+            </p>
+            <p className="text-[10px] font-semibold text-purple-600 dark:text-purple-300">
+              {percentage}% del máximo
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-purple-100 dark:bg-purple-950/60">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-2 p-3 sm:grid-cols-2">
+        {Object.entries(groupedResponses).map(
+          ([category, categoryResponses]) => {
+            const categoryScore = categoryResponses.reduce(
+              (total, response) => total + response.score,
+              0,
+            );
+            const categoryMax = categoryResponses.reduce(
+              (total, response) =>
+                total + (response.subscale.maxValue ?? 0),
+              0,
+            );
+
+            return (
+              <div
+                key={category}
+                className="rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-zinc-800 dark:bg-white/[0.03]"
+              >
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="truncate text-[11px] font-bold text-slate-700 dark:text-zinc-200">
+                    {category}
+                  </span>
+                  <span className="shrink-0 rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-bold text-purple-700 dark:text-purple-200">
+                    {categoryScore}/{categoryMax}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-2">
+                  {categoryResponses.map((response) => (
+                    <div
+                      key={response.subscale.name}
+                      className="flex min-w-0 items-center justify-between gap-2 text-[11px]"
+                    >
+                      <span className="truncate text-gray-500 dark:text-zinc-400">
+                        {response.subscale.name}
+                      </span>
+                      <span className="shrink-0 font-bold text-slate-700 dark:text-zinc-200">
+                        {response.score}/{response.subscale.maxValue ?? 0}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          },
+        )}
+      </div>
+    </div>
+  );
 }
 
 export interface SessionType {
@@ -488,63 +598,80 @@ const SessionCard: React.FC<SessionCardProps> = ({
                 </span>
               </div>
               <div className="space-y-3">
-                {session.scaleEvaluations.map((evaluation, index) => (
-                  <div
-                    key={evaluation.id || index}
-                    className="bg-gray-50/50 dark:bg-white/2 p-4 rounded-2xl border border-gray-100 dark:border-white/5"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold dark:text-white">
-                        {evaluation.scale?.name || "Escala"}
-                      </span>
-                      <span className="text-sm font-bold text-[#008080]">
-                        {evaluation.totalScore !== null &&
-                        evaluation.totalScore !== undefined
-                          ? `${evaluation.totalScore}/10`
-                          : "N/A"}
-                      </span>
+                {session.scaleEvaluations.map((evaluation, index) => {
+                  const isDemuca = evaluation.scale?.name
+                    ?.toLowerCase()
+                    .includes("demuca");
+
+                  if (isDemuca) {
+                    return (
+                      <DemucaEvaluationCard
+                        key={evaluation.id || index}
+                        evaluation={evaluation}
+                      />
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={evaluation.id || index}
+                      className="bg-gray-50/50 dark:bg-white/2 p-4 rounded-2xl border border-gray-100 dark:border-white/5"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-bold dark:text-white">
+                          {evaluation.scale?.name || "Escala"}
+                        </span>
+                        <span className="text-sm font-bold text-[#008080]">
+                          {evaluation.totalScore !== null &&
+                          evaluation.totalScore !== undefined
+                            ? `${evaluation.totalScore}/10`
+                            : "N/A"}
+                        </span>
+                      </div>
+                      {evaluation.valueResponses &&
+                        evaluation.valueResponses.length > 0 && (
+                          <ul className="space-y-1">
+                            {evaluation.valueResponses.map((response, idx) => (
+                              <li
+                                key={idx}
+                                className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2"
+                              >
+                                <ChevronRight
+                                  size={12}
+                                  className="text-[#008080] mt-0.5 flex-shrink-0"
+                                />
+                                <span>
+                                  {response.scaleValue?.label || "Sin valor"}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      {evaluation.subscaleResponses &&
+                        evaluation.subscaleResponses.length > 0 && (
+                          <ul className="space-y-1 mt-2">
+                            {evaluation.subscaleResponses.map(
+                              (response, idx) => (
+                                <li
+                                  key={idx}
+                                  className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2"
+                                >
+                                  <ChevronRight
+                                    size={12}
+                                    className="text-[#008080] mt-0.5 flex-shrink-0"
+                                  />
+                                  <span>
+                                    {response.subscale?.name || "Subescala"}:{" "}
+                                    {response.score}
+                                  </span>
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        )}
                     </div>
-                    {evaluation.valueResponses &&
-                      evaluation.valueResponses.length > 0 && (
-                        <ul className="space-y-1">
-                          {evaluation.valueResponses.map((response, idx) => (
-                            <li
-                              key={idx}
-                              className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2"
-                            >
-                              <ChevronRight
-                                size={12}
-                                className="text-[#008080] mt-0.5 flex-shrink-0"
-                              />
-                              <span>
-                                {response.scaleValue?.label || "Sin valor"}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    {evaluation.subscaleResponses &&
-                      evaluation.subscaleResponses.length > 0 && (
-                        <ul className="space-y-1 mt-2">
-                          {evaluation.subscaleResponses.map((response, idx) => (
-                            <li
-                              key={idx}
-                              className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2"
-                            >
-                              <ChevronRight
-                                size={12}
-                                className="text-[#008080] mt-0.5 flex-shrink-0"
-                              />
-                              <span>
-                                {response.subscale?.name || "Subescala"}:{" "}
-                                {response.score}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

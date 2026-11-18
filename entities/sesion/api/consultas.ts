@@ -183,6 +183,8 @@ export const OBTENER_CICLOS = gql`
             subscaleResponses {
               subscale {
                 name
+                category
+                maxValue
                 __typename
               }
               score
