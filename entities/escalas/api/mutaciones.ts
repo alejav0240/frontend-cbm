@@ -23,6 +23,25 @@ export const ADD_SCALE_RESPONSE = gql`
   }
 `;
 
+export const ACTUALIZAR_EVALUACION_ESCALA = gql`
+  mutation UpdateScaleEvaluation(
+    $evaluationId: ID!
+    $subscales: [ResponseSubScale]!
+  ) {
+    updateScaleEvaluation(
+      evaluationId: $evaluationId
+      subscales: $subscales
+    ) {
+      success
+      message
+      evaluation {
+        id
+        totalScore
+      }
+    }
+  }
+`;
+
 export const ELIMINAR_ESCALA = gql`
   mutation DeleteScale($id: ID!) {
     deleteScale(id: $id) {

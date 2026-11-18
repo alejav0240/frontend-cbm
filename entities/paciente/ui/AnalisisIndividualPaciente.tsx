@@ -87,8 +87,8 @@ export function AnalisisIndividualPaciente({
 
     let tasaDemuca = null;
     if (totalDemuca >= 2) {
-      const primero = dataDemuca[0]?.totalScore || 0;
-      const ultimo = dataDemuca[totalDemuca - 1]?.totalScore || 0;
+      const primero = dataDemuca[totalDemuca - 1]?.totalScore || 0;
+      const ultimo = dataDemuca[0]?.totalScore || 0;
       if (primero > 0) {
         tasaDemuca = Math.round(((ultimo - primero) / primero) * 100);
       }
@@ -116,10 +116,13 @@ export function AnalisisIndividualPaciente({
     if (maxPuntos === 0) return [];
 
     const puntos = [];
+    const demucaOrdenado = [...dataDemuca].reverse();
+    const eriOrdenado = [...eriData].reverse();
+    const cimOrdenado = [...cimData].reverse();
     for (let i = 0; i < maxPuntos; i++) {
-      const dDemuca = dataDemuca[i];
-      const dEri = eriData[i];
-      const dCim = cimData[i];
+      const dDemuca = demucaOrdenado[i];
+      const dEri = eriOrdenado[i];
+      const dCim = cimOrdenado[i];
 
       const fecha =
         dDemuca?.evaluatedAt ||
@@ -150,7 +153,7 @@ export function AnalisisIndividualPaciente({
   const competenciasRadar = useMemo(() => {
     if (!dataDemuca || dataDemuca.length === 0) return [];
 
-    const ultima = dataDemuca[dataDemuca.length - 1];
+    const ultima = dataDemuca[0];
     const agrupado: Record<string, { total: number; count: number }> = {};
 
     ultima.subscaleResponses.forEach((resp) => {
@@ -173,7 +176,7 @@ export function AnalisisIndividualPaciente({
 
     const keysSet = new Set<string>();
 
-    const data = dataDemuca.map((evaluacion, idx) => {
+    const data = [...dataDemuca].reverse().map((evaluacion, idx) => {
       const punto: Record<string, string | number> = {
         sesion: `S${idx + 1}`,
         fecha: evaluacion.evaluatedAt

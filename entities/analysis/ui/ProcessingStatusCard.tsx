@@ -29,6 +29,73 @@ function latestRun(runs: ProcessingRun[]) {
   })[0];
 }
 
+function labelForKey(key: string) {
+  return key
+    .replace(/([A-Z])/g, " $1")
+    .replace(/[_-]/g, " ")
+    .replace(/^./, (value) => value.toUpperCase());
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function ResultadoProcesamiento({ result }: { result: Record<string, unknown> }) {
+  const sections = Object.entries(result).filter(
+    ([key]) => !["schema_version", "status", "session_id"].includes(key),
+  );
+
+  if (sections.length === 0) {
+    return (
+      <p className="rounded-xl bg-white/60 p-3 text-xs text-gray-600 dark:bg-white/5 dark:text-gray-300">
+        El procesamiento terminó, pero el worker no devolvió una respuesta
+        detallada.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
+          Respuesta del análisis
+        </p>
+        <p className="mt-1 text-xs text-gray-500">
+          Resultado provisional generado por el worker. Requiere revisión humana.
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        {sections.map(([key, value]) => (
+          <details
+            key={key}
+            open={key === "demuca" || key === "observations"}
+            className="rounded-xl border border-purple-200/60 bg-white/60 p-3 dark:border-purple-400/20 dark:bg-white/5"
+          >
+            <summary className="cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-200">
+              {labelForKey(key)}
+            </summary>
+            <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap break-words text-[11px] leading-relaxed text-gray-600 dark:text-gray-300">
+              {isObject(value)
+                ? JSON.stringify(value, null, 2)
+                : String(value ?? "—")}
+            </pre>
+          </details>
+        ))}
+      </div>
+
+      <details className="rounded-xl border border-gray-200 p-3 dark:border-white/10">
+        <summary className="cursor-pointer text-[11px] font-bold text-gray-500">
+          Ver respuesta JSON completa
+        </summary>
+        <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-words text-[11px] text-gray-600 dark:text-gray-300">
+          {JSON.stringify(result, null, 2)}
+        </pre>
+      </details>
+    </div>
+  );
+}
+
 export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
   const { runs, loading, error, startRun, starting } = useProcessingRuns(sessionId);
   const run = latestRun(runs);
@@ -98,6 +165,10 @@ export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
         <p className="rounded-xl bg-red-50 p-3 text-xs text-red-700">
           {run.errorMessage}
         </p>
+      )}
+
+      {run.status === "completed" && run.result && (
+        <ResultadoProcesamiento result={run.result} />
       )}
 
       {provisional && (

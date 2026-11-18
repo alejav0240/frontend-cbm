@@ -330,17 +330,24 @@ export const OBTENER_CICLOS_PACIENTES = gql`
 export const VER_SESION = gql`
   query VerSesion($id: ID!) {
     session(id: $id) {
+      id
       createdAt
       cycleNumber
       databaseId
       durationMinutes
+      patient {
+        id
+      }
       sessionResources {
         resource {
           title
         }
       }
       sessionDate
+      sessionStatus
       notes
+      videoStatus
+      videoUrl
       formAssignments {
         completionRatio
         createdAt
@@ -352,6 +359,10 @@ export const VER_SESION = gql`
         }
       }
       scaleEvaluations {
+        scale {
+          id
+          name
+        }
         totalScore
         evaluatedAt
         id
@@ -359,6 +370,8 @@ export const VER_SESION = gql`
         subscaleResponses {
           subscale {
             id
+            name
+            category
             maxValue
           }
           score
