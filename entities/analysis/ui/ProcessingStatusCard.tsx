@@ -3,6 +3,7 @@
 import { AlertCircle, CheckCircle2, Clock3, Loader2, ShieldCheck } from "lucide-react";
 
 import { useProcessingRuns, type ProcessingRun } from "../api/useProcessingRuns";
+import { TemporalReviewTimeline } from "./TemporalReviewTimeline";
 
 const STATUS_LABELS: Record<string, string> = {
   queued: "En cola",
@@ -107,6 +108,8 @@ export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
           </span>
         </div>
       )}
+
+      {run.status === "completed" && <TemporalReviewTimeline runId={run.id} />}
     </section>
   );
 }
