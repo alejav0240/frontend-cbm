@@ -505,10 +505,12 @@ export const saveLocal = async (
   const localPath = join(process.cwd(), "uploads", "guardadas", relativePath);
   await mkdir(dirname(localPath), { recursive: true });
   await writeFile(localPath, body);
+  const publicOrigin =
+    process.env.APP_URL?.replace(/\/+$/, "") || "http://localhost:3000";
 
   return {
     storage: "local",
-    url: `/api/upload/ver?${firmarRutaLocal(relativePath)}`,
+    url: `${publicOrigin}/api/upload/ver?${firmarRutaLocal(relativePath)}`,
     fallbackReason,
   };
 };

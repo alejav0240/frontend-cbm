@@ -14,6 +14,7 @@ import { useTheme } from "next-themes";
 import { INICIO_SESION_MUTACION } from "@/shared/api/auth";
 import type { TokenAuthMutation } from "@/shared/api/generated/graphql";
 import { esquemaLogin, DatosFormularioLogin } from "@/shared/lib/esquemas-auth";
+import { ensureCsrfToken } from "@/shared/lib/apollo";
 
 export default function Login() {
   const { theme, setTheme } = useTheme();
@@ -59,8 +60,9 @@ export default function Login() {
   });
 
   const onFormSubmit = useCallback(
-    (data: DatosFormularioLogin) => {
+    async (data: DatosFormularioLogin) => {
       if (isBusy) return;
+      await ensureCsrfToken();
       login({
         variables: {
           username: data.username,
