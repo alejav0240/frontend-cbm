@@ -98,6 +98,7 @@ import {
 } from "@/entities/informe-clinico";
 import type { InformeClinicoDTO } from "@/entities/informe-clinico";
 import type { VerSesionQuery } from "@/shared/api/generated/graphql";
+import { ProcessingStatusCard } from "@/entities/analysis";
 
 interface RouteParams {
   id: string;
@@ -770,11 +771,12 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       >
         {selectedSessionForAI && (
           <div className="max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
-            <p className="text-center text-gray-500 py-8">
-              Componente AIAnalysisView en desarrollo para la sesión{" "}
-              {selectedSessionForAI}
-              (modo: {aiViewMode})
-            </p>
+            <div className="space-y-5">
+              <ProcessingStatusCard sessionId={selectedSessionForAI} />
+              <p className="text-center text-xs text-gray-500">
+                Vista solicitada: {aiViewMode === "charts" ? "gráficos" : "evidencia y estado"}
+              </p>
+            </div>
           </div>
         )}
       </Modal>
