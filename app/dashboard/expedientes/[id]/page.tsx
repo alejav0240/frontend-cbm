@@ -22,6 +22,7 @@ import {
 import { useObtenerProgresoEscala } from "@/entities/paciente/api/useObtenerProgresoEscala";
 import AnalisDemuca from "@/entities/paciente/ui/AnalisDemuca";
 import { AnalisisIndividualPaciente } from "@/entities/paciente/ui/AnalisisIndividualPaciente";
+import { GraficoRadar } from "@/entities/paciente/components/GraficoRadar";
 import { HistorialSesiones } from "@/entities/sesion/ui/HistorialSesiones";
 import type { SessionType } from "@/entities/sesion/ui/SessionCard";
 import { useObtenerProgresoSubEscala } from "@/entities/paciente/api/useObtenerProgresoSubEscala";
@@ -77,6 +78,119 @@ type ValueRespSesion =
 type FormAssignSesion = NonNullable<
   NonNullable<SesionDetallada["formAssignments"]>[number]
 >;
+
+function GraficosDemucaSesion({
+  sesion,
+  loading,
+}: {
+  sesion: SesionDetallada | null;
+  loading: boolean;
+}) {
+  if (loading || !sesion) {
+    return (
+      <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-purple-200/60 bg-purple-50/40 text-sm text-gray-500 dark:border-purple-400/20 dark:bg-purple-500/5 dark:text-zinc-300">
+        {loading ? "Cargando gráficos DEMUCA..." : "No se encontró la sesión."}
+      </div>
+    );
+  }
+
+  const evaluation = sesion.scaleEvaluations.find((item) =>
+    item.scale?.name?.toLowerCase().includes("demuca"),
+  );
+  const responses = evaluation?.subscaleResponses ?? [];
+  const radarData = responses.map((response) => ({
+    item: response.subscale?.name || "Subescala",
+    score: response.score,
+    category: response.subscale?.category || "General",
+  }));
+  const grouped = responses.reduce<
+    Record<string, { score: number; max: number; count: number }>
+  >((categories, response) => {
+    const category = response.subscale?.category || "General";
+    const current = categories[category] || { score: 0, max: 0, count: 0 };
+    categories[category] = {
+      score: current.score + response.score,
+      max: current.max + (response.subscale?.maxValue ?? 0),
+      count: current.count + 1,
+    };
+    return categories;
+  }, {});
+
+  if (!evaluation || responses.length === 0) {
+    return (
+      <div className="rounded-2xl border border-gray-200 p-6 text-sm text-gray-500 dark:border-white/10 dark:text-zinc-300">
+        Esta sesión todavía no tiene una evaluación DEMUCA con subescalas.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-purple-200/70 bg-gradient-to-br from-purple-50/80 via-white to-slate-50 p-5 dark:border-purple-400/20 dark:from-purple-500/10 dark:via-zinc-900 dark:to-zinc-900">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-purple-600 dark:text-purple-300">
+              Perfil de la sesión
+            </p>
+            <h3 className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
+              DEMUCA
+            </h3>
+            <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
+              Comparación por áreas y detalle de indicadores observados.
+            </p>
+          </div>
+          <div className="rounded-xl border border-purple-200/70 bg-white/80 px-5 py-3 text-center dark:border-purple-400/20 dark:bg-white/5">
+            <p className="text-2xl font-black text-purple-700 dark:text-purple-200">
+              {evaluation.totalScore ?? 0}
+              <span className="text-sm font-semibold text-gray-400">
+                {" "}
+                / {responses.reduce(
+                  (total, response) =>
+                    total + (response.subscale?.maxValue ?? 0),
+                  0,
+                )}
+              </span>
+            </p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              Puntaje total
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Object.entries(grouped).map(([category, values]) => (
+          <div
+            key={category}
+            className="rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-white/[0.03]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">
+                {category}
+              </p>
+              <span className="shrink-0 text-xs font-black text-purple-600 dark:text-purple-300">
+                {values.score}/{values.max}
+              </span>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-purple-100 dark:bg-purple-950/60">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500"
+                style={{
+                  width: `${values.max > 0 ? (values.score / values.max) * 100 : 0}%`,
+                }}
+              />
+            </div>
+            <p className="mt-2 text-[10px] text-gray-400">
+              {values.count} indicadores
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <GraficoRadar data={radarData} />
+    </div>
+  );
+}
 
 import Modal from "@/shared/ui/components/Modal";
 import { FormularioClinico } from "@/features/gestion-paciente/ui/FormularioClinico";
@@ -213,6 +327,11 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     cargando: cargandoDetalles,
     sesion: sesionDetallada,
   } = useSesionDetalles();
+  const {
+    obtenerSesion: obtenerSesionAI,
+    cargando: cargandoSesionAI,
+    sesion: sesionAI,
+  } = useSesionDetalles();
   const { actualizarSesion } = useActualizarSesion();
   const { eliminarSesion } = useEliminarSesion();
 
@@ -317,8 +436,12 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     sessionId: string | number,
     mode: "list" | "charts",
   ) => {
-    setSelectedSessionForAI(String(sessionId));
+    const normalizedSessionId = String(sessionId);
+    setSelectedSessionForAI(normalizedSessionId);
     setAiViewMode(mode);
+    obtenerSesionAI({
+      variables: { id: normalizedSessionId },
+    });
   };
 
   const handleEditSession = (session: SessionData) => {
@@ -770,16 +893,58 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       <Modal
         isOpen={selectedSessionForAI !== null}
         onClose={() => setSelectedSessionForAI(null)}
-        title="Análisis de Inteligencia Artificial"
+        title={aiViewMode === "charts" ? "Gráficos DEMUCA" : "Análisis DEMUCA"}
         maxWidth="max-w-5xl"
       >
         {selectedSessionForAI && (
           <div className="max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
             <div className="space-y-5">
-              <ProcessingStatusCard sessionId={selectedSessionForAI} />
-              <p className="text-center text-xs text-gray-500">
-                Vista solicitada: {aiViewMode === "charts" ? "gráficos" : "evidencia y estado"}
-              </p>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-1.5 dark:border-white/10 dark:bg-white/[0.03]">
+                <div className="grid grid-cols-2 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setAiViewMode("list")}
+                    className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
+                      aiViewMode === "list"
+                        ? "bg-white text-purple-700 shadow-sm dark:bg-zinc-900 dark:text-purple-200"
+                        : "text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    Análisis y evidencia
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAiViewMode("charts")}
+                    className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
+                      aiViewMode === "charts"
+                        ? "bg-white text-purple-700 shadow-sm dark:bg-zinc-900 dark:text-purple-200"
+                        : "text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    Gráficos por área
+                  </button>
+                </div>
+              </div>
+
+              {aiViewMode === "charts" ? (
+                <GraficosDemucaSesion
+                  sesion={sesionAI}
+                  loading={cargandoSesionAI}
+                />
+              ) : (
+                <>
+                  <div className="rounded-2xl border border-purple-200/60 bg-purple-50/40 p-4 dark:border-purple-400/20 dark:bg-purple-500/5">
+                    <p className="text-sm font-bold text-purple-900 dark:text-purple-100">
+                      Análisis multimodal de la sesión
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-purple-800/70 dark:text-purple-200/70">
+                      Revisá el estado del procesamiento, la evidencia devuelta
+                      por el worker y la línea de revisión humana.
+                    </p>
+                  </div>
+                  <ProcessingStatusCard sessionId={selectedSessionForAI} />
+                </>
+              )}
             </div>
           </div>
         )}
