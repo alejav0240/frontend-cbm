@@ -109,7 +109,7 @@ export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
         </div>
       )}
 
-      {run.status === "completed" && <TemporalReviewTimeline runId={run.id} />}
+      {(run.status === "completed" || run.status === "blocked_review") && (\n        <TemporalReviewTimeline runId={run.id} />\n      )}
     </section>
   );
 }
