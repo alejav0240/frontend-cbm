@@ -29,7 +29,7 @@ function latestRun(runs: ProcessingRun[]) {
 }
 
 export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
-  const { runs, loading, error } = useProcessingRuns(sessionId);
+  const { runs, loading, error, startRun, starting } = useProcessingRuns(sessionId);
   const run = latestRun(runs);
 
   if (loading && !run) {
@@ -50,8 +50,18 @@ export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
 
   if (!run) {
     return (
-      <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 text-sm text-gray-500">
-        Esta sesión todavía no tiene un procesamiento multimodal registrado.
+      <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 space-y-3">
+        <p className="text-sm text-gray-500">
+          Esta sesión todavía no tiene un procesamiento multimodal registrado.
+        </p>
+        <button
+          type="button"
+          onClick={() => void startRun()}
+          disabled={starting}
+          className="rounded-xl bg-[#008080] px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+        >
+          {starting ? "Solicitando..." : "Iniciar análisis multimodal"}
+        </button>
       </div>
     );
   }
