@@ -1,6 +1,6 @@
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 
-import { OBTENER_PROCESAMIENTO_SESION } from "./consultas";
+import { CREAR_PROCESAMIENTO_SESION, OBTENER_PROCESAMIENTO_SESION } from "./consultas";
 
 export type ProcessingArtifact = {
   id: string;
@@ -37,6 +37,7 @@ type ProcessingRunsResponse = {
 };
 
 export function useProcessingRuns(sessionId: string | null) {
+  const [createProcessingRun, createState] = useMutation(CREAR_PROCESAMIENTO_SESION);
   const query = useQuery<ProcessingRunsResponse>(OBTENER_PROCESAMIENTO_SESION, {
     variables: { sessionId },
     skip: !sessionId,
@@ -49,5 +50,16 @@ export function useProcessingRuns(sessionId: string | null) {
     loading: query.loading,
     error: query.error,
     refetch: query.refetch,
+    starting: createState.loading,
+    startRun: async (sourceUri?: string) => {
+      await createProcessingRun({
+        variables: {
+          sessionId,
+          pipelineVersion: "0.3.0",
+          sourceUri,
+        },
+      });
+      await query.refetch();
+    },
   };
 }
