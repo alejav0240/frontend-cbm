@@ -55,4 +55,4 @@ export const CREAR_PROCESAMIENTO_SESION = gql`
       }
     }
   }
-\`;
+`;
