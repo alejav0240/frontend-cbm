@@ -34,3 +34,25 @@ export const OBTENER_PROCESAMIENTO_SESION = gql`
     }
   }
 `;
+
+export const CREAR_PROCESAMIENTO_SESION = gql\`
+  mutation CrearProcesamientoSesion(
+    $sessionId: ID!
+    $pipelineVersion: String
+    $sourceUri: String
+  ) {
+    createProcessingRun(
+      sessionId: $sessionId
+      pipelineVersion: $pipelineVersion
+      sourceUri: $sourceUri
+    ) {
+      processingRun {
+        id
+        externalRunId
+        pipelineVersion
+        status
+        requestedAt
+      }
+    }
+  }
+\`;
