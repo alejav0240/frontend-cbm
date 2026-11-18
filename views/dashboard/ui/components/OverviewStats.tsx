@@ -20,7 +20,10 @@ export function OverviewStats({
   monthlyExpenses,
 }: OverviewStatsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
+    <div
+      data-onboarding-stats=""
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10"
+    >
       <StatCard
         icon={<Users />}
         label="Pacientes Activos"

@@ -27,7 +27,22 @@ const solicitarToken = async (backendUrl: string): Promise<TokenCsrf> => {
     signal: AbortSignal.timeout(30_000),
   });
 
-  const body = (await response.json()) as { csrfToken?: string };
+  const contentType = response.headers.get("content-type") || "";
+  const texto = await response.text();
+  if (!contentType.toLowerCase().includes("application/json")) {
+    const esHtml = /<\s*!doctype\s+html|<\s*html[\s>]/i.test(texto);
+    throw new Error(
+      `El endpoint CSRF devolvió ${esHtml ? "HTML" : "una respuesta no JSON"} ` +
+        `(HTTP ${response.status}). Revisá BACKEND_API_URL y /csrf/.`,
+    );
+  }
+
+  let body: { csrfToken?: string };
+  try {
+    body = JSON.parse(texto) as { csrfToken?: string };
+  } catch {
+    throw new Error(`El endpoint CSRF devolvió JSON inválido (HTTP ${response.status}).`);
+  }
   if (!response.ok) {
     throw new Error(
       `No se pudo obtener token CSRF del backend (HTTP ${response.status})`,

@@ -3,6 +3,8 @@ export const PERMISSION_ACTIONS = ["view", "add", "change", "delete"] as const;
 export type PermissionAction = (typeof PERMISSION_ACTIONS)[number];
 export type PermissionKey = `${string}:${PermissionAction}`;
 
+export const DATASETS_PERMISSION = "ml:view" as const;
+
 export interface PermissionModule {
   id: string;
   name: string;

@@ -191,6 +191,21 @@ const vistas: Record<string, ConfiguracionVista> = {
     "Revisa y actualiza tus datos personales.",
     ["header", "accion", "lista", "extra"],
   ),
+  "/dashboard/sesion-en-progreso": vista(
+    "Sesión en progreso",
+    "Registra el trabajo clínico, revisa el plan y guarda la sesión antes de finalizar.",
+    ["header", "tabs", "accion", "extra", "modal"],
+    {
+      accion: texto(
+        "Finalizar sesión",
+        "Cuando termines el trabajo, usa esta acción para revisar y confirmar el guardado.",
+      ),
+      extra: texto(
+        "Cámara y grabación",
+        "Este espacio permite controlar la cámara y la grabación de la sesión.",
+      ),
+    },
+  ),
 };
 
 const vistasDetalle: Record<string, ConfiguracionVista> = {
@@ -234,6 +249,17 @@ const pasoDeAncla = (
   rol: RolAncla,
   configuracion: ConfiguracionVista,
 ): PasoOnboarding => {
+  const interaccion =
+    rol === "accion" && configuracion.anclas.includes("modal")
+      ? "click"
+      : rol === "tabs"
+        ? "click"
+        : rol === "busqueda"
+          ? "input"
+          : rol === "filtros"
+            ? "change"
+            : undefined;
+
   const contenido =
     configuracion.textos[rol] ||
     (rol === "header"
@@ -263,10 +289,20 @@ const pasoDeAncla = (
                     "Formulario seguro",
                     "Explora los campos disponibles. El onboarding cerrará este formulario sin guardar cambios.",
                   )
-                : texto(
+        : texto(
                     "Información principal",
                     "Aquí se muestran los registros y acciones de esta vista.",
                   ));
+
+  const descripcionConInteraccion = interaccion
+    ? `${contenido.description} ${
+        interaccion === "click"
+          ? "Haz clic en el elemento para continuar."
+          : interaccion === "input"
+            ? "Escribe algo para continuar."
+            : "Cambia este valor para continuar."
+      }`
+    : contenido.description;
 
   return {
     element:
@@ -275,34 +311,22 @@ const pasoDeAncla = (
         : `[data-onboarding-step-${rol}], [data-onboarding-${rol}]`,
     popover: {
       title: contenido.title,
-      description: contenido.description,
+      description: descripcionConInteraccion,
       side: rol === "accion" || rol === "busqueda" ? "bottom" : "top",
       align: "start",
+      ...(interaccion
+        ? {
+            disableButtons: ["next"],
+            nextBtnText: "Interactúa para continuar",
+          }
+        : {}),
     },
     // Las listas y los modales pueden renderizarse después de la vista inicial.
     waitForElement: rol === "lista" ? 3000 : rol === "modal" ? 5000 : undefined,
     skipMissingElement: true,
-    interaccion:
-      rol === "accion" && configuracion.anclas.includes("modal")
-        ? "click"
-        : rol === "tabs"
-          ? "click"
-          : rol === "busqueda"
-            ? "input"
-            : rol === "filtros"
-              ? "change"
-              : undefined,
+    interaccion,
     data: {
-      interaccion:
-        rol === "accion" && configuracion.anclas.includes("modal")
-          ? "click"
-          : rol === "tabs"
-            ? "click"
-            : rol === "busqueda"
-              ? "input"
-              : rol === "filtros"
-                ? "change"
-                : undefined,
+      interaccion,
       rol,
     },
   };

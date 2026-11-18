@@ -12,7 +12,6 @@ import { useMutation } from "@apollo/client/react";
 import MusicalNotes from "@/shared/ui/MusicalNotes";
 import { useTheme } from "next-themes";
 import { INICIO_SESION_MUTACION } from "@/shared/api/auth";
-import type { TokenAuthMutation } from "@/shared/api/generated/graphql";
 import { esquemaLogin, DatosFormularioLogin } from "@/shared/lib/esquemas-auth";
 
 export default function Login() {
@@ -21,22 +20,17 @@ export default function Login() {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
 
-  // Si ya existe sesión en el cliente, redirigir inmediatamente a dashboard
+  // La sesión vive en cookies HttpOnly; el dashboard valida CONSULTA_YO.
   useEffect(() => {
-    const hasToken = typeof window !== "undefined" && (!!localStorage.getItem("token") || document.cookie.includes("cbm_auth="));
-    if (hasToken) {
-      router.replace("/dashboard");
-    }
+    router.prefetch("/dashboard");
   }, [router]);
 
   const [login, { loading }] = useMutation(INICIO_SESION_MUTACION, {
     onCompleted: (data: unknown) => {
-      const resultado = data as TokenAuthMutation;
-      if (resultado.tokenAuth?.token) {
-        localStorage.setItem("token", resultado.tokenAuth.token);
-        localStorage.setItem("refreshToken", resultado.tokenAuth.refreshToken);
-        // Establecer cookie para middleware y SSR
-        document.cookie = `cbm_auth=1; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+      const resultado = data as {
+        tokenAuth?: { user?: { username?: string } | null } | null;
+      };
+      if (resultado.tokenAuth) {
         toast.success("¡Bienvenido de nuevo!");
         setIsNavigating(true);
         router.push("/dashboard");
@@ -98,11 +92,12 @@ export default function Login() {
         </button>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md relative z-10"
-      >
+      <main className="w-full flex justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md relative z-10"
+        >
         <div className="bg-white dark:bg-accent rounded-[48px] p-10 lg:p-12 shadow-2xl border border-black/5 dark:border-white/5 transition-colors duration-500">
           <div className="text-center mb-10">
             <div className="relative w-48 h-12 mx-auto mb-8">
@@ -125,7 +120,10 @@ export default function Login() {
 
           <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-4">
+              <label
+                htmlFor="username"
+                className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-4"
+              >
                 Usuario
               </label>
               <div className="relative">
@@ -134,6 +132,7 @@ export default function Login() {
                   size={20}
                 />
                 <input
+                  id="username"
                   type="text"
                   {...register("username")}
                   className={`w-full pl-12 pr-6 py-4 bg-gray-50 dark:bg-white/5 rounded-2xl border focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all dark:text-white ${errors.username ? "border-red-500" : "border-transparent focus-visible:border-[#008080]"}`}
@@ -149,7 +148,10 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-4">
+              <label
+                htmlFor="password"
+                className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-4"
+              >
                 Contraseña
               </label>
               <div className="relative">
@@ -158,6 +160,7 @@ export default function Login() {
                   size={20}
                 />
                 <input
+                  id="password"
                   type="password"
                   {...register("password")}
                   className={`w-full pl-12 pr-6 py-4 bg-gray-50 dark:bg-white/5 rounded-2xl border focus-visible:bg-white dark:focus-visible:bg-white/10 outline-none transition-all dark:text-white ${errors.password ? "border-red-500" : "border-transparent focus-visible:border-[#008080]"}`}
@@ -203,7 +206,8 @@ export default function Login() {
             </div>
           </div>
         </div>
-      </motion.div>
+        </motion.div>
+      </main>
     </div>
   );
 }

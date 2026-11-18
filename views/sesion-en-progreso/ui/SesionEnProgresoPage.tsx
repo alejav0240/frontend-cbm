@@ -644,15 +644,16 @@ export const SesionEnProgresoPage = () => {
             id: toastId,
           });
         },
-      ).then((resultado) => {
+      ).then(async (resultado) => {
         toast.dismiss(toastId);
-        if (resultado === "ok") {
-          toast.success("La grabación se subió correctamente.");
-        } else {
+        if (resultado !== "ok") {
           toast.warning(
             "No se pudo subir la grabación ahora. Se reintentará automáticamente.",
           );
+          return;
         }
+        toast.success("La grabación se subió correctamente.");
+        toast.info("El análisis multimodal fue encolado y se procesará en segundo plano.");
       });
     }
     actualizarPasoGuardado("iniciar-subida", "completed");
@@ -1025,6 +1026,7 @@ export const SesionEnProgresoPage = () => {
     "
       >
         <motion.section
+          data-onboarding-extra=""
           initial={false}
           animate={{
             width: isDesktop ? (camaraAbierta ? "50%" : "56px") : "100%",

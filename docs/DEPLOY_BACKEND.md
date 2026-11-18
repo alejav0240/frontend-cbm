@@ -202,3 +202,28 @@ Ejecutar el comando de `pm2 startup` con sudo (requiere acceso de administrador 
 2. Verificar que Gunicorn escucha: `curl http://127.0.0.1:8000/csrf/`
 3. Verificar que el proxy funciona: `curl http://127.0.0.1:81/csrf/` (via Apache)
 4. Verificar SSL: `curl -sk https://api.musicoterapiabolivia.com/csrf/`
+
+## Worker del pipeline multimodal
+
+La subida de una sesión encola automáticamente un `TrabajoAnalisis`. Para que
+el procesamiento avance en producción debe existir un worker persistente junto
+al backend:
+
+```bash
+cd /home/hmusicot/cbm-backend
+source venv/bin/activate
+pm2 start "python manage.py procesar_pipeline_multimodal --poll-seconds 5" \
+  --name cbm-pipeline-worker --interpreter none
+pm2 save
+```
+
+Validación rápida:
+
+```bash
+pm2 logs cbm-pipeline-worker --lines 50
+python manage.py procesar_pipeline_multimodal --once
+```
+
+El worker de Next conserva el `pipelineJobId` en su cola y reintenta la
+solicitud si el backend no está disponible; el endpoint backend reutiliza un
+trabajo activo para la misma sesión y evita duplicar el procesamiento.

@@ -1,5 +1,6 @@
-import { stat } from "fs/promises";
-import { readFile } from "fs/promises";
+import { openAsBlob } from "fs";
+import { readFile, stat } from "fs/promises";
+import { basename } from "path";
 import { getOnedriveConfig } from "@/app/api/onedrive/lib";
 import {
   UploadResult,
@@ -21,6 +22,27 @@ const JOB_STALE_MS = 30 * 60 * 1000;
 const RETENCION_DIAS = 7;
 const DIA_MS = 24 * 60 * 60 * 1000;
 
+const leerJsonRespuesta = async <T>(response: Response, contexto: string) => {
+  const contentType = response.headers.get("content-type") || "";
+  const texto = await response.text();
+
+  if (!contentType.toLowerCase().includes("application/json")) {
+    const esHtml = /<\s*!doctype\s+html|<\s*html[\s>]/i.test(texto);
+    throw new Error(
+      `${contexto} devolvió ${esHtml ? "HTML" : "una respuesta no JSON"} (HTTP ${response.status}). ` +
+        "Revisá BACKEND_API_URL y que el endpoint exista.",
+    );
+  }
+
+  try {
+    return JSON.parse(texto) as T;
+  } catch {
+    throw new Error(
+      `${contexto} devolvió JSON inválido (HTTP ${response.status}).`,
+    );
+  }
+};
+
 const backoffMs = (attempts: number) =>
   Math.min(60_000 * 2 ** (attempts - 1), 3_600_000);
 
@@ -33,8 +55,8 @@ const MARCAR_EN_PROGRESO_MUTATION = `
 `;
 
 const COMPLETAR_MUTATION = `
-  mutation CompletarSubidaSesion($sessionId: ID!, $videoUrl: String, $storage: String, $ok: Boolean!, $message: String, $jobId: String) {
-    completarSubidaSesion(sessionId: $sessionId, videoUrl: $videoUrl, storage: $storage, ok: $ok, message: $message, jobId: $jobId) {
+  mutation CompletarSubidaSesion($sessionId: ID!, $videoUrl: String, $storage: String, $ok: Boolean!, $message: String, $jobId: String, $pipelineJobId: String) {
+    completarSubidaSesion(sessionId: $sessionId, videoUrl: $videoUrl, storage: $storage, ok: $ok, message: $message, jobId: $jobId, pipelineJobId: $pipelineJobId) {
       success
     }
   }
@@ -63,9 +85,15 @@ const postMutacion = async (
 };
 
 const leerDataMutacion = async (response: Response) => {
-  const data = (await response.json()) as {
+  const data = await leerJsonRespuesta<{
     errors?: { message?: string }[];
-  };
+  }>(response, "La mutación GraphQL");
+  if (!response.ok) {
+    throw new Error(
+      data.errors?.[0]?.message ||
+        `La mutación GraphQL falló (HTTP ${response.status}).`,
+    );
+  }
   if (data.errors?.length) {
     throw new Error(data.errors[0]?.message || "Error en mutación de subida");
   }
@@ -107,6 +135,44 @@ const llamarMutacion = async (
   return leerDataMutacion(response);
 };
 
+const encolarPipeline = async (job: PendingJob) => {
+  if (process.env.MULTIMODAL_PIPELINE_ENABLED === "false" || job.pipelineJobId) return;
+
+  const { backendUrl, serviceKey } = getOnedriveConfig();
+  const csrf = await obtenerTokenCsrf(backendUrl);
+  const formulario = new FormData();
+  formulario.append(
+    "video",
+    await openAsBlob(job.file, { type: job.metadata.contentType }),
+    basename(job.file),
+  );
+  formulario.append("session_id", job.sessionId);
+  const headers: Record<string, string> = { "X-Request-ID": job.id };
+  const pipelineKey = process.env.MULTIMODAL_SERVICE_KEY || serviceKey;
+  if (pipelineKey) headers["X-Service-Key"] = pipelineKey;
+  headers["X-CSRFToken"] = csrf.token;
+  headers.Cookie = csrf.cookie;
+  headers.Origin = new URL(backendUrl).origin;
+  headers.Referer = `${backendUrl.replace(/\/$/, "")}/`;
+
+  const response = await fetch(`${backendUrl}/api/pipeline-multimodal/trabajos/`, {
+    method: "POST",
+    body: formulario,
+    headers,
+    cache: "no-store",
+    signal: AbortSignal.timeout(120_000),
+  });
+  const body = await leerJsonRespuesta<{
+    job_id?: string;
+    error?: string;
+  }>(response, "El endpoint del pipeline multimodal");
+  if (!response.ok || !body.job_id) {
+    throw new Error(body.error || `No se pudo encolar el pipeline (${response.status}).`);
+  }
+  job.pipelineJobId = body.job_id;
+  await enqueueJob(job);
+};
+
 const marcarSubiendo = async (sessionId: string) => {
   try {
     await llamarMutacion(MARCAR_EN_PROGRESO_MUTATION, { sessionId });
@@ -128,6 +194,16 @@ const procesarJob = async (job: PendingJob) => {
   let resultado: UploadResult;
   try {
     try {
+      await encolarPipeline(job);
+    } catch (error) {
+      // The analysis pipeline is auxiliary: it must not prevent the recording
+      // from reaching OneDrive, R2, or local storage.
+      console.warn(
+        `[upload-worker] No se pudo encolar el pipeline para ${job.id}; se continúa con el almacenamiento:`,
+        error,
+      );
+    }
+    try {
       resultado = await uploadToOnedriveFile(job.file, job.metadata);
     } catch (error) {
       const reason = error instanceof Error ? error.message : "OneDrive error";
@@ -141,6 +217,7 @@ const procesarJob = async (job: PendingJob) => {
       storage: resultado.storage,
       ok: true,
       jobId: job.id,
+      pipelineJobId: job.pipelineJobId,
     });
 
     await deleteJobFile(job);
@@ -165,6 +242,7 @@ const procesarJob = async (job: PendingJob) => {
           ok: false,
           message: `No se pudo subir la grabación de la sesión. ${mensaje}`,
           jobId: job.id,
+          pipelineJobId: job.pipelineJobId,
         });
       } catch (notifError) {
         console.error(
@@ -225,7 +303,10 @@ export const procesarSubidasPendientes = async () => {
     await recuperarJobsColgados();
     const jobs = await listJobs();
     const pendientes = jobs
-      .filter((j) => j.status !== "processing" && j.nextAttemptAt <= Date.now())
+      // A definitive failure must remain stopped until the user explicitly
+      // retries it. Processing failed jobs here creates an endless loop of
+      // backend notifications and repeated error toasts after every login.
+      .filter((j) => j.status === "pending" && j.nextAttemptAt <= Date.now())
       .sort((a, b) => a.nextAttemptAt - b.nextAttemptAt);
 
     for (const job of pendientes) {

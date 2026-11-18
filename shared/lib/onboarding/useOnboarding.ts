@@ -210,6 +210,17 @@ export const useOnboarding = () => {
         showProgress: true,
         showButtons: ["next", "previous", "close"],
         popoverClass: "driverjs-theme",
+        allowKeyboardControl: true,
+        smoothScroll: true,
+        onPopoverRender: (popover, opciones) => {
+          popover.wrapper.setAttribute("data-onboarding-popover", "");
+          popover.wrapper.setAttribute("aria-live", "polite");
+          if (opciones.state.activeStep?.data?.interaccion) {
+            popover.wrapper.setAttribute("data-onboarding-interactive", "");
+          } else {
+            popover.wrapper.removeAttribute("data-onboarding-interactive");
+          }
+        },
         steps: pasosDisponibles,
         onHighlighted: (elemento, paso, opciones) => {
           limpiarInteraccion();
@@ -219,14 +230,11 @@ export const useOnboarding = () => {
 
           const tipo = paso.data.interaccion as "click" | "input" | "change";
           const evento = (evento: Event) => {
-            const objetivoActual = document.querySelector(
-              paso.element as string,
-            );
             const origen = evento.target;
             if (
-              !objetivoActual ||
+              !elemento ||
               !(origen instanceof Node) ||
-              (origen !== objetivoActual && !objetivoActual.contains(origen))
+              (origen !== elemento && !elemento.contains(origen))
             ) {
               return;
             }
@@ -239,9 +247,9 @@ export const useOnboarding = () => {
             const timer = window.setTimeout(() => opciones.driver.refresh(), 0);
             limpiarTimer = () => window.clearTimeout(timer);
           };
-          document.addEventListener(tipo, evento, true);
+          elemento.addEventListener(tipo, evento, true);
           limpiarInteraccion = () =>
-            document.removeEventListener(tipo, evento, true);
+            elemento.removeEventListener(tipo, evento, true);
         },
         onNextClick: (_elemento, paso, opciones) => {
           if (paso.data?.interaccion) return;

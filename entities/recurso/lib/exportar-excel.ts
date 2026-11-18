@@ -1,11 +1,10 @@
 import { RecursoExportarFila } from "../model/dto";
+import { descargarExcel } from "@/shared/lib/exportar-excel";
 
 export const generarRecursosExcel = async (
   filas: RecursoExportarFila[],
   nombreArchivo = "reporte_recursos",
 ) => {
-  const XLSX = await import("xlsx");
-
   const datos = filas.map((f) => ({
     ID: f.id,
     Título: f.titulo,
@@ -14,8 +13,5 @@ export const generarRecursosExcel = async (
     URL: f.url,
   }));
 
-  const ws = XLSX.utils.json_to_sheet(datos);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Recursos");
-  XLSX.writeFile(wb, `${nombreArchivo}_${Date.now()}.xlsx`);
+  await descargarExcel(datos, "Recursos", nombreArchivo);
 };

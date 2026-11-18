@@ -5,6 +5,8 @@ export interface PasoOnboarding {
     description: string;
     side?: "top" | "right" | "bottom" | "left";
     align?: "start" | "center" | "end";
+    disableButtons?: ("next" | "previous" | "close")[];
+    nextBtnText?: string;
   };
   waitForElement?: number;
   skipMissingElement?: boolean;

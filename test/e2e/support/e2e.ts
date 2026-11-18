@@ -14,9 +14,15 @@ export async function loginAsAdmin(page: Page) {
   await page.getByRole("button", { name: /Iniciar Sesión/i }).click();
   await page.waitForURL(/\/dashboard/, { timeout: 15_000 });
   await expect(page.getByRole("main")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Cerrar Sesión/i }),
+  ).toBeVisible({ timeout: 30_000 });
 }
 
 export async function logout(page: Page) {
+  await expect(
+    page.getByRole("button", { name: /Cerrar Sesión/i }),
+  ).toBeVisible({ timeout: 30_000 });
   await page.getByRole("button", { name: /Cerrar Sesión/i }).click();
   await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
 }
@@ -59,18 +65,16 @@ export async function fillSearchableSelect(
   search: string,
   option: string | RegExp,
 ) {
-  const select = page
-    .getByText(label, { exact: typeof label === "string" })
-    .locator("..")
-    .locator(".cursor-pointer")
-    .first();
+  const labelText = typeof label === "string" ? label : label.source;
+  const selectName = /paciente|cliente/i.test(labelText)
+    ? /Buscar paciente/i
+    : /terapeuta/i.test(labelText)
+      ? /Seleccionar terapeuta/i
+      : label;
+  const select = page.getByRole("combobox", { name: selectName }).first();
   await select.click({ force: true });
   await page.getByPlaceholder("Buscar...").fill(search);
-  await page
-    .locator("div.cursor-pointer")
-    .filter({ hasText: option })
-    .first()
-    .click({ force: true });
+  await page.getByRole("option").filter({ hasText: option }).first().click({ force: true });
   await expect(page.getByPlaceholder("Buscar...")).not.toBeVisible();
   return select;
 }
