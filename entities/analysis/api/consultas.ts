@@ -20,6 +20,19 @@ export const OBTENER_PROCESAMIENTO_SESION = gql`
       updatedAt
       result
       metadata
+      semanticStatus
+      reviewRequired
+      pipelineStages {
+        id
+        label
+        status
+        progress
+        message
+        startedAt
+        finishedAt
+        durationMs
+        artifactKinds
+      }
       artifacts {
         id
         kind

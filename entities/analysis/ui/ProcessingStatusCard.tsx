@@ -4,6 +4,8 @@ import { AlertCircle, CheckCircle2, Clock3, Loader2, ShieldCheck } from "lucide-
 
 import { useProcessingRuns, type ProcessingRun } from "../api/useProcessingRuns";
 import { TemporalReviewTimeline } from "./TemporalReviewTimeline";
+import { ProcessingPipeline } from "./ProcessingPipeline";
+import { EvidenceTimeline } from "./EvidenceTimeline";
 
 const STATUS_LABELS: Record<string, string> = {
   queued: "En cola",
@@ -40,9 +42,131 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function formatSeconds(value: unknown) {
+  return typeof value === "number" ? `${value.toFixed(2)} s` : "—";
+}
+
+function DemucaBreakdown({ value }: { value: Record<string, unknown> }) {
+  const evidence = isObject(value.evidence) ? value.evidence : {};
+  const domains = Object.entries(value).filter(
+    ([key, entry]) =>
+      key !== "evidence" &&
+      isObject(entry) &&
+      Object.values(entry).some((item) => typeof item === "number"),
+  );
+
+  return (
+    <div className="mt-3 space-y-3">
+      <div className="rounded-lg bg-purple-50 p-3 text-[11px] text-purple-900 dark:bg-purple-500/10 dark:text-purple-100">
+        Seleccioná un indicador para consultar las ventanas y señales que
+        sustentaron su puntuación.
+      </div>
+      {domains.map(([domain, entries]) => (
+        <details
+          key={domain}
+          className="rounded-xl border border-purple-200/60 bg-white/70 p-3 dark:border-purple-400/20 dark:bg-white/5"
+        >
+          <summary className="cursor-pointer text-xs font-bold text-purple-800 dark:text-purple-100">
+            {labelForKey(domain)}
+          </summary>
+          <div className="mt-2 space-y-2">
+            {Object.entries(entries as Record<string, unknown>).map(
+              ([item, score]) => {
+                const itemEvidence = isObject(evidence[`${domain}.${item}`])
+                  ? (evidence[`${domain}.${item}`] as Record<string, unknown>)
+                  : {};
+                const windows = Array.isArray(itemEvidence.evidence_windows)
+                  ? itemEvidence.evidence_windows
+                  : [];
+                return (
+                  <details
+                    key={item}
+                    className="rounded-lg border border-purple-100 p-3 dark:border-purple-400/10"
+                  >
+                    <summary className="cursor-pointer text-xs font-semibold text-gray-700 dark:text-gray-200">
+                      <span>{labelForKey(item)}</span>
+                      <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] text-purple-700 dark:bg-purple-500/20 dark:text-purple-200">
+                        {String(score)}/2
+                      </span>
+                    </summary>
+                    <div className="mt-3 space-y-2 text-[11px] text-gray-600 dark:text-gray-300">
+                      <p>
+                        Estado:{" "}
+                        <strong>{String(itemEvidence.evidence_status ?? "—")}</strong>
+                        {" · "}Confianza:{" "}
+                        <strong>
+                          {String(itemEvidence.confidence_percent ?? 0)}%
+                        </strong>
+                      </p>
+                      <p>
+                        Señales usadas:{" "}
+                        {Array.isArray(itemEvidence.source_labels) &&
+                        itemEvidence.source_labels.length > 0
+                          ? itemEvidence.source_labels.join(", ")
+                          : "ninguna"}
+                      </p>
+                      {windows.length > 0 ? (
+                        <div className="space-y-2">
+                          <p className="font-semibold text-gray-700 dark:text-gray-200">
+                            Ventanas consideradas
+                          </p>
+                          {windows.map((window, index) => {
+                            if (!isObject(window)) return null;
+                            const signals = Array.isArray(window.signals)
+                              ? window.signals
+                              : [];
+                            return (
+                              <div
+                                key={`${String(window.window_id)}-${index}`}
+                                className="rounded-lg bg-gray-50 p-2 dark:bg-white/5"
+                              >
+                                <p className="font-semibold">
+                                  {String(window.window_id ?? `Ventana ${index + 1}`)}
+                                  {" · "}
+                                  {formatSeconds(window.start_seconds)} —{" "}
+                                  {formatSeconds(window.end_seconds)}
+                                </p>
+                                <ul className="mt-1 space-y-1">
+                                  {signals.map((signal, signalIndex) => {
+                                    if (!isObject(signal)) return null;
+                                    return (
+                                      <li key={`${String(signal.label)}-${signalIndex}`}>
+                                        {String(signal.label)}: probabilidad{" "}
+                                        {String(signal.probability)} · aporte{" "}
+                                        {String(signal.contribution)}
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p>No hay ventanas individuales disponibles para este indicador.</p>
+                      )}
+                    </div>
+                  </details>
+                );
+              },
+            )}
+          </div>
+        </details>
+      ))}
+    </div>
+  );
+}
+
 function ResultadoProcesamiento({ result }: { result: Record<string, unknown> }) {
   const sections = Object.entries(result).filter(
-    ([key]) => !["schema_version", "status", "session_id"].includes(key),
+    ([key]) =>
+      ![
+        "schema_version",
+        "status",
+        "session_id",
+        "semantic_status",
+        "pipeline_stages",
+      ].includes(key),
   );
 
   if (sections.length === 0) {
@@ -75,11 +199,15 @@ function ResultadoProcesamiento({ result }: { result: Record<string, unknown> })
             <summary className="cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-200">
               {labelForKey(key)}
             </summary>
-            <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap break-words text-[11px] leading-relaxed text-gray-600 dark:text-gray-300">
-              {isObject(value)
-                ? JSON.stringify(value, null, 2)
-                : String(value ?? "—")}
-            </pre>
+            {key === "demuca" && isObject(value) ? (
+              <DemucaBreakdown value={value} />
+            ) : (
+              <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap break-words text-[11px] leading-relaxed text-gray-600 dark:text-gray-300">
+                {isObject(value)
+                  ? JSON.stringify(value, null, 2)
+                  : String(value ?? "—")}
+              </pre>
+            )}
           </details>
         ))}
       </div>
@@ -134,7 +262,10 @@ export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
     );
   }
 
-  const provisional = run.status === "completed" || run.status === "blocked_review";
+  const provisional =
+    run.semanticStatus === "provisional_evidence" ||
+    run.semanticStatus === "provisional" ||
+    run.semanticStatus === "draft";
 
   return (
     <section className="rounded-2xl border border-purple-200/60 bg-purple-50/40 dark:border-purple-400/20 dark:bg-purple-500/5 p-5 space-y-4">
@@ -161,6 +292,8 @@ export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
         </div>
       </div>
 
+      <ProcessingPipeline stages={run.pipelineStages} />
+
       {run.errorMessage && (
         <p className="rounded-xl bg-red-50 p-3 text-xs text-red-700">
           {run.errorMessage}
@@ -168,7 +301,14 @@ export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
       )}
 
       {run.status === "completed" && run.result && (
-        <ResultadoProcesamiento result={run.result} />
+        <>
+          <EvidenceTimeline
+            result={run.result}
+            sourceUri={run.sourceUri}
+            runId={run.id}
+          />
+          <ResultadoProcesamiento result={run.result} />
+        </>
       )}
 
       {provisional && (
@@ -180,7 +320,7 @@ export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
         </div>
       )}
 
-      {(run.status === "completed" || run.status === "blocked_review") && (
+      {(run.status === "completed" || run.status === "blocked_review" || run.reviewRequired) && (
         <TemporalReviewTimeline runId={run.id} />
       )}
     </section>

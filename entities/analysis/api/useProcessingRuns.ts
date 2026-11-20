@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@apollo/client/react";
 
 import { CREAR_PROCESAMIENTO_SESION, OBTENER_PROCESAMIENTO_SESION } from "./consultas";
+import type { PipelineStage } from "../ui/ProcessingPipeline";
 
 export type ProcessingArtifact = {
   id: string;
@@ -29,6 +30,9 @@ export type ProcessingRun = {
   updatedAt?: string | null;
   result?: Record<string, unknown> | null;
   metadata?: Record<string, unknown> | null;
+  semanticStatus: string;
+  reviewRequired: boolean;
+  pipelineStages: PipelineStage[];
   artifacts: ProcessingArtifact[];
 };
 
