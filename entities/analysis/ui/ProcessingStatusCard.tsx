@@ -224,8 +224,15 @@ function ResultadoProcesamiento({ result }: { result: Record<string, unknown> })
   );
 }
 
-export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
-  const { runs, loading, error, startRun, starting } = useProcessingRuns(sessionId);
+export function ProcessingStatusCard({
+  sessionId,
+  sourceUri,
+}: {
+  sessionId: string;
+  sourceUri?: string | null;
+}) {
+  const { runs, loading, error, startRun, starting, startError } =
+    useProcessingRuns(sessionId);
   const run = latestRun(runs);
 
   if (loading && !run) {
@@ -252,16 +259,22 @@ export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
         </p>
         <button
           type="button"
-          onClick={() => void startRun()}
+          onClick={() => void startRun(sourceUri ?? undefined)}
           disabled={starting}
           className="rounded-xl bg-[#008080] px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
         >
           {starting ? "Solicitando..." : "Iniciar análisis multimodal"}
         </button>
+        {startError && (
+          <p className="rounded-xl bg-red-50 p-3 text-xs text-red-700">
+            {startError}
+          </p>
+        )}
       </div>
     );
   }
 
+  const canRetry = run.status === "failed" || run.status === "cancelled";
   const provisional =
     run.semanticStatus === "provisional_evidence" ||
     run.semanticStatus === "provisional" ||
@@ -322,6 +335,17 @@ export function ProcessingStatusCard({ sessionId }: { sessionId: string }) {
 
       {(run.status === "completed" || run.status === "blocked_review" || run.reviewRequired) && (
         <TemporalReviewTimeline runId={run.id} />
+      )}
+
+      {canRetry && (
+        <button
+          type="button"
+          onClick={() => void startRun(sourceUri ?? undefined)}
+          disabled={starting}
+          className="rounded-xl bg-[#008080] px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+        >
+          {starting ? "Solicitando..." : "Reintentar análisis multimodal"}
+        </button>
       )}
     </section>
   );

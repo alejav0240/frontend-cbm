@@ -277,7 +277,10 @@ export function ModalDetalleSesion({
                       tone="success"
                     />
                     {sesion.videoUrl && (
-                      <ProcessingStatusCard sessionId={sesion.id} />
+                      <ProcessingStatusCard
+                        sessionId={sesion.id}
+                        sourceUri={sesion.videoUrl}
+                      />
                     )}
                   </>
                 )}
@@ -456,7 +459,10 @@ export function ModalDetalleSesion({
                         Tu navegador no puede reproducir este video.
                       </video>
                     </div>
-                    <ProcessingStatusCard sessionId={sesion.id} />
+                    <ProcessingStatusCard
+                      sessionId={sesion.id}
+                      sourceUri={sesion.videoUrl}
+                    />
                   </>
                 )}
 

@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@apollo/client/react";
+import { useState } from "react";
 
 import { CREAR_PROCESAMIENTO_SESION, OBTENER_PROCESAMIENTO_SESION } from "./consultas";
 import type { PipelineStage } from "../ui/ProcessingPipeline";
@@ -42,6 +43,7 @@ type ProcessingRunsResponse = {
 
 export function useProcessingRuns(sessionId: string | null) {
   const [createProcessingRun, createState] = useMutation(CREAR_PROCESAMIENTO_SESION);
+  const [startError, setStartError] = useState<string | null>(null);
   const query = useQuery<ProcessingRunsResponse>(OBTENER_PROCESAMIENTO_SESION, {
     variables: { sessionId },
     skip: !sessionId,
@@ -55,15 +57,25 @@ export function useProcessingRuns(sessionId: string | null) {
     error: query.error,
     refetch: query.refetch,
     starting: createState.loading,
+    startError,
     startRun: async (sourceUri?: string) => {
-      await createProcessingRun({
-        variables: {
-          sessionId,
-          pipelineVersion: "0.3.0",
-          sourceUri,
-        },
-      });
-      await query.refetch();
+      setStartError(null);
+      try {
+        await createProcessingRun({
+          variables: {
+            sessionId,
+            pipelineVersion: "0.3.0",
+            sourceUri,
+          },
+        });
+        await query.refetch();
+      } catch (error) {
+        setStartError(
+          error instanceof Error
+            ? error.message
+            : "No se pudo iniciar el análisis multimodal.",
+        );
+      }
     },
   };
 }
