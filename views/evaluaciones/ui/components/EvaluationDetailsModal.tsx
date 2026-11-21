@@ -3,6 +3,15 @@
 import React from "react";
 import { motion } from "motion/react";
 import { FileText, Download } from "lucide-react";
+import {
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 import { Modal } from "@/shared/ui/components/Modal";
 import { EscalaEvaluacion, EvaluacionDetallada } from "../tipos";
 
@@ -33,6 +42,21 @@ export function EvaluationDetailsModal({
     currentScale?.scaleType?.toLowerCase() === "subscale";
   const subescalas = currentScale?.subescalas ?? currentScale?.subscales ?? [];
   const valores = currentScale?.valores ?? currentScale?.values ?? [];
+  const radarData = esEscalaPorSubescalas
+    ? subescalas.map((sub) => {
+        const response = realData?.subscaleResponses?.find(
+          (r) => r.subscale.id === sub.id,
+        );
+        const score = response
+          ? response.score
+          : evaluation.subscaleScores?.[sub.id] || 0;
+        const maxValue = sub.valorMaximo || sub.maxValue || 1;
+        return {
+          dimension: sub.nombre ?? sub.name ?? "Subescala",
+          valor: Math.round((score / maxValue) * 100),
+        };
+      })
+    : [];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Detalle de Evaluación">
@@ -59,41 +83,68 @@ export function EvaluationDetailsModal({
                 : "Resultado de la Escala"}
             </h4>
             {esEscalaPorSubescalas ? (
-              <div className="grid gap-4">
-                {subescalas.map((sub) => {
-                  const response = realData?.subscaleResponses?.find(
-                    (r) => r.subscale.id === sub.id,
-                  );
-                  const score = response
-                    ? response.score
-                    : evaluation.subscaleScores?.[sub.id] || 0;
-                  const maxValue = sub.valorMaximo ?? sub.maxValue ?? 1;
-
-                  return (
-                    <div
-                      key={sub.id}
-                      className="p-4 bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5"
-                    >
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-bold dark:text-white">
-                          {sub.nombre ?? sub.name ?? "Subescala"}
-                        </span>
-                        <span className="text-sm font-bold text-[#008080]">
-                          {score} / {maxValue}
-                        </span>
-                      </div>
-                      <div className="w-full h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{
-                            width: `${(score / maxValue) * 100}%`,
-                          }}
-                          className="h-full bg-[#008080]"
+              <div className="space-y-6">
+                {radarData.length >= 3 && (
+                  <div className="h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={radarData} outerRadius="72%">
+                        <PolarGrid stroke="#d1d5db" />
+                        <PolarAngleAxis
+                          dataKey="dimension"
+                          tick={{ fontSize: 11, fill: "#6b7280" }}
                         />
+                        <PolarRadiusAxis
+                          domain={[0, 100]}
+                          tick={{ fontSize: 10, fill: "#9ca3af" }}
+                        />
+                        <Radar
+                          name="Resultado"
+                          dataKey="valor"
+                          stroke="#008080"
+                          fill="#008080"
+                          fillOpacity={0.25}
+                        />
+                        <Tooltip />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+                <div className="grid gap-4">
+                  {subescalas.map((sub) => {
+                    const response = realData?.subscaleResponses?.find(
+                      (r) => r.subscale.id === sub.id,
+                    );
+                    const score = response
+                      ? response.score
+                      : evaluation.subscaleScores?.[sub.id] || 0;
+                    const maxValue = sub.valorMaximo ?? sub.maxValue ?? 1;
+
+                    return (
+                      <div
+                        key={sub.id}
+                        className="p-4 bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5"
+                      >
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-bold dark:text-white">
+                            {sub.nombre ?? sub.name ?? "Subescala"}
+                          </span>
+                          <span className="text-sm font-bold text-[#008080]">
+                            {score} / {maxValue}
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{
+                              width: `${(score / maxValue) * 100}%`,
+                            }}
+                            className="h-full bg-[#008080]"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               <div className="p-6 bg-gray-50 dark:bg-white/2 rounded-3xl border border-gray-100 dark:border-white/5 flex items-center justify-between">

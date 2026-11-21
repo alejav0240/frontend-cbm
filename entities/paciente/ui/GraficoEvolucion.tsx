@@ -2,8 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -210,7 +210,7 @@ export function GraficoEvolucion({
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
+            <LineChart
               data={data}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
@@ -263,28 +263,26 @@ export function GraficoEvolucion({
                 wrapperStyle={{ paddingBottom: "20px" }}
               />
               {indicator !== "cim" && (
-                <Area
+                <Line
                   type="monotone"
                   dataKey="eri"
                   name="ERI"
                   stroke="#008080"
                   strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorEri)"
+                  dot={{ r: 3 }}
                 />
               )}
               {indicator !== "eri" && (
-                <Area
+                <Line
                   type="monotone"
                   dataKey="cim"
                   name="CIM"
                   stroke="#3b82f6"
                   strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorCim)"
+                  dot={{ r: 3 }}
                 />
               )}
-            </AreaChart>
+            </LineChart>
           </ResponsiveContainer>
         )}
       </div>
