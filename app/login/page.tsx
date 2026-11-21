@@ -62,7 +62,15 @@ export default function Login() {
   const onFormSubmit = useCallback(
     async (data: DatosFormularioLogin) => {
       if (isBusy) return;
-      await ensureCsrfToken();
+      try {
+        await ensureCsrfToken();
+      } catch (error) {
+        console.error("CSRF connection error:", error);
+        toast.error(
+          "No se pudo conectar con el servidor. Verifica que el backend esté activo.",
+        );
+        return;
+      }
       login({
         variables: {
           username: data.username,

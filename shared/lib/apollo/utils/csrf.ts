@@ -14,10 +14,16 @@ export async function ensureCsrfToken(): Promise<void> {
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
-  await fetch(`${baseUrl}/csrf/`, {
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/csrf/`, {
     method: "GET",
     credentials: "include",
+    cache: "no-store",
+    signal: AbortSignal.timeout(10_000),
   });
+
+  if (!response.ok) {
+    throw new Error(`No se pudo obtener el token CSRF (HTTP ${response.status})`);
+  }
 }
 
 export const getGraphQLHeaders = (): Record<string, string> => {
