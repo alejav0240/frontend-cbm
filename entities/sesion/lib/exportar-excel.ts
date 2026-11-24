@@ -1,5 +1,7 @@
 import { SesionExportarFila } from "../model/dto";
 
+import { descargarExcel } from "@/shared/lib/exportarExcel";
+
 type ExportColumn = {
   key: keyof SesionExportarFila;
   label: string;
@@ -25,8 +27,6 @@ export const generarSesionesExcel = async (
   nombreArchivo = "reporte_sesiones",
   columnas: ExportColumn[] = columnasPorDefecto,
 ) => {
-  const XLSX = await import("xlsx");
-
   const datos = filas.map((fila) =>
     Object.fromEntries(
       columnas.map((columna) => {
@@ -44,8 +44,5 @@ export const generarSesionesExcel = async (
     ),
   );
 
-  const ws = XLSX.utils.json_to_sheet(datos);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Sesiones");
-  XLSX.writeFile(wb, `${nombreArchivo}_${Date.now()}.xlsx`);
+  await descargarExcel(datos, "Sesiones", `${nombreArchivo}_${Date.now()}.xlsx`);
 };

@@ -6,7 +6,7 @@ test.describe('Vista de Inventario (Inventory)', () => {
 
     // Navegar a Inventario
     await page.getByRole('button', { name: 'Inventario' }).click();
-    await expect(page.getByText('Inventario de', { exact: false })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Inventario de Instrumentos' })).toBeVisible();
   });
 
   test('debe mostrar las estadísticas de inventario', async ({ page }) => {
@@ -17,7 +17,7 @@ test.describe('Vista de Inventario (Inventory)', () => {
   test('debe permitir abrir el formulario de Añadir Item', async ({ page }) => {
     await page.getByRole('button', { name: 'Añadir Item' }).click();
     const modal = page.getByRole('dialog');
-    await expect(modal.getByRole('heading', { name: 'Añadir Item al Inventario' })).toBeVisible();
+    await expect(modal.getByRole('heading', { name: 'Añadir Artículo al Inventario' })).toBeVisible();
 
     // Verificar campos (scoped to modal)
     await expect(modal.getByText('Nombre del Instrumento / Material')).toBeVisible();

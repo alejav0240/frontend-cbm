@@ -8,6 +8,7 @@
 /.codegraph/
 /.atl/
 /.playwright-mcp/
+/.scannerwork/
 /test-results/
 
 # dependencies
