@@ -34,6 +34,7 @@ export type UploadMetadata = {
   numeroCiclo: string;
   grabadoEn: string;
   contentType: string;
+  durationSeconds?: number | null;
 };
 
 export type UploadSession = {

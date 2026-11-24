@@ -9,6 +9,7 @@ import {
   esquemaEvaluacion,
   type DatosFormularioEvaluacion,
 } from "@/entities/escalas";
+import { hoyISO } from "@/shared/lib/schemas/fecha";
 import { EscalaEvaluacion } from "../tipos";
 
 export interface DatosEvaluacionEnviar {
@@ -140,6 +141,7 @@ export function EvaluationForm({
           </label>
           <input
             type="date"
+            max={hoyISO()}
             {...register("date")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border-transparent focus-visible:bg-white dark:focus-visible:bg-white/10 focus-visible:border-[#008080] outline-none transition-all text-sm dark:text-white"
           />

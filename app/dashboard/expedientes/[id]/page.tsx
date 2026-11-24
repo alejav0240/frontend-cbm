@@ -217,6 +217,7 @@ import {
 import type { InformeClinicoDTO } from "@/entities/informe-clinico";
 import type { VerSesionQuery } from "@/shared/api/generated/graphql";
 import { ProcessingStatusCard } from "@/entities/analysis";
+import { DemucaEditor } from "@/features/gestion-sesiones/ui/ModalDetalleSesion";
 
 interface RouteParams {
   id: string;
@@ -244,12 +245,18 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     patientId: idPaciente,
     escalaId: "1",
   });
-  const { preguntasNormalizadas, idAssigmente } = useObtenerRespuestaFormulario(
-    { patientId: idPaciente, formId: "1" },
-  );
+  const {
+    preguntasNormalizadas,
+    idAssigmente,
+    refetch: refetchRespuestaFormulario,
+  } = useObtenerRespuestaFormulario({ patientId: idPaciente, formId: "1" });
 
   const { formulario } = useFormulario("1");
-  const { asignaciones } = useAsignacionesFormulario({ patientId: idPaciente });
+  const {
+    asignaciones,
+    cargando: cargandoAsignaciones,
+    refetch: refetchAsignaciones,
+  } = useAsignacionesFormulario({ patientId: idPaciente });
   const { submitFullForm, enviando } = useSubmitFullForm();
   const { assignForm, asignando: asignandoForm } = useAssignForm();
 
@@ -289,7 +296,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     useState(false);
   const [mostrarCuestionario, setMostrarCuestionario] = useState(false);
   const [mostrarExportarClinico, setMostrarExportarClinico] = useState(false);
-  const [activeTab, setActiveTab] = useState<ExpedienteTab>("general");
+  const [activeTab, setActiveTab] = useState<ExpedienteTab>("analisis");
 
   const [selectedSessionForAI, setSelectedSessionForAI] = useState<
     string | null
@@ -421,6 +428,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       }
 
       await submitFullForm({ assignmentId: assignmentId as string, responses });
+      await Promise.all([refetchRespuestaFormulario(), refetchAsignaciones()]);
       setMostrarCuestionario(false);
       toast.success("Cuestionario guardado correctamente");
     } catch (error: unknown) {
@@ -711,8 +719,12 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
         patient={paciente!}
         onShowClinicalForm={() => setMostrarFormularioClinico(true)}
         onShowQuestionnaire={() => {
-          setMostrarCuestionario(true);
+          if (cargandoAsignaciones) {
+            toast.info("Cargando las respuestas del cuestionario...");
+            return;
+          }
           setFormValues(valoresIniciales);
+          setMostrarCuestionario(true);
         }}
         onBack={() => router.push("/dashboard/expedientes")}
         onExport={() => setMostrarExportarClinico(true)}
@@ -942,7 +954,28 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                       por el worker y la línea de revisión humana.
                     </p>
                   </div>
-                  <ProcessingStatusCard sessionId={selectedSessionForAI} />
+                  <ProcessingStatusCard
+                    sessionId={selectedSessionForAI}
+                    sourceUri={sesionAI?.videoUrl}
+                  />
+                  {(() => {
+                    const demucaEvaluation = sesionAI?.scaleEvaluations?.find(
+                      (evaluation) =>
+                        evaluation.scale?.name?.toLowerCase().includes("demuca"),
+                    );
+
+                    return demucaEvaluation ? (
+                      <DemucaEditor
+                        key={demucaEvaluation.id}
+                        evaluation={demucaEvaluation}
+                        onSaved={() => {
+                          void obtenerSesionAI({
+                            variables: { id: selectedSessionForAI },
+                          });
+                        }}
+                      />
+                    ) : null;
+                  })()}
                 </>
               )}
             </div>

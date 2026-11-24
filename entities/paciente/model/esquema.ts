@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { fechaNacimiento } from "@/shared/lib/schemas/fecha";
 
 export const esquemaPaciente = z.object({
   firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   lastName: z.string().min(2, "El apellido debe tener al menos 2 caracteres"),
-  dob: z.string().min(1, "La fecha de nacimiento es requerida"),
+  dob: fechaNacimiento(),
   idCard: z.string().min(5, "El carnet/ID debe tener al menos 5 caracteres"),
   tutor: z.string().optional(),
   ciTutor: z

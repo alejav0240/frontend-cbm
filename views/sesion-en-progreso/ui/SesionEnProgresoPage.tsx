@@ -14,7 +14,11 @@ import {
   WorkspaceSesion,
 } from "@/features/sesion-en-progreso";
 import { subirEnSegundoPlano } from "@/features/sesion-en-progreso/model/colaSubida";
-import { useSesionActivaStore, ACTUALIZAR_SESION } from "@/entities/sesion";
+import {
+  useSesionActivaStore,
+  ACTUALIZAR_SESION,
+} from "@/entities/sesion";
+import { refetchActiveSessionQueries } from "@/entities/sesion/api/cache";
 import {
   usePlanesTratamiento,
   useAgregarPasosSesion,
@@ -50,7 +54,7 @@ import { toast } from "sonner";
 import { motion } from "motion/react";
 import { useSesionConfigStore } from "@/shared/model/useSesionConfigStore";
 import { alertarFinSesion } from "@/shared/lib/utils/alarmaDuracion";
-import { useMutation } from "@apollo/client/react";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import { SessionHeader } from "@/views/sesion-en-progreso/ui/components/SessionHeader";
 import type {
   MappedResource,
@@ -251,6 +255,7 @@ export const SesionEnProgresoPage = () => {
 
   const duracionSesion = useSesionConfigStore((s) => s.duracionSesion);
   const { usuario } = useAuthStore();
+  const apolloClient = useApolloClient();
   const [actualizarSesion] = useMutation(ACTUALIZAR_SESION);
 
   const { agregarPasosSesion } = useAgregarPasosSesion();
@@ -598,10 +603,11 @@ export const SesionEnProgresoPage = () => {
         variables: {
           id: sessionId,
           notes: notas || null,
-          durationMinutes: Math.floor(segundos / 60),
+          durationMinutes: Math.max(1, Math.round(segundos / 60)),
           sessionStatus: "completa",
         },
       });
+      await refetchActiveSessionQueries(apolloClient);
     } catch {
       errores.push("actualización de sesión");
     }

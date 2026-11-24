@@ -25,7 +25,7 @@ export function OverviewStats({
         icon={<Users />}
         label="Pacientes Activos"
         value={activePatients.toString()}
-        trend="+12%"
+        trend="Registro actual"
         color="teal"
       />
       <StatCard
@@ -39,7 +39,7 @@ export function OverviewStats({
         icon={<Activity />}
         label="Ciclos Activos"
         value={activeCyclesCount.toString()}
-        trend="85% progreso"
+        trend="Estado actual"
         color="purple"
       />
       <StatCard

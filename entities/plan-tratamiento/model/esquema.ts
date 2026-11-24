@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { fechaISO } from "@/shared/lib/schemas/fecha";
 
 export const esquemaPlanIntervencion = z.object({
   patientId: z.string().min(1, "Selecciona un paciente"),
   objective: z
     .string()
     .min(5, "El objetivo debe tener al menos 5 caracteres"),
-  startDate: z.string().min(1, "La fecha es requerida"),
+  startDate: fechaISO("Introduce una fecha de inicio válida"),
 });
 
 export type DatosFormularioPlan = z.infer<typeof esquemaPlanIntervencion>;

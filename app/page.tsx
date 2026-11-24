@@ -245,13 +245,14 @@ export default function Home() {
 
   const {
     register,
+    handleSubmit,
     reset,
     formState: { errors },
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
   });
 
-  const onSubmit = async () => {
+  const onSubmit = async (_data: ContactFormData) => {
     try {
       setIsSubmitting(true);
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -288,7 +289,7 @@ export default function Home() {
         register={register}
         errors={errors}
         isSubmitting={isSubmitting}
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit(onSubmit)}
       />
       <Footer />
     </div>
@@ -701,7 +702,7 @@ const ContactSection = ({
           </div>
 
           <div className="bg-white dark:bg-accent rounded-3xl p-8 lg:p-10 text-gray-900 dark:text-white shadow-2xl transition-colors duration-300">
-            <form className="space-y-6" onSubmit={onSubmit}>
+              <form className="space-y-6" onSubmit={onSubmit}>
               <div className="grid sm:grid-cols-2 gap-6">
                 <FormField
                   label="Nombre"
@@ -767,13 +768,19 @@ const FormField = ({
   disabled?: boolean;
 }) => (
   <div className="space-y-2">
-    <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+    <label
+      htmlFor={register.name}
+      className="text-xs font-bold uppercase tracking-wider text-gray-400"
+    >
       {label}
     </label>
     {isTextarea ? (
       <textarea
         rows={4}
         {...register}
+        id={register.name}
+        aria-invalid={error ? "true" : "false"}
+        aria-describedby={error ? `${register.name}-error` : undefined}
         className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-white/5 focus-visible:ring-2 focus-visible:ring-[#008080]/20 focus-visible:border-[#008080] transition-all outline-none resize-none ${
           error
             ? "border-red-500"
@@ -786,6 +793,9 @@ const FormField = ({
       <input
         type={type}
         {...register}
+        id={register.name}
+        aria-invalid={error ? "true" : "false"}
+        aria-describedby={error ? `${register.name}-error` : undefined}
         className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-white/5 focus-visible:ring-2 focus-visible:ring-[#008080]/20 focus-visible:border-[#008080] transition-all outline-none ${
           error
             ? "border-red-500"
@@ -796,7 +806,13 @@ const FormField = ({
       />
     )}
     {error && (
-      <p className="text-[10px] text-red-500 font-bold mt-1">{error.message}</p>
+      <p
+        id={`${register.name}-error`}
+        role="alert"
+        className="text-[10px] text-red-500 font-bold mt-1"
+      >
+        {error.message}
+      </p>
     )}
   </div>
 );

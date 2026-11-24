@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { fechaNoFutura } from "@/shared/lib/schemas/fecha";
 
 export const esquemaEvaluacion = z.object({
   patientId: z.string().min(1, "Selecciona un paciente"),
   type: z.string().min(1, "Selecciona la etapa de evaluación"),
-  date: z.string().min(1, "La fecha es requerida"),
+  date: fechaNoFutura("Introduce una fecha de evaluación válida"),
   scaleId: z.string().min(1, "Selecciona una escala"),
 });
 

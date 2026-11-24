@@ -37,6 +37,15 @@ export type ProcessingRun = {
   artifacts: ProcessingArtifact[];
 };
 
+export function getProcessingErrorMessage(
+  run: Pick<ProcessingRun, "errorCode" | "errorMessage">,
+) {
+  if (run.errorCode === "insufficient_duration_for_window") {
+    return "La sesión es demasiado corta para generar una ventana completa de análisis. Se requiere una duración mayor o igual a 5 segundos.";
+  }
+  return run.errorMessage;
+}
+
 type ProcessingRunsResponse = {
   processingRuns: ProcessingRun[];
 };

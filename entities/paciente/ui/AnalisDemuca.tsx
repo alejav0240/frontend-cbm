@@ -32,8 +32,8 @@ function formatearDatosEvaluacion(evaluations: ProgresoSubEscala[]) {
     return { radarData: [], areaData: [] };
   }
 
-  // Tomamos la última evaluación para el Radar (el estado actual)
-  const ultimaEvaluacion = evaluations[evaluations.length - 1];
+  // GraphQL devuelve las evaluaciones ordenadas de más reciente a más antigua.
+  const ultimaEvaluacion = evaluations[0];
 
   // 1. FORMATEAR PARA RADAR (Detalle por subescala individual o por categoría)
   // Puedes elegir graficar las subescalas directamente:
@@ -46,7 +46,7 @@ function formatearDatosEvaluacion(evaluations: ProgresoSubEscala[]) {
   );
 
   // 2. FORMATEAR PARA ÁREA (Histórico acumulado por categorías a lo largo de las evaluaciones)
-  const areaData: AreaChartData[] = evaluations.map((evaluacion) => {
+  const areaData: AreaChartData[] = [...evaluations].reverse().map((evaluacion) => {
     // Inicializamos el objeto de la evaluación con su ID de referencia
     const puntoEvolucion: AreaChartData = {
       evaluationId: evaluacion.id,
@@ -68,8 +68,8 @@ function formatearDatosEvaluacion(evaluations: ProgresoSubEscala[]) {
 }
 
 function resumenReal(evaluations: ProgresoSubEscala[]) {
-  const latest = evaluations.at(-1);
-  const previous = evaluations.at(-2);
+  const latest = evaluations[0];
+  const previous = evaluations[1];
   const latestScore = latest?.totalScore;
   const previousScore = previous?.totalScore;
   const delta =

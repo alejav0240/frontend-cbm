@@ -15,6 +15,7 @@ import {
   listJobs,
 } from "./queue";
 import { invalidarTokenCsrf, obtenerTokenCsrf } from "./csrf";
+import { minutosDesdeSegundos } from "@/shared/lib/utils/duracionVideo";
 
 const MAX_JOB_ATTEMPTS = 5;
 const JOB_STALE_MS = 30 * 60 * 1000;
@@ -33,8 +34,8 @@ const MARCAR_EN_PROGRESO_MUTATION = `
 `;
 
 const COMPLETAR_MUTATION = `
-  mutation CompletarSubidaSesion($sessionId: ID!, $videoUrl: String, $storage: String, $ok: Boolean!, $message: String, $jobId: String) {
-    completarSubidaSesion(sessionId: $sessionId, videoUrl: $videoUrl, storage: $storage, ok: $ok, message: $message, jobId: $jobId) {
+  mutation CompletarSubidaSesion($sessionId: ID!, $videoUrl: String, $storage: String, $ok: Boolean!, $message: String, $jobId: String, $durationMinutes: Int) {
+    completarSubidaSesion(sessionId: $sessionId, videoUrl: $videoUrl, storage: $storage, ok: $ok, message: $message, jobId: $jobId, durationMinutes: $durationMinutes) {
       success
     }
   }
@@ -141,6 +142,7 @@ const procesarJob = async (job: PendingJob) => {
       storage: resultado.storage,
       ok: true,
       jobId: job.id,
+      durationMinutes: minutosDesdeSegundos(job.metadata.durationSeconds),
     });
 
     await deleteJobFile(job);

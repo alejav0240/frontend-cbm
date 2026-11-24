@@ -2,7 +2,11 @@
 
 import { AlertCircle, CheckCircle2, Clock3, Loader2, ShieldCheck } from "lucide-react";
 
-import { useProcessingRuns, type ProcessingRun } from "../api/useProcessingRuns";
+import {
+  getProcessingErrorMessage,
+  useProcessingRuns,
+  type ProcessingRun,
+} from "../api/useProcessingRuns";
 import { TemporalReviewTimeline } from "./TemporalReviewTimeline";
 import { ProcessingPipeline } from "./ProcessingPipeline";
 import { EvidenceTimeline } from "./EvidenceTimeline";
@@ -274,11 +278,17 @@ export function ProcessingStatusCard({
     );
   }
 
-  const canRetry = run.status === "failed" || run.status === "cancelled";
+  const canRetry =
+    run.status === "failed" ||
+    run.status === "cancelled" ||
+    run.status === "queued" ||
+    Boolean(run.errorMessage);
   const provisional =
     run.semanticStatus === "provisional_evidence" ||
     run.semanticStatus === "provisional" ||
     run.semanticStatus === "draft";
+  const processingErrorMessage = getProcessingErrorMessage(run);
+  const isBlockedByDuration = run.errorCode === "insufficient_duration_for_window";
 
   return (
     <section className="rounded-2xl border border-purple-200/60 bg-purple-50/40 dark:border-purple-400/20 dark:bg-purple-500/5 p-5 space-y-4">
@@ -291,7 +301,19 @@ export function ProcessingStatusCard({
             {STATUS_LABELS[run.status] ?? run.status}
           </h3>
         </div>
-        <div className="text-purple-600 dark:text-purple-300">{statusIcon(run.status)}</div>
+        <div className="flex items-center gap-3">
+          {canRetry && (
+            <button
+              type="button"
+              onClick={() => void startRun(sourceUri ?? run.sourceUri ?? undefined)}
+              disabled={starting}
+              className="rounded-xl bg-[#008080] px-4 py-2 text-xs font-bold text-white hover:bg-[#006666] transition disabled:opacity-50 shadow-sm"
+            >
+              {starting ? "Solicitando..." : "Reintentar análisis multimodal"}
+            </button>
+          )}
+          <div className="text-purple-600 dark:text-purple-300">{statusIcon(run.status)}</div>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-xs text-gray-600 dark:text-gray-300">
@@ -308,9 +330,32 @@ export function ProcessingStatusCard({
       <ProcessingPipeline stages={run.pipelineStages} />
 
       {run.errorMessage && (
-        <p className="rounded-xl bg-red-50 p-3 text-xs text-red-700">
-          {run.errorMessage}
-        </p>
+        <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl p-4 border text-xs ${
+          isBlockedByDuration
+            ? "bg-amber-50 border-amber-200 text-amber-800"
+            : "bg-red-50 border-red-200 text-red-700"
+        }`}>
+          <div>
+            <p className="font-semibold">
+              {isBlockedByDuration
+                ? "La sesión no puede analizarse con esta configuración:"
+                : "Ocurrió un error en el procesamiento:"}
+            </p>
+            <p className="mt-0.5 text-[11px]">
+              {processingErrorMessage}
+            </p>
+          </div>
+          {canRetry && (
+            <button
+              type="button"
+              onClick={() => void startRun(sourceUri ?? run.sourceUri ?? undefined)}
+              disabled={starting}
+              className="shrink-0 rounded-xl bg-red-600 hover:bg-red-700 px-4 py-2 text-xs font-bold text-white transition disabled:opacity-50 shadow-sm"
+            >
+              {starting ? "Solicitando..." : "Reintentar ahora"}
+            </button>
+          )}
+        </div>
       )}
 
       {run.status === "completed" && run.result && (
@@ -340,9 +385,9 @@ export function ProcessingStatusCard({
       {canRetry && (
         <button
           type="button"
-          onClick={() => void startRun(sourceUri ?? undefined)}
+          onClick={() => void startRun(sourceUri ?? run.sourceUri ?? undefined)}
           disabled={starting}
-          className="rounded-xl bg-[#008080] px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+          className="rounded-xl bg-[#008080] px-4 py-2 text-xs font-bold text-white hover:bg-[#006666] transition disabled:opacity-50"
         >
           {starting ? "Solicitando..." : "Reintentar análisis multimodal"}
         </button>

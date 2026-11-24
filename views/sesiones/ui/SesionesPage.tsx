@@ -116,7 +116,6 @@ export const SesionesPage = () => {
     total: totalSesiones,
     totalPages: totalPaginasSesiones,
     cargando,
-    refetch: refetchSesiones,
   } = useSesiones(filtrosConsulta);
 
   const { sesiones: sesionesExportables } = useSesiones({
@@ -132,7 +131,6 @@ export const SesionesPage = () => {
     totalPages: totalPaginasCiclos,
     currentPage: paginaCiclos,
     cargando: cargandoCiclos,
-    refetch: refetchCiclos,
   } = useCiclosPacientes({ page: paginaActual, pageSize: 10 });
 
   const terapeutas = useBuscarTerapeutas();
@@ -154,11 +152,6 @@ export const SesionesPage = () => {
   const { setSesion: setSesionActiva } = useSesionActivaStore();
 
   const { crearSesion } = useCrearSesionAgenda();
-
-  const refetch = useCallback(() => {
-    refetchSesiones();
-    refetchCiclos();
-  }, [refetchSesiones, refetchCiclos]);
 
   const datosExportacion = useMemo<SesionExportarFila[]>(
     () =>
@@ -312,12 +305,11 @@ export const SesionesPage = () => {
     async (sesion: SesionNormalizada) => {
       try {
         await actualizarEstado(sesion.id, "COMPLETA");
-        await refetch();
       } catch {
         toast.error("Error al actualizar estado");
       }
     },
-    [actualizarEstado, refetch],
+    [actualizarEstado],
   );
 
   const confirmarSesion = useCallback((sesion: SesionNormalizada) => {
@@ -331,11 +323,10 @@ export const SesionesPage = () => {
       await actualizarEstado(sesionSeleccionada.id, "CONFIRMA");
       setMostrarConfirmar(false);
       setSesionSeleccionada(null);
-      await refetch();
     } catch {
       toast.error("Error al confirmar sesión");
     }
-  }, [sesionSeleccionada, actualizarEstado, refetch]);
+  }, [sesionSeleccionada, actualizarEstado]);
 
   const reprogramarSesion = useCallback((sesion: SesionNormalizada) => {
     setSesionSeleccionada(sesion);
@@ -353,12 +344,11 @@ export const SesionesPage = () => {
         await actualizarEstado(sesionSeleccionada.id, "REPROGRAMA");
         setMostrarReprogramar(false);
         setSesionSeleccionada(null);
-        await refetch();
       } catch {
         toast.error("Error al reprogramar sesión");
       }
     },
-    [sesionSeleccionada, actualizarSesion, actualizarEstado, refetch],
+    [sesionSeleccionada, actualizarSesion, actualizarEstado],
   );
 
   const cancelarSesion = useCallback((sesion: SesionNormalizada) => {
@@ -372,11 +362,10 @@ export const SesionesPage = () => {
       await actualizarEstado(sesionSeleccionada.id, "CANCELADA");
       setMostrarCancelar(false);
       setSesionSeleccionada(null);
-      await refetch();
     } catch {
       toast.error("Error al cancelar sesión");
     }
-  }, [sesionSeleccionada, actualizarEstado, refetch]);
+  }, [sesionSeleccionada, actualizarEstado]);
 
   const confirmarEliminar = useCallback(async () => {
     if (!sesionSeleccionada) return;
@@ -384,23 +373,21 @@ export const SesionesPage = () => {
       await eliminarSesion(sesionSeleccionada.id);
       setMostrarEliminar(false);
       setSesionSeleccionada(null);
-      await refetch();
     } catch {
       toast.error("Error al eliminar");
     }
-  }, [sesionSeleccionada, eliminarSesion, refetch]);
+  }, [sesionSeleccionada, eliminarSesion]);
 
   const guardarNotas = useCallback(
     async (notas: string) => {
       if (!sesionSeleccionada) return;
       try {
         await actualizarSesion(sesionSeleccionada.id, { notes: notas });
-        await refetch();
       } catch {
         toast.error("Error al guardar notas");
       }
     },
-    [sesionSeleccionada, actualizarSesion, refetch],
+    [sesionSeleccionada, actualizarSesion],
   );
 
   const handleCambioModo = useCallback((modo: ModoVista) => {
@@ -418,9 +405,8 @@ export const SesionesPage = () => {
         durationMinutes: data.durationMinutes,
       });
       setMostrarFormulario(false);
-      await refetch();
     },
-    [crearSesion, refetch],
+    [crearSesion],
   );
 
   return (

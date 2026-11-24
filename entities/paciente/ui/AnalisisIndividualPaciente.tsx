@@ -55,7 +55,7 @@ export function AnalisisIndividualPaciente({
   datosEscalas,
   sesionesCount = 0,
 }: AnalisisIndividualPacienteProps) {
-  const [subTab, setSubTab] = useState<SubTabAnalisis>("comparativa");
+  const [subTab, setSubTab] = useState<SubTabAnalisis>("radar");
   const [escalaSeleccionada, setEscalaSeleccionada] = useState<
     "todas" | "demuca" | "eri" | "cim"
   >("todas");
@@ -166,7 +166,7 @@ export function AnalisisIndividualPaciente({
     return Object.entries(agrupado).map(([area, val]) => ({
       area,
       puntaje: parseFloat((val.total / val.count).toFixed(1)),
-      fullMark: 10,
+      fullMark: 2,
     }));
   }, [dataDemuca]);
 
@@ -491,7 +491,8 @@ export function AnalisisIndividualPaciente({
                       />
                       <PolarRadiusAxis
                         angle={90}
-                        domain={[0, "auto"]}
+                        domain={[0, 2]}
+                        tickCount={3}
                         tick={false}
                         axisLine={false}
                       />

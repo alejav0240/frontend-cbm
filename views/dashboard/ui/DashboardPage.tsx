@@ -12,7 +12,7 @@ import {
   useCiclosPacientes,
   useAgendaSessions,
 } from "@/entities/sesion";
-import { usePacientes } from "@/entities/paciente";
+import { usePacienteCrecimiento, usePacientes } from "@/entities/paciente";
 import { usePagos } from "@/entities/pago";
 import { useGastos } from "@/entities/gasto";
 import { useSesionActivaStore } from "@/entities/sesion";
@@ -114,9 +114,14 @@ export const DashboardPage = () => {
     pageSize: 10,
     skip: !verSesiones,
   });
-  const { total: totalPacientes, cargando: cargandoPacientes } = usePacientes({
-    pageSize: 1,
+  const {
+    pacientes,
+    total: totalPacientes,
+    cargando: cargandoPacientes,
+  } = usePacientes({
+    pageSize: 1000,
     search: "",
+    status: "active",
     skip: !verPacientes,
   });
   const { ciclos, cargando: cargandoCiclos } = useCiclosPacientes({
@@ -127,18 +132,19 @@ export const DashboardPage = () => {
   const { gastos } = useGastos({ pagina: 1, pageSize: 100, skip: !verPagos });
 
   const hoy = useMemo(() => new Date(), []);
-  const { sesiones: agendaHoy } = useAgendaSessions({
+  const { sesiones: sesionesMes } = useAgendaSessions({
     month: hoy,
-    range: "today",
+    range: "month",
     skip: !verAgenda && !verSesiones,
   });
+  const { datosCrecimiento } = usePacienteCrecimiento();
 
   const cargando = cargandoSesiones || cargandoPacientes || cargandoCiclos;
 
   const sesionesHoy = useMemo(() => {
     const hoyStr = hoy.toISOString().split("T")[0];
-    return agendaHoy.filter((s) => s.date === hoyStr);
-  }, [agendaHoy, hoy]);
+    return sesionesMes.filter((s) => s.date === hoyStr);
+  }, [sesionesMes, hoy]);
 
   const sesionesPendientes = useMemo(
     () =>
@@ -213,11 +219,11 @@ export const DashboardPage = () => {
       fecha.setDate(fecha.getDate() - i);
       const diaSemana = DIAS_SEMANA[fecha.getDay()];
       const fechaStr = fecha.toISOString().split("T")[0];
-      const conteo = agendaHoy.filter((s) => s.date === fechaStr).length;
+      const conteo = sesionesMes.filter((s) => s.date === fechaStr).length;
       puntos.push({ name: diaSemana, sesiones: conteo });
     }
     return puntos;
-  }, [agendaHoy]);
+  }, [sesionesMes]);
 
   const financialData = useMemo(() => {
     const ahora = new Date();
@@ -247,36 +253,30 @@ export const DashboardPage = () => {
     return puntos;
   }, [pagos, gastos]);
 
-  const growthData = useMemo(() => {
-    const ahora = new Date();
-    const puntos: Array<{ month: string; pacientes: number }> = [];
-    for (let i = 5; i >= 0; i--) {
-      const mesIdx = (ahora.getMonth() - i + 12) % 12;
-      puntos.push({
-        month: MESES[mesIdx],
-        pacientes: Math.max(1, Math.floor(totalPacientes / 6)),
-      });
-    }
-    return puntos;
-  }, [totalPacientes]);
+  const growthData: Array<{ month: string; pacientes: number }> = useMemo(
+    () =>
+      datosCrecimiento
+        .filter((point) => Boolean(point?.month))
+        .map((point) => ({
+          month: point?.month ?? "",
+          pacientes: Number(point?.total ?? 0),
+        })),
+    [datosCrecimiento],
+  );
 
   const conditionData = useMemo(() => {
-    const diagnosticosBase = [
-      { name: "TEA", value: Math.ceil(totalPacientes * 0.35) },
-      { name: "TDAH", value: Math.ceil(totalPacientes * 0.25) },
-      { name: "Discapacidad", value: Math.ceil(totalPacientes * 0.15) },
-      { name: "Ansiedad", value: Math.ceil(totalPacientes * 0.12) },
-      {
-        name: "Otros",
-        value: Math.max(1, totalPacientes - Math.ceil(totalPacientes * 0.87)),
-      },
-    ];
+    const counts = pacientes.reduce<Record<string, number>>((acc, paciente) => {
+      const diagnosis = paciente.diagnosis?.trim() || "Sin diagnóstico";
+      acc[diagnosis] = (acc[diagnosis] ?? 0) + 1;
+      return acc;
+    }, {});
 
-    return diagnosticosBase.map((d, i) => ({
-      ...d,
-      color: COLORES_DIAGNOSTICO[i % COLORES_DIAGNOSTICO.length],
+    return Object.entries(counts).map(([name, value], index) => ({
+      name,
+      value,
+      color: COLORES_DIAGNOSTICO[index % COLORES_DIAGNOSTICO.length],
     }));
-  }, [totalPacientes]);
+  }, [pacientes]);
 
   const cycleStatusData = useMemo(() => {
     const activos = ciclos.filter(
@@ -290,11 +290,21 @@ export const DashboardPage = () => {
     ).length;
 
     return [
-      { name: "Activos", value: activos || 1, color: "#008080" },
-      { name: "Completados", value: completados || 1, color: "#10b981" },
-      { name: "Cancelados", value: cancelados || 0, color: "#ef4444" },
+      { name: "Activos", value: activos, color: "#008080" },
+      { name: "Completados", value: completados, color: "#10b981" },
+      { name: "Cancelados", value: cancelados, color: "#ef4444" },
     ];
   }, [ciclos]);
+
+  const ciclosActivos = useMemo(
+    () =>
+      ciclos.filter((c) =>
+        ["ACTIVO", "ACTIVE", "EN_PROGRESO", "IN_PROGRESS"].includes(
+          c.status.toUpperCase(),
+        ),
+      ).length,
+    [ciclos],
+  );
 
   const recentActivities = useMemo(() => {
     const actividades: Array<{
@@ -411,7 +421,7 @@ export const DashboardPage = () => {
       <OverviewStats
         activePatients={verPacientes ? totalPacientes : 0}
         todaySessionsCount={verSesiones ? sesionesHoy.length : 0}
-        activeCyclesCount={verSesiones ? ciclos.length : 0}
+        activeCyclesCount={verSesiones ? ciclosActivos : 0}
         monthlyIncome={verPagos ? ingresosMes : 0}
         monthlyExpenses={verPagos ? egresosMes : 0}
       />
@@ -450,7 +460,17 @@ export const DashboardPage = () => {
               onViewAll={() => router.push("/dashboard/agenda")}
             />
           )}
-          {verPacientes && <OverviewClinicalAlerts />}
+          {verPacientes && (
+            <OverviewClinicalAlerts
+              alerts={sesionesHoy
+                .filter((session) => session.status === "Cancelada")
+                .map((session) => ({
+                  title: "Sesión cancelada",
+                  description: `${session.patientName} · ${session.time}`,
+                  tone: "danger" as const,
+                }))}
+            />
+          )}
           {verSesiones && (
             <OverviewActivityFeed activities={recentActivities} />
           )}

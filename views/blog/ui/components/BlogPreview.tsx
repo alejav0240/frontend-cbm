@@ -18,6 +18,10 @@ interface BlogPreviewProps {
   categoria: string;
   urlImagen?: string;
   tipo?: "MARKDOWN" | "LATEX" | string;
+  fechaCreacion?: Date | string;
+  autor?: string;
+  tiempoLectura?: string;
+  scrollable?: boolean;
 }
 
 export function BlogPreview({
@@ -27,11 +31,19 @@ export function BlogPreview({
   categoria,
   urlImagen,
   tipo = "MARKDOWN",
+  fechaCreacion,
+  autor,
+  tiempoLectura,
+  scrollable = true,
 }: BlogPreviewProps) {
   const esLatex = tipo?.toUpperCase() === "LATEX";
 
   return (
-    <div className="bg-white dark:bg-[#111] rounded-[32px] p-8 md:p-12 border border-gray-100 dark:border-white/5 max-h-[600px] overflow-y-auto custom-scrollbar">
+    <div
+      className={`bg-white dark:bg-[#111] rounded-[32px] p-8 md:p-12 border border-gray-100 dark:border-white/5 ${
+        scrollable ? "max-h-[600px] overflow-y-auto custom-scrollbar" : ""
+      }`}
+    >
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-3 text-xs font-bold text-[#008080] uppercase tracking-widest mb-6 flex-wrap">
           <span>{categoria}</span>
@@ -47,7 +59,18 @@ export function BlogPreview({
             {esLatex ? "LaTeX" : "Markdown"}
           </span>
           <span className="w-1 h-1 bg-gray-300 rounded-full" />
-          <span className="text-gray-400 font-normal">{new Date().toLocaleDateString()}</span>
+          {autor && <span className="text-gray-400 font-normal">{autor}</span>}
+          {tiempoLectura && (
+            <>
+              <span className="w-1 h-1 bg-gray-300 rounded-full" />
+              <span className="text-gray-400 font-normal">{tiempoLectura}</span>
+            </>
+          )}
+          <span className="text-gray-400 font-normal">
+            {fechaCreacion
+              ? new Date(fechaCreacion).toLocaleDateString()
+              : new Date().toLocaleDateString()}
+          </span>
         </div>
         <h1 className="serif text-4xl lg:text-5xl mb-4 dark:text-white">
           {titulo || "Sin Título"}
@@ -68,7 +91,8 @@ export function BlogPreview({
             />
           </div>
         )}
-        <div className="prose prose-lg dark:prose-invert max-w-none
+        <div
+          className={`prose prose-lg dark:prose-invert max-w-none
           prose-headings:serif prose-headings:font-bold
           prose-p:text-gray-600 dark:prose-p:text-gray-300
           prose-a:text-[#008080] prose-a:no-underline hover:prose-a:underline
@@ -77,7 +101,7 @@ export function BlogPreview({
           prose-blockquote:border-l-[#008080] prose-blockquote:bg-gray-50 dark:prose-blockquote:bg-white/5 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-xl
           prose-img:rounded-2xl
           prose-table:border-collapse prose-th:bg-gray-50 dark:prose-th:bg-white/5
-          max-h-[500px] overflow-y-auto custom-scrollbar"
+           ${scrollable ? "max-h-[500px] overflow-y-auto custom-scrollbar" : ""}`}
         >
           {esLatex ? (
             <LatexRenderer content={contenido} />

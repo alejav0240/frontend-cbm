@@ -49,8 +49,8 @@ function readWindows(result: Record<string, unknown>): EvidenceWindow[] {
   return [];
 }
 
-function formatSeconds(value: number) {
-  return `${value.toFixed(2)} s`;
+function formatSeconds(value: number | string) {
+  return `${Number(value).toFixed(2)} s`;
 }
 
 export function EvidenceTimeline({

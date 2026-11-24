@@ -81,6 +81,9 @@ export async function POST(request: NextRequest) {
       numeroCiclo: request.headers.get("x-numero-ciclo")?.trim() || "sin-ciclo",
       grabadoEn: request.headers.get("x-grabado-en")?.trim() ?? "",
       contentType: request.headers.get("content-type")?.trim() || "video/webm",
+      durationSeconds: parseDurationSeconds(
+        request.headers.get("x-duracion-segundos"),
+      ),
     };
 
     const extension = metadata.contentType.includes("mp4") ? "mp4" : "webm";
@@ -140,4 +143,10 @@ export async function POST(request: NextRequest) {
     const sessionId = request.headers.get("x-session-id")?.trim();
     if (sessionId) enIngesta.delete(sessionId);
   }
+}
+
+function parseDurationSeconds(value: string | null): number | null {
+  if (!value) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }

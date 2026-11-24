@@ -27,16 +27,19 @@ export const ACTUALIZAR_EVALUACION_ESCALA = gql`
   mutation UpdateScaleEvaluation(
     $evaluationId: ID!
     $subscales: [ResponseSubScale]!
+    $accept: Boolean
   ) {
     updateScaleEvaluation(
       evaluationId: $evaluationId
       subscales: $subscales
+      accept: $accept
     ) {
       success
       message
       evaluation {
         id
         totalScore
+        reviewStatus
       }
     }
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@/shared/ui/components/Modal";
@@ -13,7 +13,7 @@ import {
 interface InterventionPlanFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: DatosFormularioPlan) => void;
+  onSubmit: (data: DatosFormularioPlan) => Promise<void> | void;
   patientOptions: { label: string; value: string }[];
   onSearchPatient: (term: string) => void;
 }
@@ -25,6 +25,7 @@ export function InterventionPlanForm({
   patientOptions,
   onSearchPatient,
 }: InterventionPlanFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
     control,
@@ -46,7 +47,15 @@ export function InterventionPlanForm({
       title="Crear Plan de Intervención"
     >
       <form
-        onSubmit={handleSubmit((data) => onSubmit(data))}
+        onSubmit={handleSubmit(async (data) => {
+          if (isSubmitting) return;
+          setIsSubmitting(true);
+          try {
+            await onSubmit(data);
+          } finally {
+            setIsSubmitting(false);
+          }
+        })}
         className="space-y-6"
       >
         <Controller
@@ -100,15 +109,17 @@ export function InterventionPlanForm({
           <button
             type="button"
             onClick={onClose}
+            disabled={isSubmitting}
             className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
           >
             Cancelar
           </button>
           <button
             type="submit"
+            disabled={isSubmitting}
             className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg"
           >
-            Crear Plan
+            {isSubmitting ? "Guardando..." : "Crear Plan"}
           </button>
         </div>
       </form>

@@ -191,7 +191,11 @@ function StageDetails({ stage }: { stage: PipelineStage }) {
       </div>
 
       {stage.message && (
-        <div className="mt-4 rounded-xl bg-slate-50 p-3 text-xs text-slate-600 dark:bg-white/5 dark:text-slate-300">
+        <div className={`mt-4 rounded-xl p-3 text-xs ${
+          stage.status === "blocked"
+            ? "bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200"
+            : "bg-slate-50 text-slate-600 dark:bg-white/5 dark:text-slate-300"
+        }`}>
           <strong>Qué sucedió:</strong> {stage.message}
         </div>
       )}

@@ -1,5 +1,6 @@
-import { useMutation } from "@apollo/client/react";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import { ELIMINAR_SESION } from "./mutaciones";
+import { refetchActiveSessionQueries } from "./cache";
 import {
   EliminarSesionMutation,
   EliminarSesionMutationVariables,
@@ -7,6 +8,7 @@ import {
 import { toast } from "sonner";
 
 export function useEliminarSesion() {
+  const client = useApolloClient();
   const [eliminar, { loading }] = useMutation<
     EliminarSesionMutation,
     EliminarSesionMutationVariables
@@ -18,6 +20,7 @@ export function useEliminarSesion() {
         variables: { id },
       });
       if (data?.deleteSession?.success) {
+        await refetchActiveSessionQueries(client);
         toast.success("Sesión eliminada correctamente");
       } else {
         toast.error(

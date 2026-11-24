@@ -52,8 +52,8 @@ function procesarEscalas(
 
     return {
       dateString: item.evaluatedAt,
-      eri: item.totalScore,
-      cim: cimData[index]?.totalScore ?? 0,
+      eri: Number(item.totalScore),
+      cim: Number(cimData[index]?.totalScore ?? 0),
       formattedDate: fecha.toLocaleDateString("es-ES", {
         day: "2-digit",
         month: "2-digit",
@@ -112,11 +112,11 @@ export function GraficoEvolucion({
     const total = data.length;
 
     const eri = total
-      ? (data.reduce((a, b) => a + b.eri, 0) / total).toFixed(1)
+      ? (data.reduce((a, b) => a + Number(b.eri), 0) / total).toFixed(1)
       : 0;
 
     const cim = total
-      ? (data.reduce((a, b) => a + b.cim, 0) / total).toFixed(1)
+      ? (data.reduce((a, b) => a + Number(b.cim), 0) / total).toFixed(1)
       : 0;
 
     return {

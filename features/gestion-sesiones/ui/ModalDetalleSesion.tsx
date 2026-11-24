@@ -25,6 +25,7 @@ import {
   Save,
 } from "lucide-react";
 import { toast } from "sonner";
+import { obtenerDuracionVideo } from "@/shared/lib/utils/duracionVideo";
 
 type TabId = "info" | "ia" | "plan" | "evaluaciones" | "notas";
 
@@ -87,6 +88,7 @@ export function ModalDetalleSesion({
 
     setSubiendoGrabacion(true);
     try {
+      const duracionSegundos = await obtenerDuracionVideo(archivo);
       const response = await fetch("/api/upload/ingest", {
         method: "POST",
         headers: {
@@ -96,6 +98,9 @@ export function ModalDetalleSesion({
           "x-paciente-nombre": pacienteNombre,
           "x-numero-ciclo": String(sesion.cycleNumber ?? "sin-ciclo"),
           "x-grabado-en": String(sesion.sessionDate ?? new Date().toISOString()),
+          ...(duracionSegundos
+            ? { "x-duracion-segundos": String(duracionSegundos) }
+            : {}),
         },
         body: archivo,
       });
@@ -126,7 +131,7 @@ export function ModalDetalleSesion({
   if ((isOpen && !!sesionId) !== prevAbierto) {
     setPrevAbierto(isOpen && !!sesionId);
     if (isOpen && sesionId) {
-      setActiveTab("info");
+      setActiveTab("ia");
       setEditandoNotas(false);
     }
   }
@@ -723,6 +728,7 @@ function EmptyState({ message }: { message: string }) {
 type DemucaEvaluation = {
   id: string;
   totalScore: number | null;
+  reviewStatus?: string | null;
   subscaleResponses: Array<{
     score: number;
     subscale: {
@@ -734,7 +740,7 @@ type DemucaEvaluation = {
   }>;
 };
 
-function DemucaEditor({
+export function DemucaEditor({
   evaluation,
   onSaved,
 }: {
@@ -742,6 +748,7 @@ function DemucaEditor({
   onSaved: () => void;
 }) {
   const [editando, setEditando] = useState(false);
+  const [aceptando, setAceptando] = useState(false);
   const [scores, setScores] = useState<Record<string, number>>(() =>
     Object.fromEntries(
       evaluation.subscaleResponses.map((response) => [
@@ -755,28 +762,38 @@ function DemucaEditor({
     UpdateScaleEvaluationMutationVariables
   >(ACTUALIZAR_EVALUACION_ESCALA);
 
-  const guardar = async () => {
-    const result = await actualizarEvaluacion({
-      variables: {
-        evaluationId: evaluation.id,
-        subscales: evaluation.subscaleResponses.map((response) => ({
-          subscaleId: response.subscale.id,
-          score: scores[response.subscale.id] ?? response.score,
-        })),
-      },
-    });
+  const guardar = async (accept = false) => {
+    setAceptando(accept);
+    try {
+      const result = await actualizarEvaluacion({
+        variables: {
+          evaluationId: evaluation.id,
+          subscales: evaluation.subscaleResponses.map((response) => ({
+            subscaleId: response.subscale.id,
+            score: scores[response.subscale.id] ?? response.score,
+          })),
+          accept,
+        },
+      });
 
-    if (!result.data?.updateScaleEvaluation?.success) {
-      toast.error(
-        result.data?.updateScaleEvaluation?.message ||
-          "No se pudo guardar la evaluación DEMUCA.",
+      if (!result.data?.updateScaleEvaluation?.success) {
+        toast.error(
+          result.data?.updateScaleEvaluation?.message ||
+            "No se pudo guardar la evaluación DEMUCA.",
+        );
+        return;
+      }
+
+      setEditando(false);
+      toast.success(
+        accept
+          ? "Evaluación DEMUCA aceptada por el especialista."
+          : "Evaluación DEMUCA actualizada.",
       );
-      return;
+      onSaved();
+    } finally {
+      setAceptando(false);
     }
-
-    setEditando(false);
-    toast.success("Evaluación DEMUCA actualizada.");
-    onSaved();
   };
 
   const grouped = evaluation.subscaleResponses.reduce<
@@ -800,13 +817,26 @@ function DemucaEditor({
           </p>
         </div>
         {!editando ? (
-          <button
-            type="button"
-            onClick={() => setEditando(true)}
-            className="rounded-xl border border-purple-300 px-3 py-2 text-xs font-bold text-purple-700 hover:bg-purple-100 dark:border-purple-400/30 dark:text-purple-200 dark:hover:bg-purple-500/10"
-          >
-            Editar evaluación
-          </button>
+          <div className="flex flex-wrap justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setEditando(true)}
+              className="rounded-xl border border-purple-300 px-3 py-2 text-xs font-bold text-purple-700 hover:bg-purple-100 dark:border-purple-400/30 dark:text-purple-200 dark:hover:bg-purple-500/10"
+            >
+              Editar evaluación
+            </button>
+            {evaluation.reviewStatus !== "ACCEPTED" &&
+              evaluation.reviewStatus !== "accepted" && (
+              <button
+                type="button"
+                onClick={() => void guardar(true)}
+                disabled={loading || aceptando}
+                className="rounded-xl bg-green-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+              >
+                {aceptando ? "Aceptando..." : "Aceptar evaluación"}
+              </button>
+            )}
+          </div>
         ) : (
           <div className="flex gap-2">
             <button
@@ -830,7 +860,10 @@ function DemucaEditor({
       </div>
 
       <p className="text-xs text-gray-500 dark:text-gray-300">
-        Estos valores son provisionales y requieren revisión del profesional.
+        {evaluation.reviewStatus === "ACCEPTED" ||
+        evaluation.reviewStatus === "accepted"
+          ? "Evaluación aceptada por el especialista."
+          : "Estos valores son provisionales y requieren revisión del profesional."}
       </p>
 
       <div className="grid gap-4 md:grid-cols-2">

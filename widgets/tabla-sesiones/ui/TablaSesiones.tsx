@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import {
   Play,
@@ -57,13 +58,26 @@ export function TablaSesiones({
   onNuevaSesion,
 }: TablaSesionesProps) {
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
+  const [menuPosicion, setMenuPosicion] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuPortalRef = useRef<HTMLDivElement>(null);
 
-  const cerrarMenu = useCallback(() => setMenuAbierto(null), []);
+  const cerrarMenu = useCallback(() => {
+    setMenuAbierto(null);
+    setMenuPosicion(null);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        !menuPortalRef.current?.contains(target)
+      ) {
         cerrarMenu();
       }
     };
@@ -232,134 +246,161 @@ export function TablaSesiones({
                   >
                     <div className="relative">
                       <button
-                        onClick={() =>
-                          setMenuAbierto(
-                            menuAbierto === sesion.id ? null : sesion.id,
-                          )
-                        }
+                        onClick={(e) => {
+                          if (menuAbierto === sesion.id) {
+                            cerrarMenu();
+                            return;
+                          }
+
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setMenuPosicion({
+                            top: rect.bottom + 4,
+                            left: rect.right - 224,
+                          });
+                          setMenuAbierto(sesion.id);
+                        }}
                         className="p-2 rounded-xl text-gray-400 hover:text-[#008080] hover:bg-[#008080]/10 transition-all"
                       >
                         <MoreVertical size={18} />
                       </button>
 
-                      {menuAbierto === sesion.id && (
-                        <div className="absolute right-0 top-full mt-1 z-50 w-56 bg-white dark:bg-[#1a1a1a] rounded-2xl border border-gray-200 dark:border-white/10 shadow-2xl shadow-black/10 overflow-hidden">
-                          <div className="p-1.5">
-                            <MenuItem
-                              icono={<Eye size={14} />}
-                              label="Ver Detalles"
-                              onClick={() => {
-                                onVerDetalles(sesion);
-                                cerrarMenu();
+                      {menuAbierto === sesion.id &&
+                        menuPosicion &&
+                        createPortal(
+                          <div
+                            ref={menuPortalRef}
+                            className="fixed inset-0 z-[2147483647] pointer-events-none"
+                          >
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: menuPosicion.top,
+                                left: menuPosicion.left,
+                                zIndex: 2147483647,
+                                pointerEvents: "auto",
                               }}
-                            />
-                            <MenuItem
-                              icono={<Download size={14} />}
-                              label="Exportar PDF"
-                              onClick={() => {
-                                onExportarSesion(sesion);
-                                cerrarMenu();
-                              }}
-                            />
-                            {sesion.urlGrabacion && (
-                              <MenuItem
-                                icono={
-                                  sesion.urlGrabacion.includes(".mp3") ? (
-                                    <Music size={14} />
-                                  ) : (
-                                    <Video size={14} />
-                                  )
-                                }
-                                label="Ver Grabación"
-                                onClick={() => {
-                                  onVerDetalles(sesion);
-                                  cerrarMenu();
-                                }}
-                                variante="primario"
-                              />
-                            )}
+                              className="w-56 rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-black/10 overflow-hidden dark:border-white/10 dark:bg-[#1a1a1a]"
+                            >
+                              <div className="p-1.5">
+                                <MenuItem
+                                  icono={<Eye size={14} />}
+                                  label="Ver Detalles"
+                                  onClick={() => {
+                                    onVerDetalles(sesion);
+                                    cerrarMenu();
+                                  }}
+                                />
+                                <MenuItem
+                                  icono={<Download size={14} />}
+                                  label="Exportar PDF"
+                                  onClick={() => {
+                                    onExportarSesion(sesion);
+                                    cerrarMenu();
+                                  }}
+                                />
+                                {sesion.urlGrabacion && (
+                                  <MenuItem
+                                    icono={
+                                      sesion.urlGrabacion.includes(".mp3") ? (
+                                        <Music size={14} />
+                                      ) : (
+                                        <Video size={14} />
+                                      )
+                                    }
+                                    label="Ver Grabación"
+                                    onClick={() => {
+                                      onVerDetalles(sesion);
+                                      cerrarMenu();
+                                    }}
+                                    variante="primario"
+                                  />
+                                )}
 
-                            {(sesion.estado === "AGENDADA" ||
-                              sesion.estado === "CONFIRMA" ||
-                              sesion.estado === "REPROGRAMA") && (
-                              <>
+                                {(sesion.estado === "AGENDADA" ||
+                                  sesion.estado === "CONFIRMA" ||
+                                  sesion.estado === "REPROGRAMA") && (
+                                  <>
+                                    <div className="h-px bg-gray-100 dark:bg-white/5 my-1" />
+                                    <MenuItem
+                                      icono={
+                                        <Play size={14} fill="currentColor" />
+                                      }
+                                      label="Iniciar Sesión"
+                                      onClick={() => {
+                                        onIniciarSesion(sesion);
+                                        cerrarMenu();
+                                      }}
+                                      variante="primario"
+                                    />
+                                  </>
+                                )}
+
+                                {sesion.estado === "AGENDADA" && (
+                                  <MenuItem
+                                    icono={<CalendarCheck size={14} />}
+                                    label="Confirmar"
+                                    onClick={() => {
+                                      onConfirmar(sesion);
+                                      cerrarMenu();
+                                    }}
+                                    variante="info"
+                                  />
+                                )}
+
+                                {(sesion.estado === "AGENDADA" ||
+                                  sesion.estado === "CONFIRMA") && (
+                                  <MenuItem
+                                    icono={<RefreshCw size={14} />}
+                                    label="Reprogramar"
+                                    onClick={() => {
+                                      onReprogramar(sesion);
+                                      cerrarMenu();
+                                    }}
+                                    variante="advertencia"
+                                  />
+                                )}
+
+                                {sesion.estado !== "COMPLETA" &&
+                                  sesion.estado !== "CANCELADA" && (
+                                    <MenuItem
+                                      icono={<CheckCircle size={14} />}
+                                      label="Marcar Completada"
+                                      onClick={() => {
+                                        onMarcarCompletada(sesion);
+                                        cerrarMenu();
+                                      }}
+                                      variante="exito"
+                                    />
+                                  )}
+
+                                {sesion.estado !== "COMPLETA" &&
+                                  sesion.estado !== "CANCELADA" && (
+                                    <MenuItem
+                                      icono={<XCircle size={14} />}
+                                      label="Cancelar"
+                                      onClick={() => {
+                                        onCancelar(sesion);
+                                        cerrarMenu();
+                                      }}
+                                      variante="peligro"
+                                    />
+                                  )}
+
                                 <div className="h-px bg-gray-100 dark:bg-white/5 my-1" />
                                 <MenuItem
-                                  icono={<Play size={14} fill="currentColor" />}
-                                  label="Iniciar Sesión"
+                                  icono={<Trash2 size={14} />}
+                                  label="Eliminar"
                                   onClick={() => {
-                                    onIniciarSesion(sesion);
-                                    cerrarMenu();
-                                  }}
-                                  variante="primario"
-                                />
-                              </>
-                            )}
-
-                            {sesion.estado === "AGENDADA" && (
-                              <MenuItem
-                                icono={<CalendarCheck size={14} />}
-                                label="Confirmar"
-                                onClick={() => {
-                                  onConfirmar(sesion);
-                                  cerrarMenu();
-                                }}
-                                variante="info"
-                              />
-                            )}
-
-                            {(sesion.estado === "AGENDADA" ||
-                              sesion.estado === "CONFIRMA") && (
-                              <MenuItem
-                                icono={<RefreshCw size={14} />}
-                                label="Reprogramar"
-                                onClick={() => {
-                                  onReprogramar(sesion);
-                                  cerrarMenu();
-                                }}
-                                variante="advertencia"
-                              />
-                            )}
-
-                            {sesion.estado !== "COMPLETA" &&
-                              sesion.estado !== "CANCELADA" && (
-                                <MenuItem
-                                  icono={<CheckCircle size={14} />}
-                                  label="Marcar Completada"
-                                  onClick={() => {
-                                    onMarcarCompletada(sesion);
-                                    cerrarMenu();
-                                  }}
-                                  variante="exito"
-                                />
-                              )}
-
-                            {sesion.estado !== "COMPLETA" &&
-                              sesion.estado !== "CANCELADA" && (
-                                <MenuItem
-                                  icono={<XCircle size={14} />}
-                                  label="Cancelar"
-                                  onClick={() => {
-                                    onCancelar(sesion);
+                                    onEliminar(sesion);
                                     cerrarMenu();
                                   }}
                                   variante="peligro"
                                 />
-                              )}
-
-                            <div className="h-px bg-gray-100 dark:bg-white/5 my-1" />
-                            <MenuItem
-                              icono={<Trash2 size={14} />}
-                              label="Eliminar"
-                              onClick={() => {
-                                onEliminar(sesion);
-                                cerrarMenu();
-                              }}
-                              variante="peligro"
-                            />
-                          </div>
-                        </div>
-                      )}
+                              </div>
+                            </div>
+                          </div>,
+                          document.body,
+                        )}
                     </div>
                   </div>
                 </td>

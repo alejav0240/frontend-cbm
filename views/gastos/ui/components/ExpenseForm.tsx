@@ -7,6 +7,7 @@ import {
   esquemaGasto,
   type DatosFormularioGasto,
 } from "@/entities/gasto";
+import { hoyISO } from "@/shared/lib/schemas/fecha";
 
 interface ExpenseFormProps {
   categories: string[];
@@ -95,6 +96,7 @@ export function ExpenseForm({
           </label>
           <input
             type="date"
+            max={hoyISO()}
             {...register("fechaGasto")}
             className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#008080]/20 transition-all"
           />

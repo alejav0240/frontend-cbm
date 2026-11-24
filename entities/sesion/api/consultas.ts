@@ -361,6 +361,7 @@ export const VER_SESION = gql`
         }
       }
       scaleEvaluations {
+        reviewStatus
         scale {
           id
           name
