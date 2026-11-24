@@ -7,18 +7,10 @@ import {
   useProcessingRuns,
   type ProcessingRun,
 } from "../api/useProcessingRuns";
+import { PROCESSING_STATUS_LABELS } from "../model/pipeline";
 import { TemporalReviewTimeline } from "./TemporalReviewTimeline";
 import { ProcessingPipeline } from "./ProcessingPipeline";
 import { EvidenceTimeline } from "./EvidenceTimeline";
-
-const STATUS_LABELS: Record<string, string> = {
-  queued: "En cola",
-  running: "Procesando",
-  blocked_review: "Esperando revisión humana",
-  completed: "Procesamiento completado",
-  failed: "Procesamiento fallido",
-  cancelled: "Cancelado",
-};
 
 function statusIcon(status: string) {
   if (status === "running") return <Loader2 size={18} className="animate-spin" />;
@@ -298,7 +290,7 @@ export function ProcessingStatusCard({
             Procesamiento DEMUCA
           </p>
           <h3 className="mt-1 text-lg font-bold dark:text-white">
-            {STATUS_LABELS[run.status] ?? run.status}
+            {PROCESSING_STATUS_LABELS[run.status] ?? run.status}
           </h3>
         </div>
         <div className="flex items-center gap-3">

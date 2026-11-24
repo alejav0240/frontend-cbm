@@ -20,26 +20,10 @@ import {
   UserCheck,
 } from "lucide-react";
 
-export type PipelineStage = {
-  id: string;
-  label: string;
-  status: "pending" | "running" | "completed" | "skipped" | "blocked" | "failed" | string;
-  progress: number;
-  message?: string | null;
-  startedAt?: string | null;
-  finishedAt?: string | null;
-  durationMs?: number | null;
-  artifactKinds: string[];
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Pendiente",
-  running: "En proceso",
-  completed: "Completado",
-  skipped: "Omitido",
-  blocked: "Bloqueado",
-  failed: "Fallido",
-};
+import {
+  STAGE_STATUS_LABELS,
+  type PipelineStage,
+} from "../model/pipeline";
 
 const STAGE_DESCRIPTIONS: Record<string, string> = {
   extraction: "Normaliza el audio y el video para que puedan analizarse de forma consistente.",
@@ -129,7 +113,7 @@ function StageCard({
         </span>
         <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide">
           <StageStatusIcon status={stage.status} />
-          {STATUS_LABELS[stage.status] ?? stage.status}
+          {STAGE_STATUS_LABELS[stage.status] ?? stage.status}
         </span>
       </div>
       <p className="mt-4 min-h-9 text-sm font-bold">{stage.label}</p>
@@ -179,7 +163,7 @@ function StageDetails({ stage }: { stage: PipelineStage }) {
             CARD_TONE[stage.status] ?? CARD_TONE.pending
           }`}
         >
-          {STATUS_LABELS[stage.status] ?? stage.status}
+          {STAGE_STATUS_LABELS[stage.status] ?? stage.status}
         </span>
       </div>
 

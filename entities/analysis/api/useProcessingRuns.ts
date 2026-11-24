@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { useState } from "react";
 
 import { CREAR_PROCESAMIENTO_SESION, OBTENER_PROCESAMIENTO_SESION } from "./consultas";
-import type { PipelineStage } from "../ui/ProcessingPipeline";
+import { normalizePipelineStages, type PipelineStage } from "../model/pipeline";
 
 export type ProcessingArtifact = {
   id: string;
@@ -60,8 +60,13 @@ export function useProcessingRuns(sessionId: string | null) {
     notifyOnNetworkStatusChange: true,
   });
 
+  const runs = (query.data?.processingRuns ?? []).map((run) => ({
+    ...run,
+    pipelineStages: normalizePipelineStages(run.pipelineStages),
+  }));
+
   return {
-    runs: query.data?.processingRuns ?? [],
+    runs,
     loading: query.loading,
     error: query.error,
     refetch: query.refetch,
