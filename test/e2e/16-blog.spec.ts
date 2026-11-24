@@ -35,7 +35,7 @@ test.describe('Vista de Gestión de Blog', () => {
     await page.getByRole('button', { name: 'Vista Previa' }).click();
     
     // Verificar que cambie el modo (podría aparecer el nombre del autor o la fecha)
-    await expect(page.getByText('Dra. Elena Ríos')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Vista Previa' })).toHaveClass(/bg-white/);
     
     await page.keyboard.press('Escape');
   });

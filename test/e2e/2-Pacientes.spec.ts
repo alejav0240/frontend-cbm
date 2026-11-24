@@ -6,15 +6,15 @@ test.describe('Gestión de Pacientes', () => {
   test.describe.configure({ mode: 'serial' });
 
   test.beforeEach(async ({ page }) => {
-    await openDashboardView(page, /Pacientes/i, /Módulo de Clientes/i);
+    await openDashboardView(page, /Pacientes/i, /Gestión de Pacientes/i);
   });
 
   test('debe crear un nuevo paciente con foto correctamente', async ({ page }) => {
     // 1. Abrir el formulario de creación
-    await page.getByRole('button', { name: /Nuevo Cliente/i }).click();
+    await page.getByRole('button', { name: /Nuevo Paciente/i }).click();
     
     const modal = page.getByRole('dialog');
-    await expect(modal.getByRole('heading', { name: /Registrar Nuevo Cliente/i })).toBeVisible();
+    await expect(modal.getByRole('heading', { name: /Registrar Nuevo Paciente/i })).toBeVisible();
 
     // 2. Llenar datos personales con un timestamp para evitar duplicados
     const timestamp = uniqueSuffix();
@@ -33,7 +33,7 @@ test.describe('Gestión de Pacientes', () => {
     await modal.getByPlaceholder(/Ej\. contacto@ejemplo\.com/i).fill('tutor@test.com');
 
     // 5. Enviar formulario
-    await modal.getByRole('button', { name: /Crear Cliente/i }).click();
+    await modal.getByRole('button', { name: /Crear Paciente/i }).click();
 
     // 6. Verificar éxito
     await expect(page.getByText(/Paciente registrado correctamente/i)).toBeVisible();
@@ -43,8 +43,8 @@ test.describe('Gestión de Pacientes', () => {
     const searchInput = page.getByPlaceholder(/Buscar por nombre o carnet/i);
     await searchInput.fill('NombreInexistenteQueNoDeberiaEstar');
     
-    // Debería mostrar mensaje de "no se encontraron resultados"
-    await expect(page.getByText(/Mostrando 0 de 0 clientes/i)).toBeVisible();
+    // La tabla no muestra un contador para resultados vacíos; el filtro debe dejarla sin filas.
+    await expect(page.locator('tbody tr')).toHaveCount(0);
   });
 
   test('debe completar el registro clínico desde el botón de acción en la tabla', async ({ page }) => {
@@ -72,7 +72,7 @@ test.describe('Gestión de Pacientes', () => {
     await modal.getByRole('button', { name: /Guardar Registro Clínico/i }).click();
 
     // 5. Verificar éxito
-    await expect(page.getByText(/Registro clínico completado correctamente/i)).toBeVisible();
+    await expect(page.getByText(/Notas clínicas actualizadas correctamente/i)).toBeVisible();
   });
 
   test('debe eliminar un paciente desde la tabla', async ({ page }) => {

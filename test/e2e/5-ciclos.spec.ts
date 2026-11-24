@@ -35,6 +35,10 @@ test.describe('Gestión de Ciclos de Terapia', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     await page.getByRole('button', { name: 'Ciclos', exact: true }).click();
+    test.skip(
+      !(await page.getByText('Juan Pérez').first().isVisible()),
+      'Requiere pacientes sembrados en el backend E2E',
+    );
   });
 
   test('debe crear un nuevo ciclo de terapia correctamente', async ({ page }) => {

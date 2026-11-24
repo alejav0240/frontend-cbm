@@ -9,7 +9,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
+    workers: process.env.CI ? 1 : undefined,
   reporter: [["list"], ["html", { open: "never" }]],
   outputDir: "test-results",
   expect: {
@@ -38,7 +38,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `NEXT_PUBLIC_E2E_DISABLE_ONBOARDING=true pnpm dev --port ${port}`,
+    command: `cd ../.. && NEXT_PUBLIC_E2E_DISABLE_ONBOARDING=true pnpm build && NEXT_PUBLIC_E2E_DISABLE_ONBOARDING=true pnpm start --port ${port}`,
     url: `${baseURL}/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
