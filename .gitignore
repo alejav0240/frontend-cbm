@@ -7,6 +7,7 @@
 /.codex/
 /.codegraph/
 /.atl/
+/.playwright-mcp/
 /test-results/
 
 # dependencies
@@ -21,6 +22,8 @@
 
 # testing
 /coverage
+/playwright-report/
+/test/e2e/test-results/
 
 # next.js
 /.next/
