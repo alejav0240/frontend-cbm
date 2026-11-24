@@ -8,10 +8,8 @@ import {
 } from "@/entities/paciente";
 import { InformacionGeneral } from "@/entities/paciente/ui/InformacionGeneral";
 import { CuestionarioInicio } from "@/entities/paciente/ui/CuestionarioInicio";
-import { GraficoEvolucion } from "@/entities/paciente/ui/GraficoEvolucion";
 import { useRouter } from "next/navigation";
 import {
-  Search,
   Loader2,
   FileText,
   FileDown,
@@ -20,7 +18,6 @@ import {
   Repeat2,
 } from "lucide-react";
 import { useObtenerProgresoEscala } from "@/entities/paciente/api/useObtenerProgresoEscala";
-import AnalisDemuca from "@/entities/paciente/ui/AnalisDemuca";
 import { AnalisisIndividualPaciente } from "@/entities/paciente/ui/AnalisisIndividualPaciente";
 import { GraficoRadar } from "@/entities/paciente/components/GraficoRadar";
 import { HistorialSesiones } from "@/entities/sesion/ui/HistorialSesiones";

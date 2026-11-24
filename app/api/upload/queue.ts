@@ -17,7 +17,7 @@ export type PendingJob = {
   lastError?: string;
 };
 
-const QUEUE_DIR = join(process.cwd(), "uploads", "pending");
+const QUEUE_DIR = join(/* turbopackIgnore: true */ process.cwd(), "uploads", "pending");
 
 export const getQueueDir = () => QUEUE_DIR;
 

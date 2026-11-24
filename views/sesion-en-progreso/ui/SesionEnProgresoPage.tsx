@@ -43,7 +43,6 @@ import {
   CheckCircle2,
   Loader2,
   ChevronLeft,
-  ChevronRight,
   Video,
   Mic,
   Square,

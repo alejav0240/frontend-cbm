@@ -31,7 +31,6 @@ test.describe('Vista de Expedientes Clínicos', () => {
     
     // Abrir formulario (es el botón con el icono de lápiz/PenTool en el header)
     // En PatientHeader es el botón después de "Cuestionario"
-    const editButton = page.locator('button').filter({ has: page.locator('svg') }).nth(2); // El primero es Volver, el segundo es Cuestionario (si tiene texto), el tercero es Editar
     // Pero Cuestionario SI tiene texto. Vamos a buscar por el título del botón si lo tiene o por posición
     await page.getByRole('button', { name: 'Cuestionario' }).locator('..').locator('button').nth(1).click();
     

@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3001";
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3004";
+const port = new URL(baseURL).port || "3004";
 
 export default defineConfig({
   testDir: ".",
@@ -37,7 +38,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm dev --port 3001",
+    command: `pnpm dev --port ${port}`,
     url: `${baseURL}/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

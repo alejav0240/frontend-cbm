@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     };
 
     const extension = metadata.contentType.includes("mp4") ? "mp4" : "webm";
-    filePath = join(getQueueDir(), `${randomUUID()}.${extension}`);
+    filePath = join(/* turbopackIgnore: true */ getQueueDir(), `${randomUUID()}.${extension}`);
 
     enIngesta.add(sessionId);
 

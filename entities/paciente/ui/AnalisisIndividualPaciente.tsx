@@ -5,12 +5,9 @@ import { motion } from "motion/react";
 import {
   Activity,
   TrendingUp,
-  Brain,
   Sparkles,
-  Calendar,
   Layers,
   Award,
-  BarChart3,
   CheckCircle2,
   LineChart as LineChartIcon,
   Radar as RadarIcon,
@@ -50,7 +47,7 @@ interface AnalisisIndividualPacienteProps {
 }
 
 export function AnalisisIndividualPaciente({
-  paciente,
+  paciente: _paciente,
   dataDemuca,
   datosEscalas,
   sesionesCount = 0,
