@@ -355,7 +355,7 @@ jobs:
           git fetch origin main
           git reset --hard origin/main
           pnpm install --frozen-lockfile
-          pnpm build
+          NEXT_PUBLIC_E2E_DISABLE_ONBOARDING=true pnpm build
           test -d .next/standalone
           cp -r .next/static .next/standalone/.next/
           cp -r public .next/standalone/

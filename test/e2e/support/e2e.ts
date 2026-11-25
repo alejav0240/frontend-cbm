@@ -8,6 +8,18 @@ export const credentials = {
 };
 
 export async function loginAsAdmin(page: Page) {
+  await page.addLocatorHandler(
+    page.locator(".driver-overlay"),
+    async () => {
+      const closeButton = page.locator(".driver-close-btn");
+      if (await closeButton.isVisible()) {
+        await closeButton.click({ force: true });
+      } else {
+        await page.keyboard.press("Escape");
+      }
+    },
+  );
+
   await page.goto("/login");
   await page.getByPlaceholder("usuario").fill(credentials.adminUser);
   await page.getByPlaceholder("••••••••").fill(credentials.adminPassword);
