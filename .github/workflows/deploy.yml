@@ -173,6 +173,7 @@ jobs:
       - name: Scan source tree with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
+          cache: "false"
           version: v0.76.2
           scan-type: fs
           scan-ref: .
@@ -277,6 +278,7 @@ jobs:
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
+          cache: "false"
           image-ref: cbm-frontend:${{ github.sha }}
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
