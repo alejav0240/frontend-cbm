@@ -14,8 +14,8 @@ test.describe('Vista de Perfil de Usuario', () => {
   });
 
   test('debe mostrar la información básica del usuario', async ({ page }) => {
-    await expect(page.getByText('Información de Contacto')).toBeVisible();
-    await expect(page.getByText('Especialización')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Información Personal' })).toBeVisible();
+    await expect(page.getByText('Email', { exact: true }).first()).toBeVisible();
   });
 
   test('debe permitir entrar en modo edición', async ({ page }) => {

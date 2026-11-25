@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
+import { usePacientes } from "@/entities/paciente";
 import { useCiclosPacientes } from "@/entities/sesion";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import type { ExpedienteResumen } from "../model/tipos";
@@ -10,32 +11,55 @@ export function useExpedientes() {
   const [page, setPage] = useState(1);
   const busquedaDebounced = useDebounce(search, 500);
 
-  const { ciclos, total, totalPages, currentPage, cargando, error, refetch } =
-    useCiclosPacientes({ search: busquedaDebounced || undefined, page });
+  const {
+    pacientes,
+    total,
+    paginas: totalPages,
+    paginaActual: currentPage,
+    cargando: cargandoPacientes,
+    error: errorPacientes,
+    refetch: refetchPacientes,
+  } = usePacientes({
+    search: busquedaDebounced,
+    page,
+    pageSize: 50,
+  });
+  const {
+    ciclos,
+    cargando: cargandoCiclos,
+    error: errorCiclos,
+    refetch: refetchCiclos,
+  } = useCiclosPacientes({
+    search: busquedaDebounced || undefined,
+    page: 1,
+    pageSize: 100,
+  });
 
   const expedientes: ExpedienteResumen[] = useMemo(
     () =>
-      ciclos.map((c) => ({
-        id: c.id,
-        patientId: c.patientId,
-        patientName: c.patientName,
-        cycleNumber: c.cycleNumber,
-        totalSessions: c.totalSessions,
-        completedSessions: c.completedSessions,
-        status: c.status,
-        paymentSummary: c.paymentSummary,
-        sessionsList: c.sessionsList.map((s) => ({
-          id: s.id,
-          sessionDate: String(s.sessionDate ?? ""),
-          sessionStatus: s.sessionStatus,
-        })),
-        startDate: c.startDate,
-        lastSessionDate:
-          c.sessionsList.length > 0
-            ? String(c.sessionsList[0]?.sessionDate ?? "")
+      pacientes.map((paciente) => {
+        const ciclo = ciclos.find((item) => item.patientId === paciente.id);
+        return {
+          id: ciclo?.id ?? paciente.id,
+          patientId: paciente.id,
+          patientName: paciente.fullName || paciente.firstName || "Sin nombre",
+          cycleNumber: ciclo?.cycleNumber ?? 0,
+          totalSessions: ciclo?.totalSessions ?? 0,
+          completedSessions: ciclo?.completedSessions ?? 0,
+          status: ciclo?.status ?? paciente.status,
+          paymentSummary: ciclo?.paymentSummary ?? null,
+          sessionsList: (ciclo?.sessionsList ?? []).map((s) => ({
+            id: s.id,
+            sessionDate: String(s.sessionDate ?? ""),
+            sessionStatus: s.sessionStatus,
+          })),
+          startDate: ciclo?.startDate ?? "Sin sesiones",
+          lastSessionDate: ciclo?.sessionsList?.length
+            ? String(ciclo.sessionsList[0]?.sessionDate ?? "")
             : "",
-      })),
-    [ciclos],
+        };
+      }),
+    [ciclos, pacientes],
   );
 
   const handleSearchChange = useCallback((value: string) => {
@@ -52,12 +76,14 @@ export function useExpedientes() {
     total,
     totalPages,
     currentPage,
-    cargando,
-    error,
+    cargando: cargandoPacientes || cargandoCiclos,
+    error: errorPacientes || errorCiclos,
     search,
     setSearch: handleSearchChange,
     page,
     setPage: handlePageChange,
-    refetch,
+    refetch: async () => {
+      await Promise.all([refetchPacientes(), refetchCiclos()]);
+    },
   };
 }

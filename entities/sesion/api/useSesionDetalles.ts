@@ -9,7 +9,9 @@ export function useSesionDetalles() {
   const [obtenerSesion, { loading, error, data }] = useLazyQuery<
     VerSesionQuery,
     VerSesionQueryVariables
-  >(VER_SESION);
+  >(VER_SESION, {
+    fetchPolicy: "network-only",
+  });
 
   return {
     obtenerSesion,

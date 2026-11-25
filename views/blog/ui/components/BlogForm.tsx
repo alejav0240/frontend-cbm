@@ -17,6 +17,8 @@ import {
   Quote,
   Sigma,
   Divide,
+  ImagePlus,
+  LoaderCircle,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -121,6 +123,7 @@ export function BlogForm({
   onDirtyChange,
 }: BlogFormProps) {
   const [isPreviewMode, setIsPreviewMode] = React.useState(false);
+  const [subiendoImagen, setSubiendoImagen] = React.useState(false);
   const [showDraftRestore, setShowDraftRestore] = React.useState(false);
   const usuario = useAuthStore((s) => s.usuario);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -145,6 +148,7 @@ export function BlogForm({
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors, isDirty },
   } = form;
 
@@ -212,6 +216,7 @@ export function BlogForm({
   const getImagePreviewUrl = () => {
     const url = formValues.urlImagen;
     if (!url) return null;
+    if (url.startsWith("/")) return url;
     try {
       new URL(url);
       return url;
@@ -221,6 +226,46 @@ export function BlogForm({
   };
 
   const imagePreviewUrl = getImagePreviewUrl();
+
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setSubiendoImagen(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/upload/blog", {
+        method: "POST",
+        body: formData,
+      });
+      const result = (await response.json()) as {
+        success?: boolean;
+        url?: string;
+        message?: string;
+      };
+
+      if (!response.ok || !result.success || !result.url) {
+        throw new Error(result.message || "No se pudo subir la imagen");
+      }
+
+      setValue("urlImagen", result.url, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    } catch (error) {
+      form.setError("urlImagen", {
+        type: "manual",
+        message:
+          error instanceof Error ? error.message : "No se pudo subir la imagen",
+      });
+    } finally {
+      setSubiendoImagen(false);
+      event.target.value = "";
+    }
+  };
 
   const handleInsertSyntax = (syntax: string, wrap: boolean, closeSyntax?: string) => {
     insertSyntax(textareaRef.current, syntax, wrap, closeSyntax);
@@ -344,14 +389,36 @@ export function BlogForm({
               <InputField
                 label="URL de Imagen"
                 placeholder="https://..."
-                error={
-                  errors.urlImagen?.message === "URL inválida"
-                    ? "URL inválida"
-                    : undefined
-                }
+                error={errors.urlImagen?.message}
                 disabled={cargando}
                 {...register("urlImagen")}
               />
+              <div className="flex items-center gap-3">
+                <label
+                  className={`inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-[#008080]/40 px-4 py-2 text-xs font-bold text-[#008080] transition hover:bg-[#008080]/5 ${
+                    subiendoImagen || cargando
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }`}
+                >
+                  {subiendoImagen ? (
+                    <LoaderCircle size={15} className="animate-spin" />
+                  ) : (
+                    <ImagePlus size={15} />
+                  )}
+                  {subiendoImagen ? "Subiendo..." : "Subir imagen"}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="sr-only"
+                    disabled={subiendoImagen || cargando}
+                    onChange={handleImageUpload}
+                  />
+                </label>
+                <span className="text-[10px] text-gray-400">
+                  JPG, PNG, WEBP o GIF · máximo 5 MB
+                </span>
+              </div>
               {imagePreviewUrl && (
                 <div className="relative w-full h-24 rounded-xl overflow-hidden bg-gray-100 dark:bg-white/5">
                   <Image

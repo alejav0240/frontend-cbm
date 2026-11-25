@@ -32,32 +32,43 @@ export function OverviewDistributions({
             Diagnósticos
           </h2>
           <div className="h-40 md:h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={conditionData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={65}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {conditionData.map((entry) => (
-                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--accent)",
-                    border: "none",
-                    borderRadius: "12px",
-                    color: "var(--foreground)",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {conditionData.length > 0 ? (
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minWidth={0}
+                minHeight={160}
+              >
+                <PieChart>
+                  <Pie
+                    data={conditionData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={65}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {conditionData.map((entry) => (
+                      <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--accent)",
+                      border: "none",
+                      borderRadius: "12px",
+                      color: "var(--foreground)",
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center text-xs text-gray-400">
+                Sin datos de diagnósticos
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-2 mt-4">
             {conditionData.map((item) => (
@@ -86,32 +97,43 @@ export function OverviewDistributions({
             Estado de Ciclos
           </h2>
           <div className="h-40 md:h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={cycleStatusData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={65}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {cycleStatusData.map((entry) => (
-                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--accent)",
-                    border: "none",
-                    borderRadius: "12px",
-                    color: "var(--foreground)",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {cycleStatusData.some((item) => item.value > 0) ? (
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minWidth={0}
+                minHeight={160}
+              >
+                <PieChart>
+                  <Pie
+                    data={cycleStatusData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={65}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {cycleStatusData.map((entry) => (
+                      <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--accent)",
+                      border: "none",
+                      borderRadius: "12px",
+                      color: "var(--foreground)",
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center text-xs text-gray-400">
+                Sin ciclos registrados
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-3 gap-2 mt-4">
             {cycleStatusData.map((item) => (

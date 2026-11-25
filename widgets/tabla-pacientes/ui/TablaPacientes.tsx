@@ -103,7 +103,7 @@ export const TablaPacientes = ({
                   </div>
                 </td>
                 <td className="px-8 py-5 text-sm font-mono text-gray-500 dark:text-gray-400">
-                  {paciente.ci || "1234567"}
+                  {paciente.ci || "Sin documento"}
                 </td>
                 <td className="px-8 py-5 text-sm text-gray-600 dark:text-gray-400 font-medium">
                   {paciente?.birthDate

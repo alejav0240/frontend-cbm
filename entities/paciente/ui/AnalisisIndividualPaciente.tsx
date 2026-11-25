@@ -5,12 +5,9 @@ import { motion } from "motion/react";
 import {
   Activity,
   TrendingUp,
-  Brain,
   Sparkles,
-  Calendar,
   Layers,
   Award,
-  BarChart3,
   CheckCircle2,
   LineChart as LineChartIcon,
   Radar as RadarIcon,
@@ -50,12 +47,12 @@ interface AnalisisIndividualPacienteProps {
 }
 
 export function AnalisisIndividualPaciente({
-  paciente,
+  paciente: _paciente,
   dataDemuca,
   datosEscalas,
   sesionesCount = 0,
 }: AnalisisIndividualPacienteProps) {
-  const [subTab, setSubTab] = useState<SubTabAnalisis>("comparativa");
+  const [subTab, setSubTab] = useState<SubTabAnalisis>("radar");
   const [escalaSeleccionada, setEscalaSeleccionada] = useState<
     "todas" | "demuca" | "eri" | "cim"
   >("todas");
@@ -87,8 +84,8 @@ export function AnalisisIndividualPaciente({
 
     let tasaDemuca = null;
     if (totalDemuca >= 2) {
-      const primero = dataDemuca[0]?.totalScore || 0;
-      const ultimo = dataDemuca[totalDemuca - 1]?.totalScore || 0;
+      const primero = dataDemuca[totalDemuca - 1]?.totalScore || 0;
+      const ultimo = dataDemuca[0]?.totalScore || 0;
       if (primero > 0) {
         tasaDemuca = Math.round(((ultimo - primero) / primero) * 100);
       }
@@ -116,10 +113,13 @@ export function AnalisisIndividualPaciente({
     if (maxPuntos === 0) return [];
 
     const puntos = [];
+    const demucaOrdenado = [...dataDemuca].reverse();
+    const eriOrdenado = [...eriData].reverse();
+    const cimOrdenado = [...cimData].reverse();
     for (let i = 0; i < maxPuntos; i++) {
-      const dDemuca = dataDemuca[i];
-      const dEri = eriData[i];
-      const dCim = cimData[i];
+      const dDemuca = demucaOrdenado[i];
+      const dEri = eriOrdenado[i];
+      const dCim = cimOrdenado[i];
 
       const fecha =
         dDemuca?.evaluatedAt ||
@@ -150,7 +150,7 @@ export function AnalisisIndividualPaciente({
   const competenciasRadar = useMemo(() => {
     if (!dataDemuca || dataDemuca.length === 0) return [];
 
-    const ultima = dataDemuca[dataDemuca.length - 1];
+    const ultima = dataDemuca[0];
     const agrupado: Record<string, { total: number; count: number }> = {};
 
     ultima.subscaleResponses.forEach((resp) => {
@@ -163,7 +163,7 @@ export function AnalisisIndividualPaciente({
     return Object.entries(agrupado).map(([area, val]) => ({
       area,
       puntaje: parseFloat((val.total / val.count).toFixed(1)),
-      fullMark: 10,
+      fullMark: 2,
     }));
   }, [dataDemuca]);
 
@@ -173,7 +173,7 @@ export function AnalisisIndividualPaciente({
 
     const keysSet = new Set<string>();
 
-    const data = dataDemuca.map((evaluacion, idx) => {
+    const data = [...dataDemuca].reverse().map((evaluacion, idx) => {
       const punto: Record<string, string | number> = {
         sesion: `S${idx + 1}`,
         fecha: evaluacion.evaluatedAt
@@ -488,7 +488,8 @@ export function AnalisisIndividualPaciente({
                       />
                       <PolarRadiusAxis
                         angle={90}
-                        domain={[0, "auto"]}
+                        domain={[0, 2]}
+                        tickCount={3}
                         tick={false}
                         axisLine={false}
                       />

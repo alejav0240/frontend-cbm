@@ -8,10 +8,8 @@ import {
 } from "@/entities/paciente";
 import { InformacionGeneral } from "@/entities/paciente/ui/InformacionGeneral";
 import { CuestionarioInicio } from "@/entities/paciente/ui/CuestionarioInicio";
-import { GraficoEvolucion } from "@/entities/paciente/ui/GraficoEvolucion";
 import { useRouter } from "next/navigation";
 import {
-  Search,
   Loader2,
   FileText,
   FileDown,
@@ -20,8 +18,8 @@ import {
   Repeat2,
 } from "lucide-react";
 import { useObtenerProgresoEscala } from "@/entities/paciente/api/useObtenerProgresoEscala";
-import AnalisDemuca from "@/entities/paciente/ui/AnalisDemuca";
 import { AnalisisIndividualPaciente } from "@/entities/paciente/ui/AnalisisIndividualPaciente";
+import { GraficoRadar } from "@/entities/paciente/components/GraficoRadar";
 import { HistorialSesiones } from "@/entities/sesion/ui/HistorialSesiones";
 import type { SessionType } from "@/entities/sesion/ui/SessionCard";
 import { useObtenerProgresoSubEscala } from "@/entities/paciente/api/useObtenerProgresoSubEscala";
@@ -66,13 +64,130 @@ type ScaleEvalSesion = SesionDetallada["scaleEvaluations"][number] & {
   scale?: { name?: string | null } | null;
 };
 type SubscaleRespSesion = ScaleEvalSesion["subscaleResponses"][number] & {
-  subscale?: { name?: string | null } | null;
+  subscale?: {
+    name?: string | null;
+    category?: string | null;
+    maxValue?: number | null;
+  } | null;
 };
 type ValueRespSesion =
   SesionDetallada["scaleEvaluations"][number]["valueResponses"][number];
 type FormAssignSesion = NonNullable<
   NonNullable<SesionDetallada["formAssignments"]>[number]
 >;
+
+function GraficosDemucaSesion({
+  sesion,
+  loading,
+}: {
+  sesion: SesionDetallada | null;
+  loading: boolean;
+}) {
+  if (loading || !sesion) {
+    return (
+      <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-purple-200/60 bg-purple-50/40 text-sm text-gray-500 dark:border-purple-400/20 dark:bg-purple-500/5 dark:text-zinc-300">
+        {loading ? "Cargando gráficos DEMUCA..." : "No se encontró la sesión."}
+      </div>
+    );
+  }
+
+  const evaluation = sesion.scaleEvaluations.find((item) =>
+    item.scale?.name?.toLowerCase().includes("demuca"),
+  );
+  const responses = evaluation?.subscaleResponses ?? [];
+  const radarData = responses.map((response) => ({
+    item: response.subscale?.name || "Subescala",
+    score: response.score,
+    category: response.subscale?.category || "General",
+  }));
+  const grouped = responses.reduce<
+    Record<string, { score: number; max: number; count: number }>
+  >((categories, response) => {
+    const category = response.subscale?.category || "General";
+    const current = categories[category] || { score: 0, max: 0, count: 0 };
+    categories[category] = {
+      score: current.score + response.score,
+      max: current.max + (response.subscale?.maxValue ?? 0),
+      count: current.count + 1,
+    };
+    return categories;
+  }, {});
+
+  if (!evaluation || responses.length === 0) {
+    return (
+      <div className="rounded-2xl border border-gray-200 p-6 text-sm text-gray-500 dark:border-white/10 dark:text-zinc-300">
+        Esta sesión todavía no tiene una evaluación DEMUCA con subescalas.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-purple-200/70 bg-gradient-to-br from-purple-50/80 via-white to-slate-50 p-5 dark:border-purple-400/20 dark:from-purple-500/10 dark:via-zinc-900 dark:to-zinc-900">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-purple-600 dark:text-purple-300">
+              Perfil de la sesión
+            </p>
+            <h3 className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
+              DEMUCA
+            </h3>
+            <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
+              Comparación por áreas y detalle de indicadores observados.
+            </p>
+          </div>
+          <div className="rounded-xl border border-purple-200/70 bg-white/80 px-5 py-3 text-center dark:border-purple-400/20 dark:bg-white/5">
+            <p className="text-2xl font-black text-purple-700 dark:text-purple-200">
+              {evaluation.totalScore ?? 0}
+              <span className="text-sm font-semibold text-gray-400">
+                {" "}
+                / {responses.reduce(
+                  (total, response) =>
+                    total + (response.subscale?.maxValue ?? 0),
+                  0,
+                )}
+              </span>
+            </p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              Puntaje total
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Object.entries(grouped).map(([category, values]) => (
+          <div
+            key={category}
+            className="rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-white/[0.03]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">
+                {category}
+              </p>
+              <span className="shrink-0 text-xs font-black text-purple-600 dark:text-purple-300">
+                {values.score}/{values.max}
+              </span>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-purple-100 dark:bg-purple-950/60">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500"
+                style={{
+                  width: `${values.max > 0 ? (values.score / values.max) * 100 : 0}%`,
+                }}
+              />
+            </div>
+            <p className="mt-2 text-[10px] text-gray-400">
+              {values.count} indicadores
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <GraficoRadar data={radarData} />
+    </div>
+  );
+}
 
 import Modal from "@/shared/ui/components/Modal";
 import { FormularioClinico } from "@/features/gestion-paciente/ui/FormularioClinico";
@@ -99,6 +214,7 @@ import {
 import type { InformeClinicoDTO } from "@/entities/informe-clinico";
 import type { VerSesionQuery } from "@/shared/api/generated/graphql";
 import { ProcessingStatusCard } from "@/entities/analysis";
+import { DemucaEditor } from "@/features/gestion-sesiones/ui/ModalDetalleSesion";
 
 interface RouteParams {
   id: string;
@@ -126,12 +242,18 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     patientId: idPaciente,
     escalaId: "1",
   });
-  const { preguntasNormalizadas, idAssigmente } = useObtenerRespuestaFormulario(
-    { patientId: idPaciente, formId: "1" },
-  );
+  const {
+    preguntasNormalizadas,
+    idAssigmente,
+    refetch: refetchRespuestaFormulario,
+  } = useObtenerRespuestaFormulario({ patientId: idPaciente, formId: "1" });
 
   const { formulario } = useFormulario("1");
-  const { asignaciones } = useAsignacionesFormulario({ patientId: idPaciente });
+  const {
+    asignaciones,
+    cargando: cargandoAsignaciones,
+    refetch: refetchAsignaciones,
+  } = useAsignacionesFormulario({ patientId: idPaciente });
   const { submitFullForm, enviando } = useSubmitFullForm();
   const { assignForm, asignando: asignandoForm } = useAssignForm();
 
@@ -171,7 +293,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     useState(false);
   const [mostrarCuestionario, setMostrarCuestionario] = useState(false);
   const [mostrarExportarClinico, setMostrarExportarClinico] = useState(false);
-  const [activeTab, setActiveTab] = useState<ExpedienteTab>("general");
+  const [activeTab, setActiveTab] = useState<ExpedienteTab>("analisis");
 
   const [selectedSessionForAI, setSelectedSessionForAI] = useState<
     string | null
@@ -208,6 +330,11 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     obtenerSesion,
     cargando: cargandoDetalles,
     sesion: sesionDetallada,
+  } = useSesionDetalles();
+  const {
+    obtenerSesion: obtenerSesionAI,
+    cargando: cargandoSesionAI,
+    sesion: sesionAI,
   } = useSesionDetalles();
   const { actualizarSesion } = useActualizarSesion();
   const { eliminarSesion } = useEliminarSesion();
@@ -298,6 +425,7 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       }
 
       await submitFullForm({ assignmentId: assignmentId as string, responses });
+      await Promise.all([refetchRespuestaFormulario(), refetchAsignaciones()]);
       setMostrarCuestionario(false);
       toast.success("Cuestionario guardado correctamente");
     } catch (error: unknown) {
@@ -313,8 +441,12 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
     sessionId: string | number,
     mode: "list" | "charts",
   ) => {
-    setSelectedSessionForAI(String(sessionId));
+    const normalizedSessionId = String(sessionId);
+    setSelectedSessionForAI(normalizedSessionId);
     setAiViewMode(mode);
+    obtenerSesionAI({
+      variables: { id: normalizedSessionId },
+    });
   };
 
   const handleEditSession = (session: SessionData) => {
@@ -584,8 +716,12 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
         patient={paciente!}
         onShowClinicalForm={() => setMostrarFormularioClinico(true)}
         onShowQuestionnaire={() => {
-          setMostrarCuestionario(true);
+          if (cargandoAsignaciones) {
+            toast.info("Cargando las respuestas del cuestionario...");
+            return;
+          }
           setFormValues(valoresIniciales);
+          setMostrarCuestionario(true);
         }}
         onBack={() => router.push("/dashboard/expedientes")}
         onExport={() => setMostrarExportarClinico(true)}
@@ -766,16 +902,79 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
       <Modal
         isOpen={selectedSessionForAI !== null}
         onClose={() => setSelectedSessionForAI(null)}
-        title="Análisis de Inteligencia Artificial"
+        title={aiViewMode === "charts" ? "Gráficos DEMUCA" : "Análisis DEMUCA"}
         maxWidth="max-w-5xl"
       >
         {selectedSessionForAI && (
           <div className="max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
             <div className="space-y-5">
-              <ProcessingStatusCard sessionId={selectedSessionForAI} />
-              <p className="text-center text-xs text-gray-500">
-                Vista solicitada: {aiViewMode === "charts" ? "gráficos" : "evidencia y estado"}
-              </p>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-1.5 dark:border-white/10 dark:bg-white/[0.03]">
+                <div className="grid grid-cols-2 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setAiViewMode("list")}
+                    className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
+                      aiViewMode === "list"
+                        ? "bg-white text-purple-700 shadow-sm dark:bg-zinc-900 dark:text-purple-200"
+                        : "text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    Análisis y evidencia
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAiViewMode("charts")}
+                    className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
+                      aiViewMode === "charts"
+                        ? "bg-white text-purple-700 shadow-sm dark:bg-zinc-900 dark:text-purple-200"
+                        : "text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    Gráficos por área
+                  </button>
+                </div>
+              </div>
+
+              {aiViewMode === "charts" ? (
+                <GraficosDemucaSesion
+                  sesion={sesionAI}
+                  loading={cargandoSesionAI}
+                />
+              ) : (
+                <>
+                  <div className="rounded-2xl border border-purple-200/60 bg-purple-50/40 p-4 dark:border-purple-400/20 dark:bg-purple-500/5">
+                    <p className="text-sm font-bold text-purple-900 dark:text-purple-100">
+                      Análisis multimodal de la sesión
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-purple-800/70 dark:text-purple-200/70">
+                      Revisá el estado del procesamiento, la evidencia devuelta
+                      por el worker y la línea de revisión humana.
+                    </p>
+                  </div>
+                  <ProcessingStatusCard
+                    sessionId={selectedSessionForAI}
+                    sourceUri={sesionAI?.videoUrl}
+                  />
+                  {(() => {
+                    const demucaEvaluation = sesionAI?.scaleEvaluations?.find(
+                      (evaluation) =>
+                        evaluation.scale?.name?.toLowerCase().includes("demuca"),
+                    );
+
+                    return demucaEvaluation ? (
+                      <DemucaEditor
+                        key={demucaEvaluation.id}
+                        evaluation={demucaEvaluation}
+                        onSaved={() => {
+                          void obtenerSesionAI({
+                            variables: { id: selectedSessionForAI },
+                          });
+                        }}
+                      />
+                    ) : null;
+                  })()}
+                </>
+              )}
             </div>
           </div>
         )}
@@ -1030,57 +1229,160 @@ export default function ExpedientePage({ params }: ExpedientePageProps) {
                   </h4>
                   <div className="grid md:grid-cols-2 gap-4">
                     {sesionDetallada.scaleEvaluations.map(
-                      (evalData: ScaleEvalSesion) => (
-                        <div
-                          key={evalData.id}
-                          className="p-4 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/50 dark:border-zinc-800/80 space-y-2"
-                        >
-                          <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800/60 pb-2">
-                            <span className="text-sm font-bold dark:text-white font-sans">
-                              {evalData.scale?.name || "Escala"}
-                            </span>
-                            <span className="text-xs font-extrabold text-[#008080] bg-teal-500/10 px-2 py-1 rounded-full font-sans">
-                              Puntuación: {evalData.totalScore}/10
-                            </span>
-                          </div>
+                      (evalData: ScaleEvalSesion) => {
+                        const respuestas = evalData.subscaleResponses ?? [];
+                        const maxScore = respuestas.reduce(
+                          (total, response) =>
+                            total + (response.subscale?.maxValue ?? 0),
+                          0,
+                        );
+                        const score = evalData.totalScore ?? 0;
+                        const percentage =
+                          maxScore > 0
+                            ? Math.round((score / maxScore) * 100)
+                            : 0;
+                        const groupedResponses = respuestas.reduce<
+                          Record<string, SubscaleRespSesion[]>
+                        >((groups, response) => {
+                          const category =
+                            response.subscale?.category || "General";
+                          groups[category] ??= [];
+                          groups[category].push(response);
+                          return groups;
+                        }, {});
 
-                          <div className="space-y-1 pt-1">
-                            {evalData.subscaleResponses &&
-                              evalData.subscaleResponses.map(
-                                (r: SubscaleRespSesion, idx: number) => (
-                                  <div
-                                    key={idx}
-                                    className="flex justify-between text-xs text-gray-500 font-sans"
-                                  >
-                                    <span>
-                                      {r.subscale?.name || "Subescala"}
+                        return (
+                          <div
+                            key={evalData.id}
+                            className="overflow-hidden rounded-2xl border border-purple-200/70 bg-gradient-to-br from-purple-50/80 via-white to-slate-50 dark:border-purple-400/20 dark:from-purple-500/10 dark:via-zinc-900 dark:to-zinc-900"
+                          >
+                            <div className="border-b border-purple-200/60 px-5 py-4 dark:border-purple-400/15">
+                              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="rounded-lg bg-purple-500/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-200">
+                                      DEMUCA
                                     </span>
-                                    <span className="font-semibold">
-                                      {r.score} (máx:{" "}
-                                      {r.subscale?.maxValue || 10})
+                                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                                      Resultado provisional
                                     </span>
                                   </div>
-                                ),
+                                  <h5 className="mt-2 text-base font-bold text-slate-900 dark:text-white font-sans">
+                                    {evalData.scale?.name || "Escala DEMUCA"}
+                                  </h5>
+                                  <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
+                                    {respuestas.length} indicadores · requiere revisión profesional
+                                  </p>
+                                </div>
+
+                                <div className="min-w-[180px] rounded-xl border border-purple-200/70 bg-white/80 px-4 py-3 dark:border-purple-400/15 dark:bg-white/5">
+                                  <div className="flex items-end justify-between gap-3">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                      Puntaje total
+                                    </span>
+                                    <span className="text-2xl font-black text-purple-700 dark:text-purple-200">
+                                      {score}
+                                      <span className="text-sm font-semibold text-gray-400">
+                                        {" "}
+                                        / {maxScore}
+                                      </span>
+                                    </span>
+                                  </div>
+                                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-purple-100 dark:bg-purple-950/60">
+                                    <div
+                                      className="h-full rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all"
+                                      style={{ width: `${percentage}%` }}
+                                    />
+                                  </div>
+                                  <p className="mt-1 text-right text-[10px] font-semibold text-purple-600 dark:text-purple-300">
+                                    {percentage}% del máximo
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="grid gap-3 p-4 md:grid-cols-2">
+                              {Object.entries(groupedResponses).map(
+                                ([category, categoryResponses]) => {
+                                  const categoryScore = categoryResponses.reduce(
+                                    (total, response) => total + response.score,
+                                    0,
+                                  );
+                                  const categoryMax = categoryResponses.reduce(
+                                    (total, response) =>
+                                      total +
+                                      (response.subscale?.maxValue ?? 0),
+                                    0,
+                                  );
+
+                                  return (
+                                    <div
+                                      key={category}
+                                      className="rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-zinc-800 dark:bg-white/[0.03]"
+                                    >
+                                      <div className="mb-2 flex items-center justify-between gap-3">
+                                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-200">
+                                          {category}
+                                        </span>
+                                        <span className="shrink-0 rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-bold text-purple-700 dark:text-purple-200">
+                                          {categoryScore}/{categoryMax}
+                                        </span>
+                                      </div>
+                                      <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
+                                        {categoryResponses.map(
+                                          (
+                                            response: SubscaleRespSesion,
+                                            responseIndex: number,
+                                          ) => (
+                                            <div
+                                              key={`${response.subscale?.name || "subscale"}-${responseIndex}`}
+                                              className="flex min-w-0 items-center justify-between gap-2 text-xs"
+                                            >
+                                              <span className="truncate text-gray-500 dark:text-zinc-400">
+                                                {response.subscale?.name ||
+                                                  "Subescala"}
+                                              </span>
+                                              <span className="shrink-0 font-bold text-slate-700 dark:text-zinc-200">
+                                                {response.score}/
+                                                {response.subscale?.maxValue ?? 0}
+                                              </span>
+                                            </div>
+                                          ),
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                },
                               )}
+                            </div>
+
                             {evalData.valueResponses &&
-                              evalData.valueResponses.map(
-                                (v: ValueRespSesion, idx: number) => (
-                                  <div
-                                    key={idx}
-                                    className="flex justify-between text-xs text-gray-500 font-sans"
-                                  >
-                                    <span>
-                                      {v.scaleValue?.label || "Indicador"}
-                                    </span>
-                                    <span className="font-semibold">
-                                      {v.scaleValue?.value || "—"}
-                                    </span>
+                              evalData.valueResponses.length > 0 && (
+                                <div className="border-t border-purple-200/60 px-5 py-3 dark:border-purple-400/15">
+                                  <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                    Valores cualitativos
+                                  </p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {evalData.valueResponses.map(
+                                      (valueResponse: ValueRespSesion) => (
+                                        <span
+                                          key={valueResponse.id}
+                                          className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs text-slate-600 dark:bg-white/5 dark:text-zinc-300"
+                                        >
+                                          {valueResponse.scaleValue?.label}:{" "}
+                                          <strong>
+                                            {valueResponse.scaleValue?.value ??
+                                              "—"}
+                                          </strong>
+                                        </span>
+                                      ),
+                                    )}
                                   </div>
-                                ),
+                                </div>
                               )}
                           </div>
-                        </div>
-                      ),
+                        );
+                      },
                     )}
                   </div>
                 </div>

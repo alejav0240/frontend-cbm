@@ -1,6 +1,8 @@
 import { useMutation, useQuery } from "@apollo/client/react";
+import { useState } from "react";
 
 import { CREAR_PROCESAMIENTO_SESION, OBTENER_PROCESAMIENTO_SESION } from "./consultas";
+import { normalizePipelineStages, type PipelineStage } from "../model/pipeline";
 
 export type ProcessingArtifact = {
   id: string;
@@ -29,8 +31,20 @@ export type ProcessingRun = {
   updatedAt?: string | null;
   result?: Record<string, unknown> | null;
   metadata?: Record<string, unknown> | null;
+  semanticStatus: string;
+  reviewRequired: boolean;
+  pipelineStages: PipelineStage[];
   artifacts: ProcessingArtifact[];
 };
+
+export function getProcessingErrorMessage(
+  run: Pick<ProcessingRun, "errorCode" | "errorMessage">,
+) {
+  if (run.errorCode === "insufficient_duration_for_window") {
+    return "La sesión es demasiado corta para generar una ventana completa de análisis. Se requiere una duración mayor o igual a 5 segundos.";
+  }
+  return run.errorMessage;
+}
 
 type ProcessingRunsResponse = {
   processingRuns: ProcessingRun[];
@@ -38,6 +52,7 @@ type ProcessingRunsResponse = {
 
 export function useProcessingRuns(sessionId: string | null) {
   const [createProcessingRun, createState] = useMutation(CREAR_PROCESAMIENTO_SESION);
+  const [startError, setStartError] = useState<string | null>(null);
   const query = useQuery<ProcessingRunsResponse>(OBTENER_PROCESAMIENTO_SESION, {
     variables: { sessionId },
     skip: !sessionId,
@@ -45,21 +60,36 @@ export function useProcessingRuns(sessionId: string | null) {
     notifyOnNetworkStatusChange: true,
   });
 
+  const runs = (query.data?.processingRuns ?? []).map((run) => ({
+    ...run,
+    pipelineStages: normalizePipelineStages(run.pipelineStages),
+  }));
+
   return {
-    runs: query.data?.processingRuns ?? [],
+    runs,
     loading: query.loading,
     error: query.error,
     refetch: query.refetch,
     starting: createState.loading,
+    startError,
     startRun: async (sourceUri?: string) => {
-      await createProcessingRun({
-        variables: {
-          sessionId,
-          pipelineVersion: "0.3.0",
-          sourceUri,
-        },
-      });
-      await query.refetch();
+      setStartError(null);
+      try {
+        await createProcessingRun({
+          variables: {
+            sessionId,
+            pipelineVersion: "0.3.0",
+            sourceUri,
+          },
+        });
+        await query.refetch();
+      } catch (error) {
+        setStartError(
+          error instanceof Error
+            ? error.message
+            : "No se pudo iniciar el análisis multimodal.",
+        );
+      }
     },
   };
 }

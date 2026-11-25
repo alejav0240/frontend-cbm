@@ -14,6 +14,11 @@ export async function loginAsAdmin(page: Page) {
   await page.getByRole("button", { name: /Iniciar Sesión/i }).click();
   await page.waitForURL(/\/dashboard/, { timeout: 15_000 });
   await expect(page.getByRole("main")).toBeVisible();
+  await page.keyboard.press("Escape");
+  const onboardingClose = page.locator(".driver-close-btn");
+  if (await onboardingClose.count()) {
+    await onboardingClose.click({ force: true });
+  }
 }
 
 export async function logout(page: Page) {

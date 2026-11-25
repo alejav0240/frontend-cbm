@@ -29,6 +29,7 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
         search: filtros.busqueda || "",
       },
       skip: filtros.skip,
+      fetchPolicy: "cache-and-network",
       nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     },
@@ -41,6 +42,31 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
       data.sessions.sessions
         // 1. Filtramos los elementos null que puedan venir en el array del backend
         .filter((s): s is NonNullable<typeof s> => s !== null)
+        // Ordenamos por la fecha real de la sesión, no por el identificador.
+        // Los registros sin fecha quedan al final y databaseId desempata.
+        .sort((a, b) => {
+          const parseDate = (value: unknown) => {
+            if (typeof value !== "string") return null;
+            const timestamp = Date.parse(value);
+            return Number.isFinite(timestamp) ? timestamp : null;
+          };
+          const fechaA = parseDate(a.fechaSesion);
+          const fechaB = parseDate(b.fechaSesion);
+
+          if (fechaA === null && fechaB === null) {
+            return (
+              ((b as { databaseId?: number }).databaseId ?? 0) -
+              ((a as { databaseId?: number }).databaseId ?? 0)
+            );
+          }
+          if (fechaA === null) return 1;
+          if (fechaB === null) return -1;
+          if (fechaA !== fechaB) return fechaB - fechaA;
+          return (
+            ((b as { databaseId?: number }).databaseId ?? 0) -
+            ((a as { databaseId?: number }).databaseId ?? 0)
+          );
+        })
         // 2. Transformamos y normalizamos directamente a 'SesionNormalizada'
         .map((s) => {
           // Aseguramos de manera segura que las notas sean un string plano antes de asignarlo
@@ -110,8 +136,6 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
             videoStatus: s.videoStatus || "",
           };
         })
-        // Conservamos el orden descendente del backend: las sesiones nuevas primero.
-        .sort((a, b) => (b.databaseId ?? 0) - (a.databaseId ?? 0))
     );
   }, [data]);
 
@@ -142,6 +166,8 @@ export const useCiclos = (filtros: SesionFiltros = {}) => {
         pageSize: filtros.pageSize || 10,
         byCycles: filtros.verCiclo || true,
       },
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     },
   );

@@ -18,7 +18,7 @@ test.describe('Vista de Gastos (Expenses)', () => {
   test('debe permitir abrir el formulario de Registrar Nuevo Gasto', async ({ page }) => {
     await page.getByRole('button', { name: 'Registrar Gasto' }).click();
     const modal = page.getByRole('dialog');
-    await expect(modal.getByRole('heading', { name: 'Registrar Nuevo Gasto' })).toBeVisible();
+    await expect(modal.getByRole('heading', { name: 'Registrar Gasto' })).toBeVisible();
 
     // Verificar campos (scoped to modal)
     await expect(modal.getByText('Descripción')).toBeVisible();

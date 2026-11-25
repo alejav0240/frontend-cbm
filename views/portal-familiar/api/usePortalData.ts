@@ -34,6 +34,8 @@ export const usePortalData = (patientId?: string | null) => {
         patientId: patientId || undefined,
       },
       skip: !patientId,
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
     },
   );
 

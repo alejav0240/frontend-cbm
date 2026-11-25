@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { fechaISO } from "./fecha";
 
 export const esquemaSesion = z.object({
   patientId: z.string().min(1, "Selecciona un paciente"),
   therapistId: z.string().min(1, "Selecciona un terapeuta"),
   sessionType: z.enum(["individual", "group"]),
-  sessionDate: z.string().min(1, "La fecha es obligatoria"),
+  sessionDate: fechaISO("Introduce una fecha válida"),
   sessionTime: z.string().min(1, "La hora es obligatoria"),
   durationMinutes: z
     .number()

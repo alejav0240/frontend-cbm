@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fechaISO } from "@/shared/lib/schemas/fecha";
 
 export const esquemaLead = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -21,7 +22,7 @@ export const esquemaCampana = z.object({
     .nonnegative("El presupuesto no puede ser negativo"),
   spent: z.number().nonnegative("El monto invertido no puede ser negativo"),
   status: z.string().min(1, "Selecciona un estado"),
-  startDate: z.string().min(1, "La fecha de inicio es obligatoria"),
+  startDate: fechaISO("Introduce una fecha de inicio válida"),
 });
 
 export type DatosFormularioCampana = z.infer<typeof esquemaCampana>;

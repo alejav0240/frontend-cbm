@@ -83,7 +83,9 @@ export function ExpedienteCard({
               {expediente.patientName}
             </h3>
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-              Ciclo #{expediente.cycleNumber}
+              {expediente.cycleNumber > 0
+                ? `Ciclo #${expediente.cycleNumber}`
+                : "Sin ciclos registrados"}
             </span>
           </div>
         </div>
@@ -102,7 +104,9 @@ export function ExpedienteCard({
         </span>
         <span className="flex items-center gap-1.5">
           <Clock size={14} />
-          {expediente.completedSessions}/{expediente.totalSessions} Sesiones
+          {expediente.totalSessions > 0
+            ? `${expediente.completedSessions}/${expediente.totalSessions} Sesiones`
+            : "Sin sesiones"}
         </span>
         <span
           className={`flex items-center gap-1.5 font-bold uppercase tracking-widest ${paymentProgress >= 100 ? "text-green-500" : "text-orange-500"}`}

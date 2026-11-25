@@ -1,5 +1,6 @@
 import type { InformeClinicoDTO } from "../model/dto";
 import { renderChartToCanvas } from "./renderChart";
+import { renderTimelineChartToCanvas } from "@/shared/lib/charts/renderClinicalCharts";
 
 export async function generarInformeClinicoPDF(datos: InformeClinicoDTO[]) {
   const [{ jsPDF }, { default: autoTable }] = await Promise.all([
@@ -66,6 +67,22 @@ export async function generarInformeClinicoPDF(datos: InformeClinicoDTO[]) {
     });
     return doc.lastAutoTable.finalY + 6;
   };
+  const escalaDemuca = informe.escalas.find((escala) =>
+    `${escala.id} ${escala.nombre} ${escala.etiqueta}`
+      .toLocaleLowerCase("es-ES")
+      .includes("demuca"),
+  );
+  const demucaPuntajes =
+    escalaDemuca?.puntuaciones.filter(
+      (puntuacion): puntuacion is { sesion: string; valor: number } =>
+        puntuacion.valor !== null,
+    ) ?? [];
+  const primerPuntaje = demucaPuntajes[0];
+  const ultimoPuntaje = demucaPuntajes.at(-1);
+  const variacionDemuca =
+    primerPuntaje && ultimoPuntaje
+      ? ultimoPuntaje.valor - primerPuntaje.valor
+      : null;
 
   // ── Title ──
   doc.setFontSize(20);
@@ -134,6 +151,57 @@ export async function generarInformeClinicoPDF(datos: InformeClinicoDTO[]) {
     doc.text("Notas:", pagX, y);
     y += 5;
     bodyText(p.notas);
+  }
+
+  if (escalaDemuca && ultimoPuntaje) {
+    ensureSpace(55);
+    header("Resumen de evolución clínica");
+    autoTable(doc, {
+      body: [
+        [
+          "Escala de seguimiento:",
+          "DEMUCA",
+          "Evaluaciones:",
+          String(demucaPuntajes.length),
+        ],
+        [
+          "Puntaje inicial:",
+          String(primerPuntaje?.valor ?? "—"),
+          "Sesión inicial:",
+          primerPuntaje?.sesion ?? "—",
+        ],
+        [
+          "Puntaje actual:",
+          String(ultimoPuntaje.valor),
+          "Sesión actual:",
+          ultimoPuntaje.sesion,
+        ],
+        [
+          "Variación del puntaje:",
+          variacionDemuca === null
+            ? "—"
+            : `${variacionDemuca > 0 ? "+" : ""}${variacionDemuca}`,
+          "Lectura:",
+          variacionDemuca === null
+            ? "Datos insuficientes"
+            : variacionDemuca === 0
+              ? "Sin variación"
+              : variacionDemuca > 0
+                ? "Aumento del puntaje"
+                : "Disminución del puntaje",
+        ],
+      ],
+      startY: y,
+      theme: "plain",
+      styles: { fontSize: 9, cellPadding: 3 },
+      columnStyles: {
+        0: { fontStyle: "bold", textColor: [100, 100, 100], cellWidth: 38 },
+        1: { textColor: [50, 50, 50], cellWidth: 45 },
+        2: { fontStyle: "bold", textColor: [100, 100, 100], cellWidth: 38 },
+        3: { textColor: [50, 50, 50], cellWidth: 55 },
+      },
+    });
+    y = doc.lastAutoTable.finalY + 10;
   }
 
   // ── 3. Sesiones ──
@@ -285,6 +353,92 @@ export async function generarInformeClinicoPDF(datos: InformeClinicoDTO[]) {
             );
           }
         }
+      }
+    }
+
+    if (escalaDemuca?.puntuaciones.length) {
+      // El gráfico ocupa una hoja independiente en formato horizontal.
+      doc.addPage("landscape");
+      y = 22;
+      header("Evolución temporal — Escala DEMUCA");
+
+      doc.setFontSize(10);
+      doc.setTextColor(90);
+      doc.text("Evolución del puntaje por sesión del paciente", pagX, y);
+      y += 10;
+
+      const timeline = renderTimelineChartToCanvas(
+        "DEMUCA: evolución por sesión",
+        [
+          {
+            name: "DEMUCA",
+            color: escalaDemuca.color || "#008080",
+            values: escalaDemuca.puntuaciones.map((puntuacion) => ({
+              label: puntuacion.sesion,
+              value: puntuacion.valor,
+            })),
+          },
+        ],
+        900,
+        360,
+      );
+      const imgW = Math.min(250, doc.internal.pageSize.getWidth() - pagX * 2);
+      const imgH = (360 / 900) * imgW;
+      doc.addImage(
+        timeline,
+        "PNG",
+        (doc.internal.pageSize.width - imgW) / 2,
+        y,
+        imgW,
+        imgH,
+      );
+
+      const detalleDemuca = escalaDemuca.detalle ?? [];
+      const detalleInicial = detalleDemuca[0];
+      const detalleActual = detalleDemuca.at(-1);
+      const subescalaNombres = Array.from(
+        new Set(
+          detalleDemuca.flatMap((detalle) =>
+            detalle.subescalas.map((subescala) => subescala.nombre),
+          ),
+        ),
+      );
+
+      if (detalleActual && subescalaNombres.length > 0) {
+        const inicialPorNombre = new Map(
+          (detalleInicial?.subescalas ?? []).map((subescala) => [
+            subescala.nombre,
+            subescala.puntuacion,
+          ]),
+        );
+        const actualPorNombre = new Map(
+          detalleActual.subescalas.map((subescala) => [
+            subescala.nombre,
+            subescala.puntuacion,
+          ]),
+        );
+
+        autoTable(doc, {
+          head: [["Dimensión DEMUCA", "Puntaje actual", "Variación"]],
+          body: subescalaNombres.map((nombre) => {
+            const actual = actualPorNombre.get(nombre);
+            const inicial = inicialPorNombre.get(nombre);
+            const delta =
+              actual !== undefined && inicial !== undefined
+                ? actual - inicial
+                : null;
+            return [
+              nombre,
+              actual === undefined ? "—" : String(actual),
+              delta === null ? "—" : `${delta > 0 ? "+" : ""}${delta}`,
+            ];
+          }),
+          startY: y + imgH + 12,
+          theme: "striped",
+          headStyles: { fillColor: [0, 128, 128] },
+          styles: { fontSize: 9, cellPadding: 3 },
+          margin: { left: pagX, right: pagX },
+        });
       }
     }
   }

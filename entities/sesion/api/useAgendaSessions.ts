@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client/react";
 import { OBTENER_SESIONES } from "./consultas";
 import { SesionAgenda } from "../model/tipos-agenda";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ObtenerSesionesQuery } from "@/shared/api/generated/graphql";
 
 export interface UseAgendaSessionsProps {
@@ -87,6 +87,26 @@ function mapToSesionAgenda(s: NonNullable<RawSession>): SesionAgenda {
   };
 }
 
+function mergeSessionPage(
+  previous: ObtenerSesionesQuery,
+  { fetchMoreResult }: { fetchMoreResult: ObtenerSesionesQuery },
+): ObtenerSesionesQuery {
+  const incoming = fetchMoreResult;
+  if (!previous.sessions || !incoming.sessions) return previous;
+
+  return {
+    ...previous,
+    sessions: {
+      ...previous.sessions,
+      ...incoming.sessions,
+      sessions: [
+        ...(previous.sessions.sessions ?? []),
+        ...(incoming.sessions.sessions ?? []),
+      ],
+    },
+  };
+}
+
 export function useAgendaSessions({
   month,
   selectedDate,
@@ -128,9 +148,31 @@ export function useAgendaSessions({
       byCycles: false,
     },
     skip,
+    fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
     notifyOnNetworkStatusChange: true,
   });
+  const fetchMore3m = query3m.fetchMore;
+
+  useEffect(() => {
+    const totalPages = query3m.data?.sessions?.totalPages ?? 1;
+    if (skip || totalPages <= 1) return;
+
+    let cancelled = false;
+    const loadRemainingPages = async () => {
+      for (let page = 2; page <= totalPages && !cancelled; page += 1) {
+        await fetchMore3m({
+          variables: { page },
+          updateQuery: mergeSessionPage,
+        });
+      }
+    };
+
+    void loadRemainingPages();
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchMore3m, query3m.data?.sessions?.totalPages, skip]);
 
   // ── Query 2: sesiones AGENDADA sin fecha → panel "Sin programar" ─────────
   const querySinFecha = useQuery<ObtenerSesionesQuery>(OBTENER_SESIONES, {
@@ -142,6 +184,7 @@ export function useAgendaSessions({
       byCycles: false,
     },
     skip: skip || range === "today",
+    fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
     notifyOnNetworkStatusChange: true,
   });
@@ -168,6 +211,7 @@ export function useAgendaSessions({
       byCycles: false,
     },
     skip: skip || !dateStr || range === "today",
+    fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
     notifyOnNetworkStatusChange: true,
   });
@@ -229,10 +273,12 @@ export function useAgendaSessions({
     return raw.filter((s) => !s.fechaSesion).map(mapToSesionAgenda);
   }, [querySinFecha.data]);
 
-  const refetch = () => {
-    query3m.refetch();
-    if (range !== "today") querySinFecha.refetch();
-    if (dateStr) queryDia.refetch();
+  const refetch = async () => {
+    await Promise.all([
+      query3m.refetch(),
+      ...(range !== "today" ? [querySinFecha.refetch()] : []),
+      ...(dateStr ? [queryDia.refetch()] : []),
+    ]);
   };
 
   return {

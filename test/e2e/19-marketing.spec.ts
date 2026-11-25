@@ -19,11 +19,11 @@ test.describe('Vista de Marketing CRM', () => {
 
   test('debe alternar entre pestañas de Campañas y Leads', async ({ page }) => {
     // Pestaña Campañas
-    await page.getByRole('button', { name: 'Campañas', exact: true }).click();
+    await page.getByRole('tab', { name: 'Campañas', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Nueva Campaña' })).toBeVisible();
 
     // Pestaña Leads
-    await page.getByRole('button', { name: 'Leads', exact: true }).click();
+    await page.getByRole('tab', { name: 'Leads', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Nuevo Lead' })).toBeVisible();
   });
 

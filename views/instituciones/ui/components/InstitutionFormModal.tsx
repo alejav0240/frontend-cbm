@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Modal } from "@/shared/ui/components/Modal";
@@ -14,7 +14,7 @@ export type InstitutionFormData = DatosFormularioInstitucion;
 interface InstitutionFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: InstitutionFormData) => void;
+  onSave: (data: InstitutionFormData) => Promise<void> | void;
 }
 
 export function InstitutionFormModal({
@@ -22,6 +22,7 @@ export function InstitutionFormModal({
   onClose,
   onSave,
 }: InstitutionFormModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
@@ -41,7 +42,15 @@ export function InstitutionFormModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Nueva Institución">
       <form
         className="space-y-6"
-        onSubmit={handleSubmit((data) => onSave(data))}
+        onSubmit={handleSubmit(async (data) => {
+          if (isSubmitting) return;
+          setIsSubmitting(true);
+          try {
+            await onSave(data);
+          } finally {
+            setIsSubmitting(false);
+          }
+        })}
       >
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -112,15 +121,17 @@ export function InstitutionFormModal({
           <button
             type="button"
             onClick={onClose}
+            disabled={isSubmitting}
             className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
           >
             Cancelar
           </button>
           <button
             type="submit"
+            disabled={isSubmitting}
             className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg"
           >
-            Guardar Institución
+            {isSubmitting ? "Guardando..." : "Guardar Institución"}
           </button>
         </div>
       </form>

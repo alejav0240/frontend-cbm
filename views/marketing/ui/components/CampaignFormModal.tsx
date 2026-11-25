@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Modal } from "@/shared/ui/components/Modal";
@@ -14,7 +14,7 @@ import {
 interface CampaignFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (campaign: Partial<MarketingCampaign>) => void;
+  onSave: (campaign: Partial<MarketingCampaign>) => Promise<void> | void;
   initialData?: Partial<MarketingCampaign> | null;
 }
 
@@ -52,13 +52,20 @@ export function CampaignFormModal({
         }
       : DEFAULT_FORM,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmitForm = (data: DatosFormularioCampana) => {
-    onSave({
-      ...data,
-      status: data.status as MarketingCampaign["status"],
-    });
-    reset();
+  const handleSubmitForm = async (data: DatosFormularioCampana) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await onSave({
+        ...data,
+        status: data.status as MarketingCampaign["status"],
+      });
+      reset();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -186,16 +193,23 @@ export function CampaignFormModal({
         </div>
         <div className="flex justify-end gap-4 pt-4">
           <button
+            type="button"
             onClick={onClose}
+            disabled={isSubmitting}
             className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
           >
             Cancelar
           </button>
           <button
             type="submit"
+            disabled={isSubmitting}
             className="bg-[#008080] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#006666] transition-all shadow-lg"
           >
-            {initialData?.id ? "Guardar Cambios" : "Crear Campaña"}
+            {isSubmitting
+              ? "Guardando..."
+              : initialData?.id
+                ? "Guardar Cambios"
+                : "Crear Campaña"}
           </button>
         </div>
       </form>

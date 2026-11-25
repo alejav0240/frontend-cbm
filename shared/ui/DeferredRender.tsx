@@ -38,7 +38,10 @@ export function DeferredRender({
   }, [rootMargin, visible]);
 
   return (
-    <div ref={containerRef} className={className}>
+    <div
+      ref={containerRef}
+      className={["w-full min-w-0", className].filter(Boolean).join(" ")}
+    >
       {visible ? children : fallback}
     </div>
   );

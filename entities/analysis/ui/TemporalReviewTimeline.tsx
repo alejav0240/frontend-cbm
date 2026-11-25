@@ -4,8 +4,8 @@ import { Check, Clock3, X } from "lucide-react";
 
 import { useAnnotationCases } from "../api/anotaciones";
 
-function seconds(value: number) {
-  return value.toFixed(2) + " s";
+function seconds(value: number | string) {
+  return `${Number(value).toFixed(2)} s`;
 }
 
 export function TemporalReviewTimeline({ runId }: { runId: string }) {
@@ -34,7 +34,8 @@ export function TemporalReviewTimeline({ runId }: { runId: string }) {
           Revisión temporal
         </p>
         <p className="text-xs text-gray-500">
-          Acepta o rechaza eventos antes de incorporarlos al dataset.
+          Revisión independiente de eventos para el dataset; no controla la
+          aprobación clínica DEMUCA ni el cierre del pipeline.
         </p>
       </div>
 

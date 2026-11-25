@@ -32,8 +32,8 @@ function formatearDatosEvaluacion(evaluations: ProgresoSubEscala[]) {
     return { radarData: [], areaData: [] };
   }
 
-  // Tomamos la última evaluación para el Radar (el estado actual)
-  const ultimaEvaluacion = evaluations[evaluations.length - 1];
+  // GraphQL devuelve las evaluaciones ordenadas de más reciente a más antigua.
+  const ultimaEvaluacion = evaluations[0];
 
   // 1. FORMATEAR PARA RADAR (Detalle por subescala individual o por categoría)
   // Puedes elegir graficar las subescalas directamente:
@@ -46,7 +46,7 @@ function formatearDatosEvaluacion(evaluations: ProgresoSubEscala[]) {
   );
 
   // 2. FORMATEAR PARA ÁREA (Histórico acumulado por categorías a lo largo de las evaluaciones)
-  const areaData: AreaChartData[] = evaluations.map((evaluacion) => {
+  const areaData: AreaChartData[] = [...evaluations].reverse().map((evaluacion) => {
     // Inicializamos el objeto de la evaluación con su ID de referencia
     const puntoEvolucion: AreaChartData = {
       evaluationId: evaluacion.id,
@@ -67,6 +67,35 @@ function formatearDatosEvaluacion(evaluations: ProgresoSubEscala[]) {
   return { radarData, areaData };
 }
 
+function resumenReal(evaluations: ProgresoSubEscala[]) {
+  const latest = evaluations[0];
+  const previous = evaluations[1];
+  const latestScore = latest?.totalScore;
+  const previousScore = previous?.totalScore;
+  const delta =
+    typeof latestScore === "number" && typeof previousScore === "number"
+      ? latestScore - previousScore
+      : null;
+  const focus = latest?.subscaleResponses.reduce<{
+    name: string;
+    score: number;
+  } | null>((best, response) => {
+    if (!best || response.score > best.score) {
+      return { name: response.subscale.name, score: response.score };
+    }
+    return best;
+  }, null);
+
+  return {
+    lastUpdateDate: latest?.evaluatedAt
+      ? new Intl.DateTimeFormat("es-ES").format(new Date(latest.evaluatedAt))
+      : "Sin evaluaciones",
+    progressLabel:
+      delta === null ? "—" : `${delta > 0 ? "+" : ""}${delta}`,
+    focusLabel: focus?.name ?? "Sin datos",
+  };
+}
+
 export default function AnalisDemuca({
   dataDemuca,
 }: PatientAIGeneralViewProps) {
@@ -75,9 +104,15 @@ export default function AnalisDemuca({
   }
 
   const { areaData, radarData } = formatearDatosEvaluacion(dataDemuca);
+  const summary = resumenReal(dataDemuca);
   return (
     <div className="space-y-8 p-6">
-      <AIOverviewCards analysesCount={20} lastUpdateDate={""} />
+      <AIOverviewCards
+        analysesCount={dataDemuca.length}
+        lastUpdateDate={summary.lastUpdateDate}
+        progressLabel={summary.progressLabel}
+        focusLabel={summary.focusLabel}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <EvolucionCategoria data={areaData} />

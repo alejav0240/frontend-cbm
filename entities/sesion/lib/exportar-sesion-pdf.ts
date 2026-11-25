@@ -1,4 +1,5 @@
 import { SesionDetalladaDTO } from "../model/dto";
+import { renderRadarChartToCanvas } from "@/shared/lib/charts/renderClinicalCharts";
 
 export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
   const [{ jsPDF }, { default: autoTable }] = await Promise.all([
@@ -183,6 +184,31 @@ export async function generarSesionDetalladaPDF(dto: SesionDetalladaDTO) {
         y = doc.lastAutoTable.finalY + 8;
       } else {
         y += 4;
+      }
+
+      if (evalData.subscaleResponses.length >= 3) {
+        const radar = renderRadarChartToCanvas(
+          `Perfil por dimensiones — ${evalData.scaleName}`,
+          evalData.subscaleResponses.map((response) => ({
+            label: response.name || "Subescala",
+            value: (response.score / (response.maxValue || 10)) * 100,
+          })),
+        );
+        const imgW = 160;
+        const imgH = (360 / 500) * imgW;
+        if (y + imgH > 270) {
+          doc.addPage();
+          y = 22;
+        }
+        doc.addImage(
+          radar,
+          "PNG",
+          (doc.internal.pageSize.width - imgW) / 2,
+          y,
+          imgW,
+          imgH,
+        );
+        y += imgH + 12;
       }
     }
     y += 4;

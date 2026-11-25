@@ -53,7 +53,7 @@ export const Topbar = () => {
   const handleLogout = async () => {
     setShowProfileMenu(false);
     await cerrarSesion();
-    window.location.href = "/login";
+    router.push("/login");
   };
 
   const navigateTo = (path: string) => {
