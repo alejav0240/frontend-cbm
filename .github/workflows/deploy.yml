@@ -173,11 +173,13 @@ jobs:
       - name: Scan source tree with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
+          cache: "false"
           version: v0.76.2
           scan-type: fs
           scan-ref: .
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
+          limit-severities-for-sarif: "true"
           format: sarif
           output: trivy-frontend-filesystem.sarif
           exit-code: "1"
