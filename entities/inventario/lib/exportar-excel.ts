@@ -1,5 +1,5 @@
 import { ArticuloInventarioExportarFila } from "../model/dto";
-import { descargarExcel } from "@/shared/lib/exportarExcel";
+import { descargarExcel } from "@/shared/lib/exportar-excel";
 
 export const generarInventarioExcel = async (
   filas: ArticuloInventarioExportarFila[],
@@ -13,9 +13,5 @@ export const generarInventarioExcel = async (
     Estado: f.estadoMostrado,
   }));
 
-  await descargarExcel(
-    datos,
-    "Inventario",
-    `${nombreArchivo}_${Date.now()}.xlsx`,
-  );
+  await descargarExcel(datos, "Inventario", nombreArchivo);
 };

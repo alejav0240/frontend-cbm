@@ -1,5 +1,5 @@
 import type { EvaluacionExportarFila } from "../model/dto";
-import { descargarExcel } from "@/shared/lib/exportarExcel";
+import { descargarExcel } from "@/shared/lib/exportar-excel";
 
 export const generarEvaluacionesExcel = async (
   filas: EvaluacionExportarFila[],
@@ -14,9 +14,5 @@ export const generarEvaluacionesExcel = async (
     Dimensiones: f.dimensiones,
   }));
 
-  await descargarExcel(
-    datos,
-    "Evaluaciones",
-    `${nombreArchivo}_${Date.now()}.xlsx`,
-  );
+  await descargarExcel(datos, "Evaluaciones", nombreArchivo);
 };

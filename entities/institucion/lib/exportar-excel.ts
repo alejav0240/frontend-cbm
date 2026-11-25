@@ -1,5 +1,5 @@
 import { InstitucionExportarFila } from "../model/dto";
-import { descargarExcel } from "@/shared/lib/exportarExcel";
+import { descargarExcel } from "@/shared/lib/exportar-excel";
 
 export const generarInstitucionesExcel = async (
   filas: InstitucionExportarFila[],
@@ -14,9 +14,5 @@ export const generarInstitucionesExcel = async (
     "Cant. Grupos": f.cantidadGrupos,
   }));
 
-  await descargarExcel(
-    datos,
-    "Instituciones",
-    `${nombreArchivo}_${Date.now()}.xlsx`,
-  );
+  await descargarExcel(datos, "Instituciones", nombreArchivo);
 };

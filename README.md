@@ -16,10 +16,11 @@ pnpm install
 
 ## Entorno
 
-Crea un archivo `.env.local` en la raíz:
+Copia `.env.example` como `.env.local` en la raíz y ajusta la URL del backend:
 
 ```
 NEXT_PUBLIC_GRAPHQL_URI=http://localhost:8000/graphql/
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 ## Scripts

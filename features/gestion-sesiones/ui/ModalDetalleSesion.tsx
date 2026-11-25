@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useMutation } from "@apollo/client/react";
+import React, { useEffect, useRef, useState } from "react";
 import Modal from "@/shared/ui/components/Modal";
 import { useSesionDetalles } from "@/entities/sesion";
 import { ProcessingStatusCard } from "@/entities/analysis/ui/ProcessingStatusCard";
@@ -11,6 +10,14 @@ import type {
   UpdateScaleEvaluationMutationVariables,
 } from "@/shared/api/generated/graphql";
 import {
+  subirEnSegundoPlano,
+  type GrabacionPendiente,
+} from "@/features/sesion-en-progreso/model/colaSubida";
+import {
+  actualizarDemucaAnalisisMultimodal,
+  consultarResultadoAnalisisMultimodal,
+} from "@/shared/api/multimodal";
+import {
   FileText,
   PenTool,
   Download,
@@ -18,24 +25,66 @@ import {
   BarChart3,
   CheckCircle,
   Circle,
-  Upload,
-  Loader2,
-  AlertCircle,
-  Sparkles,
-  Save,
+  Video,
+  Plus,
+  Paperclip,
 } from "lucide-react";
 import { toast } from "sonner";
-import { obtenerDuracionVideo } from "@/shared/lib/utils/duracionVideo";
+import {
+  crearVentanaAnotacion,
+  listarVentanasAnotacion,
+  consultarArtefactosAnotacion,
+  type AnnotationWindow,
+} from "@/shared/lib/datasets/api";
 
-type TabId = "info" | "ia" | "plan" | "evaluaciones" | "notas";
+type TabId = "info" | "plan" | "evaluaciones" | "anotaciones" | "notas";
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "info", label: "Información", icon: <FileText size={14} /> },
   { id: "ia", label: "IA / DEMUCA", icon: <Sparkles size={14} /> },
   { id: "plan", label: "Plan", icon: <ClipboardList size={14} /> },
   { id: "evaluaciones", label: "Evaluaciones", icon: <BarChart3 size={14} /> },
+  { id: "anotaciones", label: "Anotaciones", icon: <Video size={14} /> },
   { id: "notas", label: "Notas", icon: <PenTool size={14} /> },
 ];
+
+const DEMUCA_FIELDS: Record<string, string[]> = {
+  comportamientos_restrictivos: [
+    "estereotipias", "agresividad", "desinteres", "pasividad", "aislamiento",
+    "resistencia", "berrinche_crisis",
+  ],
+  exploracion_vocal: [
+    "vocalizaciones", "balbuceos", "silabas_canonicas", "imitacion_de_canciones",
+    "creacion_vocal", "comunicacion_verbal",
+  ],
+  interaccion_social_cognitiva: [
+    "contacto_visual", "interaccion_con_otros_objetos", "interaccion_con_instrumentos_musicales",
+    "interaccion_con_el_educador_musicoterapeuta", "interaccion_con_sus_padres",
+    "interaccion_con_sus_pares", "atencion", "imitacion",
+  ],
+  movimiento_corporal: [
+    "andar", "correr", "parar", "gesticular", "danzar", "movimiento_en_su_lugar", "saltar",
+  ],
+  exploracion_sonora: [
+    "sonido_silencio", "timbre", "planos_de_altura", "movimiento_sonoro", "contrastes_de_intensidad",
+  ],
+  exploracion_ritmica: [
+    "repeticion_de_ideas_ritmicas_melodicas", "sensacion_de_conclusion", "pulso_interno",
+    "regulacion_temporal", "ritmo_real", "apoyo", "contrastes_de_tempo",
+  ],
+};
+
+const DEMUCA_LABELS: Record<string, string> = {
+  comportamientos_restrictivos: "Comportamientos restrictivos",
+  exploracion_vocal: "Exploración vocal",
+  interaccion_social_cognitiva: "Interacción social cognitiva",
+  movimiento_corporal: "Movimiento corporal",
+  exploracion_sonora: "Exploración sonora",
+  exploracion_ritmica: "Exploración rítmica",
+};
+
+const formatDemucaLabel = (value: string) =>
+  value.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
 
 interface ModalDetalleSesionProps {
   isOpen: boolean;
@@ -59,10 +108,11 @@ export function ModalDetalleSesion({
   const [activeTab, setActiveTab] = useState<TabId>("info");
   const [editandoNotas, setEditandoNotas] = useState(false);
   const [notasEditadas, setNotasEditadas] = useState("");
-  const [subiendoGrabacion, setSubiendoGrabacion] = useState(false);
-  const [grabacionAceptadaSesionId, setGrabacionAceptadaSesionId] = useState<
-    string | null
-  >(null);
+  const [analisis, setAnalisis] = useState<Record<string, unknown> | null>(null);
+  const [cargandoAnalisis, setCargandoAnalisis] = useState(false);
+  const [adjuntandoVideo, setAdjuntandoVideo] = useState(false);
+  const [errorVideo, setErrorVideo] = useState<string | null>(null);
+  const inputVideoRef = useRef<HTMLInputElement>(null);
 
   const { obtenerSesion, cargando, sesion } = useSesionDetalles();
 
@@ -143,16 +193,26 @@ export function ModalDetalleSesion({
   }, [isOpen, sesionId, obtenerSesion]);
 
   useEffect(() => {
-    if (!isOpen || !sesionId || sesion?.videoStatus !== "SUBIENDO") {
-      return;
+    let activo = true;
+    if (!isOpen || !sesionId) {
+      return () => {
+        activo = false;
+      };
     }
-
-    const intervalId = window.setInterval(() => {
-      void obtenerSesion({ variables: { id: sesionId } });
-    }, 2000);
-
-    return () => window.clearInterval(intervalId);
-  }, [isOpen, sesionId, sesion?.videoStatus, obtenerSesion]);
+    consultarResultadoAnalisisMultimodal(sesionId)
+      .then((resultado) => {
+        if (activo) setAnalisis(resultado);
+      })
+      .catch(() => {
+        if (activo) setAnalisis(null);
+      })
+      .finally(() => {
+        if (activo) setCargandoAnalisis(false);
+      });
+    return () => {
+      activo = false;
+    };
+  }, [isOpen, sesionId]);
 
   const notasSesion = sesion?.notes;
   const [prevNotas, setPrevNotas] = useState(notasSesion);
@@ -173,6 +233,44 @@ export function ModalDetalleSesion({
   const demucaEvaluation = sesion?.scaleEvaluations?.find(
     (evaluation) => evaluation?.scale?.name?.toLowerCase() === "escala demuca",
   );
+
+  const adjuntarVideo = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = event.target.files?.[0];
+    event.target.value = "";
+    if (!archivo || !sesionId || !sesion) return;
+
+    if (!archivo.type.startsWith("video/")) {
+      setErrorVideo("Seleccioná un archivo de video válido.");
+      return;
+    }
+
+    setAdjuntandoVideo(true);
+    setErrorVideo(null);
+    try {
+      const grabacion: GrabacionPendiente = {
+        sessionId: sesionId,
+        archivo,
+        pacienteId: "",
+        pacienteNombre,
+        numeroCiclo: sesion.cycleNumber,
+        grabadoEn: new Date().toISOString(),
+        addedAt: Date.now(),
+      };
+      const resultado = await subirEnSegundoPlano(grabacion);
+      if (resultado !== "ok") {
+        throw new Error("La subida quedó pendiente de reintento.");
+      }
+
+      await obtenerSesion({ variables: { id: sesionId } });
+      toast.success("Video adjuntado. El procesamiento multimodal está en curso.");
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : "No se pudo adjuntar el video.";
+      setErrorVideo(mensaje);
+      toast.error(mensaje);
+    } finally {
+      setAdjuntandoVideo(false);
+    }
+  };
 
   return (
     <Modal
@@ -319,6 +417,43 @@ export function ModalDetalleSesion({
                   />
                 </div>
 
+                <div className="rounded-2xl border border-dashed border-[#008080]/30 bg-[#008080]/5 p-5">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold dark:text-white">
+                        Video de la sesión
+                      </h4>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Adjuntá un video desde tu galería para guardarlo y procesarlo con ML.
+                      </p>
+                      {(sesion as typeof sesion & { videoStatus?: string | null }).videoStatus && (
+                        <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#008080]">
+                          Estado: {(sesion as typeof sesion & { videoStatus?: string | null }).videoStatus}
+                        </p>
+                      )}
+                      {errorVideo && (
+                        <p className="mt-2 text-xs text-red-600">{errorVideo}</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => inputVideoRef.current?.click()}
+                      disabled={adjuntandoVideo || !sesionId}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#008080] px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-[#006666] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Paperclip size={15} />
+                      {adjuntandoVideo ? "Subiendo…" : "Adjuntar video"}
+                    </button>
+                    <input
+                      ref={inputVideoRef}
+                      type="file"
+                      accept="video/mp4,video/webm,video/quicktime,video/x-matroska,.mp4,.webm,.mov,.mkv"
+                      className="hidden"
+                      onChange={adjuntarVideo}
+                    />
+                  </div>
+                </div>
+
                 {sesion.sessionResources &&
                   sesion.sessionResources.length > 0 && (
                     <div className="bg-gray-50 dark:bg-white/2 p-5 rounded-2xl border border-gray-100 dark:border-white/5">
@@ -364,6 +499,13 @@ export function ModalDetalleSesion({
                       </div>
                     </div>
                   )}
+
+                <DemoAnalysisCard
+                  analysis={analisis}
+                  loading={cargandoAnalisis}
+                  sessionId={sesionId}
+                  onAnalysisUpdated={setAnalisis}
+                />
               </div>
             )}
 
@@ -620,6 +762,16 @@ export function ModalDetalleSesion({
               </div>
             )}
 
+            {activeTab === "anotaciones" && (
+              <AnnotationWorkspace
+                sessionId={sesionId}
+                analysis={analisis}
+                videoUrl={
+                  (sesion as typeof sesion & { videoUrl?: string | null })?.videoUrl
+                }
+              />
+            )}
+
             {activeTab === "notas" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -725,227 +877,360 @@ function EmptyState({ message }: { message: string }) {
   );
 }
 
-type DemucaEvaluation = {
-  id: string;
-  totalScore: number | null;
-  reviewStatus?: string | null;
-  subscaleResponses: Array<{
-    score: number;
-    subscale: {
-      id: string;
-      name: string;
-      category: string | null;
-      maxValue: number;
-    };
-  }>;
+type TagGroup = "sonido" | "movimiento" | "interaccion";
+
+const TAG_GROUPS: Record<TagGroup, { label: string; fields: string[] }> = {
+  sonido: {
+    label: "Sonido",
+    fields: [...DEMUCA_FIELDS.exploracion_sonora, ...DEMUCA_FIELDS.exploracion_ritmica, ...DEMUCA_FIELDS.exploracion_vocal],
+  },
+  movimiento: { label: "Movimiento", fields: DEMUCA_FIELDS.movimiento_corporal },
+  interaccion: {
+    label: "Interacción",
+    fields: [...DEMUCA_FIELDS.interaccion_social_cognitiva, ...DEMUCA_FIELDS.comportamientos_restrictivos],
+  },
 };
 
-export function DemucaEditor({
-  evaluation,
-  onSaved,
+const formatSeconds = (seconds: number) => {
+  const safeSeconds = Math.max(0, Math.round(seconds));
+  return `${Math.floor(safeSeconds / 60).toString().padStart(2, "0")}:${(safeSeconds % 60).toString().padStart(2, "0")}`;
+};
+
+const POSE_CONNECTIONS: Array<[number, number]> = [
+  [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
+  [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [27, 29], [29, 31],
+  [24, 26], [26, 28], [28, 30], [30, 32], [23, 27], [24, 28],
+];
+
+type PoseLandmark = { x: number; y: number; visibility?: number };
+
+function getPoseForTime(source: unknown, time: number): PoseLandmark[] {
+  if (!source || typeof source !== "object") return [];
+  const frames = (source as { frames?: unknown }).frames;
+  if (!Array.isArray(frames) || frames.length === 0) return [];
+  const frame = frames.reduce<Record<string, unknown> | null>((closest, candidate) => {
+    if (!candidate || typeof candidate !== "object") return closest;
+    if (!closest) return candidate as Record<string, unknown>;
+    const candidateDistance = Math.abs(Number((candidate as { timestamp_seconds?: number }).timestamp_seconds ?? 0) - time);
+    const closestDistance = Math.abs(Number((closest as { timestamp_seconds?: number }).timestamp_seconds ?? 0) - time);
+    return candidateDistance < closestDistance ? candidate as Record<string, unknown> : closest;
+  }, null);
+  const poses = frame?.poses;
+  const landmarks = Array.isArray(poses) && poses[0] && typeof poses[0] === "object" ? (poses[0] as { landmarks?: unknown }).landmarks : null;
+  return Array.isArray(landmarks) ? landmarks.filter((point): point is PoseLandmark => Boolean(point && typeof point === "object" && "x" in point && "y" in point)) : [];
+}
+
+function AnnotationWorkspace({
+  sessionId,
+  analysis,
+  videoUrl,
 }: {
-  evaluation: DemucaEvaluation;
-  onSaved: () => void;
+  sessionId: string | null;
+  analysis: Record<string, unknown> | null;
+  videoUrl?: string | null;
 }) {
-  const [editando, setEditando] = useState(false);
-  const [aceptando, setAceptando] = useState(false);
-  const [scores, setScores] = useState<Record<string, number>>(() =>
-    Object.fromEntries(
-      evaluation.subscaleResponses.map((response) => [
-        response.subscale.id,
-        response.score,
-      ]),
-    ),
-  );
-  const [actualizarEvaluacion, { loading }] = useMutation<
-    UpdateScaleEvaluationMutation,
-    UpdateScaleEvaluationMutationVariables
-  >(ACTUALIZAR_EVALUACION_ESCALA);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [startTime, setStartTime] = useState(0);
+  const [endTime, setEndTime] = useState(0);
+  const [phase, setPhase] = useState("exploracion_vocal");
+  const [tags, setTags] = useState<Record<TagGroup, string[]>>({ sonido: [], movimiento: [], interaccion: [] });
+  const [windows, setWindows] = useState<AnnotationWindow[]>([]);
+  const [landmarks, setLandmarks] = useState<unknown>(null);
+  const [loadingWindows, setLoadingWindows] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const guardar = async (accept = false) => {
-    setAceptando(accept);
+  useEffect(() => {
+    if (!sessionId) return;
+    listarVentanasAnotacion(sessionId)
+      .then((result) => setWindows(result.windows || []))
+      .catch(() => setWindows([]))
+      .finally(() => setLoadingWindows(false));
+    consultarArtefactosAnotacion(sessionId)
+      .then((result) => setLandmarks(result.pose_landmarks))
+      .catch(() => setLandmarks(null));
+  }, [sessionId]);
+
+  const setVideoTime = (value: number) => {
+    const nextTime = Math.min(Math.max(value, 0), duration || value);
+    setCurrentTime(nextTime);
+    if (videoRef.current) videoRef.current.currentTime = nextTime;
+  };
+
+  const toggleTag = (group: TagGroup, field: string) => {
+    setTags((current) => ({
+      ...current,
+      [group]: current[group].includes(field)
+        ? current[group].filter((tag) => tag !== field)
+        : [...current[group], field],
+    }));
+  };
+
+  const saveWindow = async () => {
+    if (!sessionId || endTime <= startTime) {
+      setMessage("Define un inicio y un final válidos para la ventana.");
+      return;
+    }
+    setSaving(true);
+    setMessage(null);
     try {
-      const result = await actualizarEvaluacion({
-        variables: {
-          evaluationId: evaluation.id,
-          subscales: evaluation.subscaleResponses.map((response) => ({
-            subscaleId: response.subscale.id,
-            score: scores[response.subscale.id] ?? response.score,
-          })),
-          accept,
-        },
+      const modelPredictions = analysis?.model_predictions as Record<string, unknown> | undefined;
+      const landmarkPayload = landmarks || modelPredictions?.landmarks || modelPredictions?.pose_landmarks || {};
+      const created = await crearVentanaAnotacion(sessionId, {
+        start_time: startTime,
+        end_time: endTime,
+        demuca_phase: phase,
+        tags,
+        landmarks: landmarkPayload,
+        features: {},
       });
-
-      if (!result.data?.updateScaleEvaluation?.success) {
-        toast.error(
-          result.data?.updateScaleEvaluation?.message ||
-            "No se pudo guardar la evaluación DEMUCA.",
-        );
-        return;
-      }
-
-      setEditando(false);
-      toast.success(
-        accept
-          ? "Evaluación DEMUCA aceptada por el especialista."
-          : "Evaluación DEMUCA actualizada.",
-      );
-      onSaved();
+      setWindows((current) => [...current, created].sort((a, b) => a.start_time - b.start_time));
+      setMessage("Ventana guardada en el dataset de la sesión.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No se pudo guardar la ventana.");
     } finally {
-      setAceptando(false);
+      setSaving(false);
     }
   };
 
-  const grouped = evaluation.subscaleResponses.reduce<
-    Record<string, DemucaEvaluation["subscaleResponses"]>
-  >((groups, response) => {
-    const category = response.subscale.category || "General";
-    groups[category] ??= [];
-    groups[category].push(response);
-    return groups;
-  }, {});
+  const modelPredictions = analysis?.model_predictions as Record<string, unknown> | undefined;
+  const landmarkSource = landmarks || modelPredictions?.landmarks || modelPredictions?.pose_landmarks;
+  const landmarkCount = Array.isArray(landmarkSource)
+    ? landmarkSource.length
+    : landmarkSource && typeof landmarkSource === "object"
+      ? Array.isArray((landmarkSource as { frames?: unknown }).frames)
+        ? ((landmarkSource as { frames: unknown[] }).frames).length
+        : Object.keys(landmarkSource).length
+      : 0;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    const draw = () => {
+      const width = video.clientWidth;
+      const height = video.clientHeight;
+      if (!width || !height) return;
+      const scale = window.devicePixelRatio || 1;
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      const context = canvas.getContext("2d");
+      if (!context) return;
+      context.setTransform(scale, 0, 0, scale, 0, 0);
+      context.clearRect(0, 0, width, height);
+      const pose = getPoseForTime(landmarkSource, currentTime);
+      if (pose.length === 0) return;
+      context.strokeStyle = "rgba(20, 184, 166, 0.9)";
+      context.lineWidth = 2;
+      POSE_CONNECTIONS.forEach(([from, to]) => {
+        const start = pose[from];
+        const end = pose[to];
+        if (!start || !end) return;
+        context.beginPath();
+        context.moveTo(start.x * width, start.y * height);
+        context.lineTo(end.x * width, end.y * height);
+        context.stroke();
+      });
+      context.fillStyle = "rgba(251, 146, 60, 0.95)";
+      pose.forEach((point) => {
+        if (point.visibility !== undefined && point.visibility < 0.35) return;
+        context.beginPath();
+        context.arc(point.x * width, point.y * height, 3, 0, Math.PI * 2);
+        context.fill();
+      });
+    };
+    draw();
+    window.addEventListener("resize", draw);
+    return () => window.removeEventListener("resize", draw);
+  }, [currentTime, landmarkSource]);
 
   return (
-    <section className="space-y-4 rounded-2xl border border-purple-200/60 bg-purple-50/40 p-5 dark:border-purple-400/20 dark:bg-purple-500/5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-purple-600 dark:text-purple-300">
-            Evaluación DEMUCA guardada en la sesión
-          </p>
-          <p className="mt-1 text-lg font-bold dark:text-white">
-            Puntaje total: {evaluation.totalScore ?? 0}
-          </p>
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 dark:border-white/5 dark:bg-white/2">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h4 className="text-sm font-bold dark:text-white">Espacio de anotación</h4>
+            <p className="text-xs text-gray-500">Marca ventanas para construir el dataset progresivamente.</p>
+          </div>
+          <span className="text-xs font-bold text-[#008080]">{formatSeconds(currentTime)} / {formatSeconds(duration)}</span>
         </div>
-        {!editando ? (
-          <div className="flex flex-wrap justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setEditando(true)}
-              className="rounded-xl border border-purple-300 px-3 py-2 text-xs font-bold text-purple-700 hover:bg-purple-100 dark:border-purple-400/30 dark:text-purple-200 dark:hover:bg-purple-500/10"
+        {videoUrl ? (
+          <div className="relative overflow-hidden rounded-xl bg-black">
+            <video
+              ref={videoRef}
+              controls
+              className="block w-full"
+              onLoadedMetadata={(event) => {
+                const nextDuration = Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0;
+                setDuration(nextDuration);
+                setEndTime(nextDuration);
+              }}
+              onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
             >
-              Editar evaluación
-            </button>
-            {evaluation.reviewStatus !== "ACCEPTED" &&
-              evaluation.reviewStatus !== "accepted" && (
-              <button
-                type="button"
-                onClick={() => void guardar(true)}
-                disabled={loading || aceptando}
-                className="rounded-xl bg-green-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
-              >
-                {aceptando ? "Aceptando..." : "Aceptar evaluación"}
-              </button>
-            )}
+              <source src={videoUrl} />
+              Tu navegador no puede reproducir este video.
+            </video>
+            <canvas ref={canvasRef} aria-label="Landmarks corporales sobre el video" className="pointer-events-none absolute left-0 top-0" />
           </div>
         ) : (
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setEditando(false)}
-              className="rounded-xl px-3 py-2 text-xs font-bold text-gray-500"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={() => void guardar()}
-              disabled={loading}
-              className="inline-flex items-center gap-1 rounded-xl bg-purple-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
-            >
-              <Save size={13} />
-              {loading ? "Guardando..." : "Guardar"}
-            </button>
-          </div>
+          <div className="rounded-xl bg-black/5 px-4 py-10 text-center text-sm text-gray-500 dark:bg-white/5">Esta sesión no tiene un video disponible.</div>
         )}
+        <input aria-label="Línea de tiempo del video" type="range" min="0" max={duration || 1} step="0.1" value={Math.min(currentTime, duration || 1)} onChange={(event) => setVideoTime(Number(event.target.value))} className="mt-4 w-full accent-[#008080]" />
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <button type="button" onClick={() => setStartTime(currentTime)} className="rounded-lg border border-[#008080]/20 px-3 py-2 text-xs font-bold text-[#008080]">Marcar inicio</button>
+          <button type="button" onClick={() => setEndTime(currentTime)} className="rounded-lg border border-[#008080]/20 px-3 py-2 text-xs font-bold text-[#008080]">Marcar final</button>
+          <span className="rounded-lg bg-white px-3 py-2 text-center text-xs dark:bg-[#111]">Inicio {formatSeconds(startTime)}</span>
+          <span className="rounded-lg bg-white px-3 py-2 text-center text-xs dark:bg-[#111]">Final {formatSeconds(endTime)}</span>
+        </div>
       </div>
 
-      <p className="text-xs text-gray-500 dark:text-gray-300">
-        {evaluation.reviewStatus === "ACCEPTED" ||
-        evaluation.reviewStatus === "accepted"
-          ? "Evaluación aceptada por el especialista."
-          : "Estos valores son provisionales y requieren revisión del profesional."}
-      </p>
+      <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
+        <div className="space-y-4 rounded-2xl border border-gray-100 p-4 dark:border-white/5">
+          <label className="block text-xs font-bold uppercase tracking-widest text-gray-400">Fase DEMUCA
+            <select value={phase} onChange={(event) => setPhase(event.target.value)} className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-[#111]">
+              {Object.entries(DEMUCA_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </label>
+          {Object.entries(TAG_GROUPS).map(([group, config]) => (
+            <fieldset key={group}>
+              <legend className="mb-2 text-xs font-bold text-gray-700 dark:text-gray-200">{config.label}</legend>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {config.fields.map((field) => <label key={field} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={tags[group as TagGroup].includes(field)} onChange={() => toggleTag(group as TagGroup, field)} className="accent-[#008080]" />{formatDemucaLabel(field)}</label>)}
+              </div>
+            </fieldset>
+          ))}
+          <button type="button" onClick={saveWindow} disabled={saving || !sessionId} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#008080] px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-white disabled:opacity-50"><Plus size={14} />{saving ? "Guardando…" : "Guardar ventana"}</button>
+          {message && <p className="text-xs text-gray-600 dark:text-gray-300">{message}</p>}
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {Object.entries(grouped).map(([category, responses]) => (
-          <div
-            key={category}
-            className="rounded-xl border border-purple-200/60 bg-white/70 p-4 dark:border-purple-400/20 dark:bg-white/5"
-          >
-            <h4 className="mb-3 text-xs font-bold text-purple-700 dark:text-purple-200">
-              {category}
-            </h4>
-            <div className="space-y-2">
-              {responses.map((response) => {
-                const id = response.subscale.id;
-                return (
-                  <label
-                    key={id}
-                    className="flex items-center justify-between gap-3 text-xs text-gray-600 dark:text-gray-300"
-                  >
-                    <span>{response.subscale.name}</span>
-                    {editando ? (
-                      <select
-                        value={scores[id] ?? response.score}
-                        onChange={(event) =>
-                          setScores((current) => ({
-                            ...current,
-                            [id]: Number(event.target.value),
-                          }))
-                        }
-                        className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs dark:border-white/10 dark:bg-[#111] dark:text-white"
-                      >
-                        {Array.from(
-                          { length: response.subscale.maxValue + 1 },
-                          (_, value) => (
-                            <option key={value} value={value}>
-                              {value}
-                            </option>
-                          ),
-                        )}
-                      </select>
-                    ) : (
-                      <span className="font-bold text-purple-700 dark:text-purple-200">
-                        {response.score}/{response.subscale.maxValue}
-                      </span>
-                    )}
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+        <div className="space-y-4 rounded-2xl border border-gray-100 p-4 dark:border-white/5">
+          <div className="flex items-center justify-between"><h4 className="text-xs font-bold uppercase tracking-widest text-gray-400">Landmarks del cuerpo</h4><span className="text-xs text-gray-500">{landmarkCount} frames</span></div>
+          {landmarkCount > 0 ? <p className="text-sm text-gray-600 dark:text-gray-300">MediaPipe entregó landmarks temporales. El esqueleto se superpone al video y se guarda junto a cada ventana anotada.</p> : <p className="text-sm text-gray-500">El resultado multimodal todavía no incluye landmarks para esta sesión.</p>}
+          <div className="border-t border-gray-100 pt-4 dark:border-white/5"><h4 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-400">Ventanas guardadas</h4>{loadingWindows ? <p className="text-sm text-gray-500">Cargando ventanas…</p> : windows.length > 0 ? <div className="space-y-2">{windows.map((window) => <button type="button" key={window.id} onClick={() => setVideoTime(window.start_time)} className="flex w-full items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-left text-xs dark:bg-white/5"><span className="font-bold text-[#008080]">{formatSeconds(window.start_time)}–{formatSeconds(window.end_time)}</span><span className="truncate pl-3 text-gray-500">{formatDemucaLabel(window.demuca_phase)}</span></button>)}</div> : <p className="text-sm text-gray-500">Aún no hay ventanas anotadas.</p>}</div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
 
-function EstadoVideo({
-  icon,
-  label,
-  description,
-  tone,
+function DemoAnalysisCard({
+  analysis,
+  loading,
+  sessionId,
+  onAnalysisUpdated,
 }: {
-  icon: React.ReactNode;
-  label: string;
-  description: string;
-  tone: "info" | "success" | "danger";
+  analysis: Record<string, unknown> | null;
+  loading: boolean;
+  sessionId: string | null;
+  onAnalysisUpdated: (analysis: Record<string, unknown>) => void;
 }) {
-  const styles = {
-    info: "border-blue-200 bg-blue-50/60 text-blue-700 dark:border-blue-400/20 dark:bg-blue-500/10 dark:text-blue-200",
-    success:
-      "border-green-200 bg-green-50/60 text-green-700 dark:border-green-400/20 dark:bg-green-500/10 dark:text-green-200",
-    danger:
-      "border-red-200 bg-red-50/60 text-red-700 dark:border-red-400/20 dark:bg-red-500/10 dark:text-red-200",
+  const predictions = analysis?.model_predictions as Record<string, unknown> | undefined;
+  const windows = Array.isArray(predictions?.windows) ? predictions.windows : [];
+  const demuca = analysis?.demuca as Record<string, unknown> | undefined;
+  const demucaData = (demuca?.data || {}) as Record<string, Record<string, number>>;
+  const [draft, setDraft] = useState<Record<string, Record<string, number>>>(demucaData);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const status = typeof analysis?.status === "string" ? analysis.status : "pending";
+
+  const draftValues = Object.keys(draft).length > 0 ? draft : demucaData;
+
+  const updateValue = (category: string, field: string, value: string) => {
+    const numericValue = Number(value);
+    setDraft((current) => ({
+      ...current,
+      [category]: {
+        ...(current[category] || {}),
+        [field]: Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : 0,
+      },
+    }));
+  };
+
+  const saveDemuca = async () => {
+    if (!sessionId) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const updated = await actualizarDemucaAnalisisMultimodal(sessionId, draftValues);
+      onAnalysisUpdated(updated);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "No se pudo guardar el DEMUCA.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div className={`flex items-start gap-3 rounded-2xl border p-5 ${styles[tone]}`}>
-      <div className="mt-0.5">{icon}</div>
-      <div>
-        <h4 className="text-sm font-bold">{label}</h4>
-        <p className="mt-1 text-xs opacity-80">{description}</p>
+    <div className="bg-[#008080]/5 p-5 rounded-2xl border border-[#008080]/20">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h4 className="text-[10px] font-bold text-[#008080] uppercase tracking-widest">
+          Análisis multimodal demo
+        </h4>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+          {loading ? "Consultando" : status}
+        </span>
       </div>
+      {loading && <p className="text-sm text-gray-500">Procesando resultado…</p>}
+      {!loading && !analysis && (
+        <p className="text-sm text-gray-500">Todavía no hay un resultado disponible.</p>
+      )}
+      {!loading && analysis && (
+        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+          <p>Modelo: <strong>{String(predictions?.model_type || "no disponible")}</strong></p>
+          <p>Ventanas con predicción: <strong>{windows.length}</strong></p>
+          <p>DEMUCA: <strong>{String(demuca?.status || "provisional")}</strong></p>
+          <p className="text-xs text-amber-700 dark:text-amber-300">
+            Resultado demo basado en videos reales, sin validación terapéutica. Requiere revisión humana.
+          </p>
+          {demucaData && Object.keys(DEMUCA_FIELDS).length > 0 && (
+            <div className="mt-4 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <h5 className="text-xs font-bold uppercase tracking-widest text-[#008080]">
+                  Revisión del terapeuta
+                </h5>
+                <span className="text-[10px] text-gray-500">Valores editables</span>
+              </div>
+              {Object.entries(DEMUCA_FIELDS).map(([category, fields]) => (
+                <fieldset key={category} className="rounded-xl border border-[#008080]/15 bg-white/60 p-3 dark:bg-black/10">
+                  <legend className="px-1 text-xs font-bold text-gray-700 dark:text-gray-200">
+                    {DEMUCA_LABELS[category]}
+                  </legend>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {fields.map((field) => (
+                      <label key={field} className="flex items-center justify-between gap-2 text-xs">
+                        <span>{formatDemucaLabel(field)}</span>
+                        <input
+                          aria-label={field}
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={draftValues[category]?.[field] ?? 0}
+                          onChange={(event) => updateValue(category, field, event.target.value)}
+                          className="w-20 rounded-lg border border-gray-200 bg-white px-2 py-1 text-right text-sm dark:border-white/10 dark:bg-[#111]"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              ))}
+              {saveError && <p className="text-xs text-red-600">{saveError}</p>}
+              <button
+                type="button"
+                onClick={saveDemuca}
+                disabled={saving || !sessionId}
+                className="rounded-lg bg-[#008080] px-4 py-2 text-xs font-bold uppercase tracking-widest text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {saving ? "Guardando…" : "Guardar revisión DEMUCA"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

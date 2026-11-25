@@ -5,7 +5,8 @@ test.describe("Autenticación", () => {
     page,
   }) => {
     await loginAsAdmin(page);
-    await expect(page.getByText("Hola, ")).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page.getByRole("main")).toBeVisible();
   });
 
   test("debe mostrar error con credenciales inválidas", async ({ page }) => {

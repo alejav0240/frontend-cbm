@@ -87,6 +87,11 @@ export function CampanaNotificaciones() {
     if (cargando) return;
 
     if (primerCargaRef.current) {
+      // Do not consume the initial empty state. Apollo starts with an empty
+      // list while the query is loading; marking it as initialized here would
+      // replay every historical notification as a new toast when the response
+      // arrives after login.
+      if (cargando) return;
       for (const n of notificaciones) {
         vistosRef.current.add(n.id);
       }

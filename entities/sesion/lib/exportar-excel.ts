@@ -1,4 +1,5 @@
 import { SesionExportarFila } from "../model/dto";
+import { descargarExcel } from "@/shared/lib/exportar-excel";
 
 import { descargarExcel } from "@/shared/lib/exportarExcel";
 
@@ -36,13 +37,11 @@ export const generarSesionesExcel = async (
             : fila[columna.key];
         return [
           columna.label,
-          columna.formatter
-            ? columna.formatter(value, fila)
-            : (value ?? ""),
+          columna.formatter ? columna.formatter(value, fila) : (value ?? ""),
         ];
       }),
     ),
   );
 
-  await descargarExcel(datos, "Sesiones", `${nombreArchivo}_${Date.now()}.xlsx`);
+  await descargarExcel(datos, "Sesiones", nombreArchivo);
 };

@@ -42,26 +42,19 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
       data.sessions.sessions
         // 1. Filtramos los elementos null que puedan venir en el array del backend
         .filter((s): s is NonNullable<typeof s> => s !== null)
-        // Ordenamos por la fecha real de la sesión, no por el identificador.
-        // Los registros sin fecha quedan al final y databaseId desempata.
+        // El backend pagina por databaseId, pero la vista es cronológica. Ordenar
+        // por databaseId hacía que sesiones antiguas aparecieran antes que las
+        // próximas cuando se habían creado/importado en distinto orden.
         .sort((a, b) => {
-          const parseDate = (value: unknown) => {
-            if (typeof value !== "string") return null;
-            const timestamp = Date.parse(value);
-            return Number.isFinite(timestamp) ? timestamp : null;
-          };
-          const fechaA = parseDate(a.fechaSesion);
-          const fechaB = parseDate(b.fechaSesion);
+          const fechaA = a.fechaSesion
+            ? Date.parse(a.fechaSesion as string)
+            : Number.NEGATIVE_INFINITY;
+          const fechaB = b.fechaSesion
+            ? Date.parse(b.fechaSesion as string)
+            : Number.NEGATIVE_INFINITY;
 
-          if (fechaA === null && fechaB === null) {
-            return (
-              ((b as { databaseId?: number }).databaseId ?? 0) -
-              ((a as { databaseId?: number }).databaseId ?? 0)
-            );
-          }
-          if (fechaA === null) return 1;
-          if (fechaB === null) return -1;
           if (fechaA !== fechaB) return fechaB - fechaA;
+
           return (
             ((b as { databaseId?: number }).databaseId ?? 0) -
             ((a as { databaseId?: number }).databaseId ?? 0)

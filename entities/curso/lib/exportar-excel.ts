@@ -1,5 +1,5 @@
 import { CursoExportarFila } from "../model/dto";
-import { descargarExcel } from "@/shared/lib/exportarExcel";
+import { descargarExcel } from "@/shared/lib/exportar-excel";
 
 export const generarCursosExcel = async (
   filas: CursoExportarFila[],
@@ -14,5 +14,5 @@ export const generarCursosExcel = async (
     Estado: f.estado === "ACTIVE" ? "Activo" : "Cerrado",
   }));
 
-  await descargarExcel(datos, "Cursos", `${nombreArchivo}_${Date.now()}.xlsx`);
+  await descargarExcel(datos, "Cursos", nombreArchivo);
 };

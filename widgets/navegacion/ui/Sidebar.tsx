@@ -415,7 +415,7 @@ export const Sidebar = () => {
             <motion.aside
                 initial={false}
                 animate={{width: sidebarWidth}}
-                className="bg-white/80 dark:bg-accent/80 backdrop-blur-2xl border-r border-gray-200 dark:border-white/5 flex flex-col sticky top-0 h-[100dvh] overflow-hidden z-50 hidden md:flex"
+                className="bg-white/80 dark:bg-accent/80 backdrop-blur-2xl border-r border-gray-200 dark:border-white/5 flex flex-col shrink-0 sticky top-0 h-[100dvh] overflow-hidden z-50 hidden md:flex"
             >
                 {/* Cabecera */}
                 <div

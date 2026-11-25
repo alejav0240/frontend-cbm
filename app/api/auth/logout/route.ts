@@ -2,15 +2,18 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
+  const backendUrl = process.env.BACKEND_API_URL?.replace(/\/$/, "");
   const graphqlUri =
-    process.env.NEXT_PUBLIC_GRAPHQL_URI || "http://localhost:8000/graphql/";
+    (backendUrl && `${backendUrl}/graphql/`) ||
+    process.env.NEXT_PUBLIC_GRAPHQL_URI ||
+    "http://localhost:8000/graphql/";
 
   try {
     const cookieHeader = request.headers.get("cookie") || "";
     const csrfMatch = cookieHeader.match(/csrftoken=([^;]+)/);
     const csrfToken = csrfMatch ? csrfMatch[1] : "";
 
-    await fetch(graphqlUri, {
+    void fetch(graphqlUri, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -25,6 +28,9 @@ export async function POST(request: NextRequest) {
           }
         `,
       }),
+      signal: AbortSignal.timeout(5_000),
+    }).catch((error) => {
+      console.warn("Backend logout notification failed:", error);
     });
   } catch (error) {
     console.warn("Backend logout notification failed:", error);

@@ -65,24 +65,10 @@ export const createErrorLink = () => {
           mutation: REFRESH_TOKEN_MUTATION,
           fetchPolicy: "network-only",
         })
-        .then((response) => {
-          const refreshed = TokenManager.handleRefreshSuccess(
-            (
-              response.data as
-                | {
-                    refreshToken?: {
-                      token?: string;
-                      refreshToken?: string;
-                      payload?: string;
-                      refreshExpiresIn?: number;
-                    };
-                  }
-                | null
-                | undefined
-            )?.refreshToken,
-          );
+        .then(() => {
+          const refreshed = TokenManager.handleRefreshSuccess();
           if (!refreshed) {
-            throw new Error("Refresh response did not include an access token");
+            throw new Error("Refresh response did not refresh the session cookies");
           }
           flushRefreshQueue(true);
           forward(operation).subscribe(observer);

@@ -1,5 +1,5 @@
 import { PacienteExportarFila } from "../model/dto";
-import { descargarExcel } from "@/shared/lib/exportarExcel";
+import { descargarExcel } from "@/shared/lib/exportar-excel";
 
 export const generarPacientesExcel = async (
   filas: PacienteExportarFila[],
@@ -17,9 +17,5 @@ export const generarPacientesExcel = async (
     "Fecha Registro": f.fechaRegistro ?? "",
   }));
 
-  await descargarExcel(
-    datos,
-    "Pacientes",
-    `${nombreArchivo}_${Date.now()}.xlsx`,
-  );
+  await descargarExcel(datos, "Pacientes", nombreArchivo);
 };

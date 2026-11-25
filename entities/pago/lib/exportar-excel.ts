@@ -1,5 +1,5 @@
 import { PagoExportarFila } from "../model/dto";
-import { descargarExcel } from "@/shared/lib/exportarExcel";
+import { descargarExcel } from "@/shared/lib/exportar-excel";
 
 export const generarPagosExcel = async (
   filas: PagoExportarFila[],
@@ -15,5 +15,5 @@ export const generarPagosExcel = async (
     Método: f.metodo,
   }));
 
-  await descargarExcel(datos, "Pagos", `${nombreArchivo}_${Date.now()}.xlsx`);
+  await descargarExcel(datos, "Pagos", nombreArchivo);
 };

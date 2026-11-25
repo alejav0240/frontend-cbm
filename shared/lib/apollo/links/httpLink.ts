@@ -1,5 +1,5 @@
 import { HttpLink } from "@apollo/client";
-import { csrfFetch } from "../utils/csrf";
+import { secureFetch } from "@/shared/lib/crypto/applicationEncryption";
 
 /**
  * Configuración base del enlace HTTP para GraphQL
@@ -12,7 +12,7 @@ export const createHttpLink = () => {
   return new HttpLink({
     uri,
     credentials: "include", // Esencial para cookies de sesión y CSRF
-    fetch: csrfFetch,
+    fetch: secureFetch,
     fetchOptions: {
       cache: "no-store", // Evita caché del navegador para requests auth
     },

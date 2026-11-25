@@ -120,7 +120,7 @@ export function SessionHeader({
             {/* Información del paciente */}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg lg:text-xl font-bold dark:text-white truncate">
+                <h2 data-onboarding-header="" className="text-base sm:text-lg lg:text-xl font-bold dark:text-white truncate">
                   {activeSession.patientName}
                 </h2>
                 {/* Badge de sesión en vivo */}
@@ -246,6 +246,7 @@ export function SessionHeader({
 
               {/* Botón Finalizar - Acción de Cierre Clínico */}
               <button
+                data-onboarding-action=""
                 onClick={() => setShowFinishConfirm(true)}
                 className="
                   px-3.5 sm:px-5 py-2.5 sm:py-3
