@@ -179,6 +179,7 @@ jobs:
           scan-ref: .
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
+          limit-severities-for-sarif: "true"
           format: sarif
           output: trivy-frontend-filesystem.sarif
           exit-code: "1"
@@ -282,6 +283,7 @@ jobs:
           image-ref: cbm-frontend:${{ github.sha }}
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
+          limit-severities-for-sarif: "true"
           format: sarif
           output: trivy-frontend-image.sarif
           exit-code: "1"
