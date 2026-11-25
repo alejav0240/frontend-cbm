@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Settings,
   Bell,
@@ -21,6 +22,7 @@ type OneDriveStatus = {
 };
 
 const TarjetaOneDrive = () => {
+  const router = useRouter();
   const [cargando, setCargando] = useState(true);
   const [status, setStatus] = useState<OneDriveStatus | null>(null);
 
@@ -45,7 +47,7 @@ const TarjetaOneDrive = () => {
   }, []);
 
   const conectar = () => {
-    window.location.href = "/api/onedrive/connect";
+    router.push("/api/onedrive/connect");
   };
 
   const conectado = status?.connected === true;

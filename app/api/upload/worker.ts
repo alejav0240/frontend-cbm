@@ -16,6 +16,7 @@ import {
   listJobs,
 } from "./queue";
 import { invalidarTokenCsrf, obtenerTokenCsrf } from "./csrf";
+import { minutosDesdeSegundos } from "@/shared/lib/utils/duracionVideo";
 
 const MAX_JOB_ATTEMPTS = 5;
 const JOB_STALE_MS = 30 * 60 * 1000;

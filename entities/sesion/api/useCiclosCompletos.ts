@@ -21,6 +21,8 @@ export function useCiclosCompletos(pacienteId?: string) {
     useQuery<ObtenerCiclosPacienteQuery>(OBTENER_CICLOS_PACIENTE, {
       variables: { patientId: pacienteId },
       skip: !pacienteId,
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     });
 

@@ -1,17 +1,16 @@
-name: "CI/CD — Lint, Security Scan & Deploy"
+name: Frontend DevSecOps
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   pull_request:
-    branches: ["main"]
+    branches: [main]
 
 permissions:
   contents: read
-  security-events: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: frontend-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -24,20 +23,27 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 24
+          fetch-depth: 0
+
+      - name: Detect secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 11.2.2
+          version: ${{ env.PNPM_VERSION }}
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
 
   build:
-    name: "Build (Next.js)"
-    runs-on: ubuntu-latest
+    name: "Phase 2 - Next.js build"
+    runs-on: ubuntu-24.04
+    needs: fast-checks
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
 
@@ -49,7 +55,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 11.2.2
+          version: ${{ env.PNPM_VERSION }}
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
@@ -85,45 +91,164 @@ jobs:
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: trivy-report.sarif
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Upload reports
         uses: actions/upload-artifact@v7
         with:
-          name: trivy-frontend-reports
-          path: trivy-report.*
+          name: frontend-standalone
+          path: |
+            .next/standalone
+            .next/static
+            public
+          if-no-files-found: error
+          retention-days: 7
+
+  dependency-security:
+    name: "Phase 3 - Dependency security"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Audit Node dependencies
+        run: pnpm audit --audit-level high
+
+      - name: Scan source tree with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          version: v0.76.2
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          format: sarif
+          output: trivy-frontend-filesystem.sarif
+          exit-code: "1"
+
+      - name: Show Trivy findings when the scan fails
+        if: ${{ failure() }}
+        run: |
+          trivy fs . \
+            --scanners vuln,secret,misconfig \
+            --severity HIGH,CRITICAL \
+            --format table
+
+      - name: Upload Trivy filesystem report
+        if: ${{ always() && hashFiles('trivy-frontend-filesystem.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-frontend-filesystem.sarif
+
+      - name: Upload security artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-trivy-filesystem
+          path: trivy-frontend-filesystem.sarif
+          if-no-files-found: ignore
           retention-days: 30
 
-  deploy:
-    name: "Deploy Frontend"
-    runs-on: ubuntu-latest
-    needs: [build, security-scan]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
+  sast:
+    name: "Phase 4 - CodeQL SAST"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
     steps:
-      - name: Setup SSH
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+
+      - name: Analyze with CodeQL
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:javascript-typescript
+
+  deploy:
+    name: "Phase 5 - Deploy frontend"
+    runs-on: ubuntu-24.04
+    needs: [build, dependency-security, sast]
+    if: >-
+      ${{
+        always() &&
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' &&
+        needs.build.result == 'success' &&
+        needs.dependency-security.result == 'success' &&
+        needs.sast.result == 'success'
+      }}
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - name: Prepare SSH identity
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -p 22 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
+          set -euo pipefail
+          test -n "$SSH_PRIVATE_KEY"
+          test -n "$SSH_KNOWN_HOSTS"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/deploy_key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/deploy_key" "$HOME/.ssh/known_hosts"
+
+      - name: Verify SSH connection
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          set -euo pipefail
+          ssh -i "$HOME/.ssh/deploy_key" -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$SSH_USER@$SSH_HOST" 'echo SSH connection OK'
 
       - name: Deploy via SSH
         env:
-          SSH_KEY: ~/.ssh/deploy_key
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          ssh -i ${{ env.SSH_KEY }} -o StrictHostKeyChecking=yes \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash -s << 'DEPLOY_EOF'
-            set -ex
-            cd ~/cbm-frontend
-            git fetch origin main
-            git reset --hard origin/main
-            pnpm install --frozen-lockfile
-            pnpm build
-            test -d .next/standalone || { echo "ERROR: el build no genero .next/standalone (falta output: 'standalone' en next.config.ts)"; exit 1; }
-            cp -r .next/static .next/standalone/.next/
-            cp -r public .next/standalone/
-            pm2 restart cbm-frontend
-            pm2 save
-            echo "Frontend deployed successfully!"
+          set -euo pipefail
+          ssh -i "$HOME/.ssh/deploy_key" -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$SSH_USER@$SSH_HOST" bash -s <<'DEPLOY_EOF'
+          set -euo pipefail
+          cd ~/cbm-frontend
+          git fetch origin main
+          git reset --hard origin/main
+          pnpm install --frozen-lockfile
+          pnpm build
+          test -d .next/standalone || { echo "ERROR: standalone output missing"; exit 1; }
+          cp -r .next/static .next/standalone/.next/
+          cp -r public .next/standalone/
+          pm2 restart cbm-frontend
+          pm2 save
           DEPLOY_EOF
+
+      - name: Verify deployed health endpoint
+        if: ${{ vars.FRONTEND_HEALTHCHECK_URL != '' }}
+        env:
+          HEALTHCHECK_URL: ${{ vars.FRONTEND_HEALTHCHECK_URL }}
+        run: curl --fail --show-error --silent --retry 10 --retry-delay 5 "$HEALTHCHECK_URL"

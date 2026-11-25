@@ -75,6 +75,7 @@ export function ModalReprogramarSesion({
 
         <div className="flex justify-end gap-3 pt-4">
           <button
+            type="button"
             onClick={onClose}
             className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
             disabled={cargando}
@@ -82,6 +83,7 @@ export function ModalReprogramarSesion({
             Cancelar
           </button>
           <button
+            type="button"
             onClick={handleConfirm}
             className="bg-orange-500 text-white px-8 py-3 rounded-2xl font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 flex items-center gap-2 disabled:opacity-50"
             disabled={cargando || !nuevaFecha || !nuevaHora}

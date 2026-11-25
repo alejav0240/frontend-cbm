@@ -51,7 +51,8 @@ function EscalaSection({
   const promedio =
     ordenado.length > 0
       ? (
-          ordenado.reduce((s, e) => s + e.totalScore, 0) / ordenado.length
+          ordenado.reduce((s, e) => s + Number(e.totalScore), 0) /
+          ordenado.length
         ).toFixed(1)
       : "—";
 

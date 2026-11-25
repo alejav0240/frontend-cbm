@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
-import { useMutation } from "@apollo/client/react";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import {
   useInstituciones,
   useCrearInstitucion,
@@ -27,6 +27,7 @@ import GenericExportModal, { Exporter } from "@/shared/ui/GenericExportModal";
 import { Pagination } from "@/shared/ui/Pagination";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import { CREAR_SESION } from "@/entities/sesion/api/mutaciones";
+import { refetchActiveSessionQueries } from "@/entities/sesion/api/cache";
 import {
   CrearSesionMutation,
   CrearSesionMutationVariables,
@@ -36,6 +37,7 @@ import type { InstitutionFormData } from "./components/InstitutionFormModal";
 import type { GroupFormData } from "./components/GroupFormModal";
 
 export const InstitucionesPage = () => {
+  const apolloClient = useApolloClient();
   const [vista, setVista] = useState<"lista" | "detalle" | "detalle-grupo">(
     "lista",
   );
@@ -200,6 +202,7 @@ export const InstitucionesPage = () => {
             notes: data.notes,
           },
         });
+        await refetchActiveSessionQueries(apolloClient);
         toast.success("Sesión creada correctamente");
       } catch (err: unknown) {
         const message =
@@ -208,7 +211,7 @@ export const InstitucionesPage = () => {
         throw err;
       }
     },
-    [crearSesionMut, grupoSeleccionadoId],
+    [apolloClient, crearSesionMut, grupoSeleccionadoId],
   );
 
   const handleEliminarConfirm = useCallback(async () => {

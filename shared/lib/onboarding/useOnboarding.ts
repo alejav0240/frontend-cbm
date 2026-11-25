@@ -108,6 +108,8 @@ const prepararAnclasDeVista = (pasos: PasoOnboarding[]) => {
 export const useOnboarding = () => {
   const pathname = usePathname();
   const usuarioId = useAuthStore((estado) => estado.usuario?.id);
+  const deshabilitadoEnE2E =
+    process.env.NEXT_PUBLIC_E2E_DISABLE_ONBOARDING === "true";
   const tourActivoRef = useRef(false);
   const rutaMarcadaRef = useRef<string | null>(null);
   const [vistaARepetir, setVistaARepetir] = useState<string | null>(null);
@@ -124,7 +126,7 @@ export const useOnboarding = () => {
     CONSULTA_ONBOARDING_VISTA,
     {
       variables: { viewKey: claveVista || "" },
-      skip: !habilitado,
+      skip: deshabilitadoEnE2E || !habilitado,
       fetchPolicy: "network-only",
     },
   );
@@ -144,6 +146,7 @@ export const useOnboarding = () => {
 
   useEffect(() => {
     if (
+      deshabilitadoEnE2E ||
       !habilitado ||
       !pathname ||
       !claveVista ||
@@ -313,6 +316,7 @@ export const useOnboarding = () => {
   }, [
     claveVista,
     data,
+    deshabilitadoEnE2E,
     error,
     habilitado,
     loading,

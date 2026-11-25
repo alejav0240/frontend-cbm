@@ -2,7 +2,7 @@
 
 import React, { useRef, useCallback } from "react";
 import { motion } from "motion/react";
-import { Clock, CheckCircle2, Sparkles, CornerDownLeft } from "lucide-react";
+import { Clock, CheckCircle2 } from "lucide-react";
 
 interface NotesTabProps {
   notes: string;

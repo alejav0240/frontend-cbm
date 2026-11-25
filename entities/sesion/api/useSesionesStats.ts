@@ -25,26 +25,32 @@ export function useSesionesStats() {
   const total = useQuery<ObtenerSesionesQuery>(OBTENER_SESIONES, {
     variables: variablesBase,
     fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
   });
   const completadas = useQuery<ObtenerSesionesQuery>(OBTENER_SESIONES, {
     variables: { ...variablesBase, sessionStatus: "completa" },
     fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
   });
   const agendadas = useQuery<ObtenerSesionesQuery>(OBTENER_SESIONES, {
     variables: { ...variablesBase, sessionStatus: "agendada" },
     fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
   });
   const confirmadas = useQuery<ObtenerSesionesQuery>(OBTENER_SESIONES, {
     variables: { ...variablesBase, sessionStatus: "confirma" },
     fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
   });
   const reprogramadas = useQuery<ObtenerSesionesQuery>(OBTENER_SESIONES, {
     variables: { ...variablesBase, sessionStatus: "reprograma" },
     fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
   });
   const canceladas = useQuery<ObtenerSesionesQuery>(OBTENER_SESIONES, {
     variables: { ...variablesBase, sessionStatus: "cancelada" },
     fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
   });
 
   const loading =

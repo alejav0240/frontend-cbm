@@ -1,6 +1,6 @@
-import { useMutation } from "@apollo/client/react";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import { CREATE_USER } from "./mutaciones";
-import { useUsuarios } from "./useUsuarios";
+import { OBTENER_USUARIOS } from "./consultas";
 
 interface CreateUserVariables {
   username: string;
@@ -25,13 +25,15 @@ interface CreateUserData {
 }
 
 export function useCreateUser() {
-  const { refetch } = useUsuarios({ pagina: 1, pageSize: 10 });
+  const client = useApolloClient();
   const [crearMutation, { loading }] = useMutation<CreateUserData, CreateUserVariables>(CREATE_USER, {
-    onCompleted: () => refetch(),
   });
 
-  const crearUsuario = (variables: CreateUserVariables) =>
-    crearMutation({ variables });
+  const crearUsuario = async (variables: CreateUserVariables) => {
+    const result = await crearMutation({ variables });
+    await client.refetchQueries({ include: [OBTENER_USUARIOS] });
+    return result;
+  };
 
   return { crearUsuario, loading };
 }

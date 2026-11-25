@@ -6,7 +6,9 @@ test.describe('Vista de Informes Terapéuticos', () => {
 
     // Navegar a Informes
     await page.getByRole('button', { name: 'Informes' }).click();
-    await expect(page.getByText('Informes Terapéuticos', { exact: false })).toBeVisible();
+    await expect(
+      page.getByRole('main').getByText('Informes Terapéuticos', { exact: false }).first(),
+    ).toBeVisible();
   });
 
   test('debe permitir buscar informes por paciente', async ({ page }) => {
@@ -21,7 +23,7 @@ test.describe('Vista de Informes Terapéuticos', () => {
     
     // Verificar campos
     await expect(page.getByText('Paciente', { exact: true })).toBeVisible();
-    await expect(page.getByText('Título del Informe')).toBeVisible();
+    await expect(page.getByText('Link del Informe (Drive/PDF)')).toBeVisible();
     
     await page.keyboard.press('Escape');
   });

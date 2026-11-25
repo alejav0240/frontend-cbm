@@ -3,6 +3,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import Modal from "@/shared/ui/components/Modal";
 import { useSesionDetalles } from "@/entities/sesion";
+import { ProcessingStatusCard } from "@/entities/analysis/ui/ProcessingStatusCard";
+import { ACTUALIZAR_EVALUACION_ESCALA } from "@/entities/escalas/api/mutaciones";
+import type {
+  UpdateScaleEvaluationMutation,
+  UpdateScaleEvaluationMutationVariables,
+} from "@/shared/api/generated/graphql";
 import {
   subirEnSegundoPlano,
   type GrabacionPendiente,
@@ -35,6 +41,7 @@ type TabId = "info" | "plan" | "evaluaciones" | "anotaciones" | "notas";
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "info", label: "Información", icon: <FileText size={14} /> },
+  { id: "ia", label: "IA / DEMUCA", icon: <Sparkles size={14} /> },
   { id: "plan", label: "Plan", icon: <ClipboardList size={14} /> },
   { id: "evaluaciones", label: "Evaluaciones", icon: <BarChart3 size={14} /> },
   { id: "anotaciones", label: "Anotaciones", icon: <Video size={14} /> },
@@ -109,11 +116,72 @@ export function ModalDetalleSesion({
 
   const { obtenerSesion, cargando, sesion } = useSesionDetalles();
 
+  const grabacionEnviada =
+    grabacionAceptadaSesionId === sesionId && sesion?.videoStatus !== "FALLO";
+  const puedeSubirGrabacion =
+    sesion?.sessionStatus === "COMPLETA" &&
+    !sesion.videoUrl &&
+    sesion.videoStatus !== "SUBIENDO" &&
+    !grabacionEnviada;
+
+  const videoSubido =
+    Boolean(sesion?.videoUrl) || sesion?.videoStatus === "SUBIDO";
+  const videoSubiendo =
+    subiendoGrabacion ||
+    sesion?.videoStatus === "SUBIENDO" ||
+    (grabacionEnviada && !videoSubido);
+
+  const subirGrabacion = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = event.target.files?.[0];
+    event.target.value = "";
+    if (!archivo || !sesionId || !sesion?.patient?.id) return;
+
+    setSubiendoGrabacion(true);
+    try {
+      const duracionSegundos = await obtenerDuracionVideo(archivo);
+      const response = await fetch("/api/upload/ingest", {
+        method: "POST",
+        headers: {
+          "Content-Type": archivo.type || "video/mp4",
+          "x-session-id": sesionId,
+          "x-paciente-id": sesion.patient.id,
+          "x-paciente-nombre": pacienteNombre,
+          "x-numero-ciclo": String(sesion.cycleNumber ?? "sin-ciclo"),
+          "x-grabado-en": String(sesion.sessionDate ?? new Date().toISOString()),
+          ...(duracionSegundos
+            ? { "x-duracion-segundos": String(duracionSegundos) }
+            : {}),
+        },
+        body: archivo,
+      });
+      const result = (await response.json()) as {
+        success?: boolean;
+        message?: string;
+      };
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "No se pudo subir la grabación.");
+      }
+
+      toast.success(
+        "Grabación recibida. Se está guardando y quedará disponible para análisis.",
+      );
+      setGrabacionAceptadaSesionId(sesionId);
+      await obtenerSesion({ variables: { id: sesionId } });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "No se pudo subir la grabación.",
+      );
+    } finally {
+      setSubiendoGrabacion(false);
+    }
+  };
+
   const [prevAbierto, setPrevAbierto] = useState(isOpen && !!sesionId);
   if ((isOpen && !!sesionId) !== prevAbierto) {
     setPrevAbierto(isOpen && !!sesionId);
     if (isOpen && sesionId) {
-      setActiveTab("info");
+      setActiveTab("ia");
       setEditandoNotas(false);
     }
   }
@@ -162,6 +230,9 @@ export function ModalDetalleSesion({
         dateStyle: "full",
       }).format(new Date(String(sesion.sessionDate)))
     : "";
+  const demucaEvaluation = sesion?.scaleEvaluations?.find(
+    (evaluation) => evaluation?.scale?.name?.toLowerCase() === "escala demuca",
+  );
 
   const adjuntarVideo = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const archivo = event.target.files?.[0];
@@ -240,6 +311,93 @@ export function ModalDetalleSesion({
           <>
             {activeTab === "info" && (
               <div className="space-y-6">
+                {puedeSubirGrabacion && (
+                  <div className="rounded-2xl border border-[#008080]/20 bg-[#008080]/5 p-5">
+                    <div className="flex items-start gap-3">
+                      <Upload className="mt-0.5 text-[#008080]" size={18} />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold dark:text-white">
+                          Subir grabación
+                        </h4>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Esta sesión está completada y todavía no tiene video.
+                        </p>
+                        <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#008080] px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#006666]">
+                          {subiendoGrabacion ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Upload size={14} />
+                          )}
+                          {subiendoGrabacion
+                            ? "Subiendo..."
+                            : "Seleccionar video"}
+                          <input
+                            type="file"
+                            accept="video/*"
+                            className="sr-only"
+                            disabled={subiendoGrabacion}
+                            onChange={subirGrabacion}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {sesion.sessionStatus === "COMPLETA" && !videoSubido && videoSubiendo && (
+                  <EstadoVideo
+                    icon={<Loader2 size={18} className="animate-spin" />}
+                    label="Video en proceso de subida"
+                    description="La grabación fue recibida y se está guardando. No cierres la sesión hasta que aparezca como subida."
+                    tone="info"
+                  />
+                )}
+
+                {sesion.sessionStatus === "COMPLETA" && videoSubido && (
+                  <>
+                    {sesion.videoUrl && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-1.5 rounded-full bg-[#008080]" />
+                          <h4 className="text-xs font-bold uppercase tracking-[0.2em] dark:text-white">
+                            Grabación
+                          </h4>
+                        </div>
+                        <video
+                          controls
+                          preload="metadata"
+                          className="aspect-video w-full rounded-xl bg-black shadow-lg"
+                        >
+                          <source src={sesion.videoUrl} type="video/mp4" />
+                          Tu navegador no puede reproducir este video.
+                        </video>
+                      </div>
+                    )}
+                    <EstadoVideo
+                      icon={<CheckCircle size={18} />}
+                      label="Video subido"
+                      description="La grabación está disponible para iniciar el análisis multimodal."
+                      tone="success"
+                    />
+                    {sesion.videoUrl && (
+                      <ProcessingStatusCard
+                        sessionId={sesion.id}
+                        sourceUri={sesion.videoUrl}
+                      />
+                    )}
+                  </>
+                )}
+
+                {sesion.sessionStatus === "COMPLETA" &&
+                  sesion.videoStatus === "FALLO" && (
+                    <EstadoVideo
+                      icon={<AlertCircle size={18} />}
+                      label="Falló la subida del video"
+                      description="Podés seleccionar el video nuevamente para reintentar."
+                      tone="danger"
+                    />
+                  )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InfoCard label="Fecha" value={fechaFormateada} />
                   <InfoCard
@@ -417,6 +575,59 @@ export function ModalDetalleSesion({
                   )
                 ) : (
                   <EmptyState message="No hay pasos de plan registrados" />
+                )}
+              </div>
+            )}
+
+            {activeTab === "ia" && (
+              <div className="space-y-6">
+                {!sesion.videoUrl ? (
+                  <EstadoVideo
+                    icon={<AlertCircle size={18} />}
+                    label="No hay grabación disponible"
+                    description="Subí una grabación desde la pestaña Información para iniciar el análisis."
+                    tone="info"
+                  />
+                ) : (
+                  <>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-6 w-1.5 rounded-full bg-[#008080]" />
+                        <h4 className="text-xs font-bold uppercase tracking-[0.2em] dark:text-white">
+                          Grabación analizada
+                        </h4>
+                      </div>
+                      <video
+                        controls
+                        preload="metadata"
+                        className="aspect-video w-full rounded-xl bg-black shadow-lg"
+                      >
+                        <source src={sesion.videoUrl} type="video/mp4" />
+                        Tu navegador no puede reproducir este video.
+                      </video>
+                    </div>
+                    <ProcessingStatusCard
+                      sessionId={sesion.id}
+                      sourceUri={sesion.videoUrl}
+                    />
+                  </>
+                )}
+
+                {demucaEvaluation ? (
+                  <DemucaEditor
+                    key={demucaEvaluation.id}
+                    evaluation={demucaEvaluation}
+                    onSaved={() => {
+                      if (sesionId) {
+                        void obtenerSesion({ variables: { id: sesionId } });
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="rounded-2xl border border-gray-200 p-5 text-sm text-gray-500 dark:border-white/10">
+                    La evaluación DEMUCA aparecerá aquí cuando el worker
+                    termine y guarde sus respuestas en la sesión.
+                  </div>
                 )}
               </div>
             )}

@@ -40,7 +40,10 @@ export const FormulariosPage = () => {
     respuestaForm,
     paginas: paginasAsignaciones,
     refetch: refetchAssignments,
-  } = useAsignacionesFormulario();
+  } = useAsignacionesFormulario({
+    page: paginaActualAsignaciones,
+    pageSize: 10,
+  });
   const [selectedResponse, setSelectedResponse] = useState<FormResponse | null>(
     null,
   );

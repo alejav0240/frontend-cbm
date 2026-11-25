@@ -58,7 +58,7 @@ export const AgendaPage = () => {
 
   const hours = Array.from({ length: 13 }, (_, i) => i + 8);
 
-  const { sesiones, sesionesDia, sesionesSinFecha, refetch } = useAgendaSessions({
+  const { sesiones, sesionesDia, sesionesSinFecha } = useAgendaSessions({
     month: selectedDate,
     selectedDate,
   });
@@ -129,9 +129,8 @@ export const AgendaPage = () => {
       setShowForm(false);
       setEditingSession(null);
       setPendingSlotHour(undefined);
-      refetch();
     },
-    [crearSesion, refetch],
+    [crearSesion],
   );
 
   const handleUpdateSession = useCallback(
@@ -150,19 +149,14 @@ export const AgendaPage = () => {
       setShowForm(false);
       setEditingSession(null);
       setPendingSlotHour(undefined);
-      refetch();
     },
-    [actualizarSesion, editingSession, formMode, refetch],
+    [actualizarSesion, editingSession, formMode],
   );
 
   const handleCloseDetail = useCallback(() => {
     setShowDetails(false);
     setSelectedSession(null);
   }, []);
-
-  const handleDeleted = useCallback(() => {
-    refetch();
-  }, [refetch]);
 
   const handleEditSession = useCallback((session: SesionAgenda) => {
     setShowDetails(false);
@@ -241,12 +235,11 @@ export const AgendaPage = () => {
           notes: `Sesión de prueba — Paciente: ${data.testPatientName}, Tel: ${data.testFatherPhone}`,
         });
         setShowTestForm(false);
-        refetch();
       } catch {
         // error toast handled by crearSesion
       }
     },
-    [crearSesion, refetch],
+    [crearSesion],
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -371,7 +364,7 @@ export const AgendaPage = () => {
           <DetalleSesion
             session={selectedSession}
             onClose={handleCloseDetail}
-            onDeleted={handleDeleted}
+            onDeleted={handleCloseDetail}
             onEdit={handleEditSession}
             onReschedule={handleRescheduleSession}
             onStartSession={handleStartSession}

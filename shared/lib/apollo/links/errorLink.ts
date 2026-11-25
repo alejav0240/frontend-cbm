@@ -9,6 +9,7 @@ const AUTH_CODES = [
   "UNAUTHENTICATED",
   "invalid_token",
   "token_expired",
+  "Signature has expired",
   "authentication_required",
   "Unauthorized",
 ];

@@ -111,7 +111,8 @@ export function GraficoRadar({ data }: PatientAIRadarChartProps) {
 
             <PolarRadiusAxis
               angle={90}
-              domain={[0, "auto"]}
+              domain={[0, 2]}
+              tickCount={3}
               tick={false}
               axisLine={false}
             />

@@ -4,6 +4,10 @@ import React, { useMemo } from "react";
 import { Loader2, TrendingUp } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  fechaMinimaNacimientoISO,
+  hoyISO,
+} from "@/shared/lib/schemas/fecha";
 import { esquemaPaciente, DatosFormularioPaciente } from "@/entities/paciente";
 import { SearchableSelect } from "@/shared/ui/components/SearchableSelect";
 import { InputField } from "@/shared/ui/form/InputField";
@@ -93,6 +97,8 @@ export const FormularioCrearPaciente = ({
         <InputField
           label="Fecha de Nacimiento"
           type="date"
+          min={fechaMinimaNacimientoISO()}
+          max={hoyISO()}
           error={errors.dob?.message}
           {...register("dob")}
         />

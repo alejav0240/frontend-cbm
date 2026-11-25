@@ -1,5 +1,6 @@
-import { useMutation } from "@apollo/client/react";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import { CREAR_SESION } from "./mutaciones";
+import { refetchActiveSessionQueries } from "./cache";
 import {
   CrearSesionMutation,
   CrearSesionMutationVariables,
@@ -16,6 +17,7 @@ interface CrearSesionInput {
 }
 
 export function useCrearSesionAgenda() {
+  const client = useApolloClient();
   const [crear, { loading }] = useMutation<
     CrearSesionMutation,
     CrearSesionMutationVariables
@@ -33,6 +35,7 @@ export function useCrearSesionAgenda() {
           notes: input.notes,
         },
       });
+      await refetchActiveSessionQueries(client);
       toast.success("Sesión creada correctamente");
       return result.data?.createSession?.session;
     } catch (err: unknown) {

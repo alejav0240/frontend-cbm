@@ -1,3 +1,7 @@
+import {
+  obtenerDuracionVideo,
+} from "@/shared/lib/utils/duracionVideo";
+
 const DB_NAME = "cbm-subidas";
 const DB_VERSION = 2;
 const STORE = "pendientes";
@@ -11,6 +15,7 @@ export type GrabacionPendiente = {
   numeroCiclo?: number | null;
   grabadoEn: string;
   addedAt: number;
+  duracionSegundos?: number | null;
 };
 
 export type ProgresoSubida = {
@@ -136,6 +141,12 @@ const subirGrabacionAlServidor = (
       item.numeroCiclo == null ? "sin-ciclo" : String(item.numeroCiclo),
     );
     xhr.setRequestHeader("x-grabado-en", item.grabadoEn);
+    if (item.duracionSegundos && item.duracionSegundos > 0) {
+      xhr.setRequestHeader(
+        "x-duracion-segundos",
+        String(item.duracionSegundos),
+      );
+    }
 
     xhr.upload.onprogress = (e) => {
       if (onProgreso && e.lengthComputable) {
@@ -168,15 +179,23 @@ export const subirEnSegundoPlano = async (
   item: GrabacionPendiente,
   onProgreso?: (progreso: ProgresoSubida) => void,
 ): Promise<ResultadoSubida> => {
+  const itemConDuracion =
+    item.duracionSegundos == null
+      ? {
+          ...item,
+          duracionSegundos: await obtenerDuracionVideo(item.archivo),
+        }
+      : item;
+
   try {
-    await guardarGrabacionPendiente(item);
+    await guardarGrabacionPendiente(itemConDuracion);
   } catch (error) {
     console.warn("No se pudo respaldar la grabación en IndexedDB:", error);
   }
 
   try {
-    await subirGrabacionAlServidor(item, onProgreso);
-    await eliminarGrabacionPendiente(item.sessionId);
+    await subirGrabacionAlServidor(itemConDuracion, onProgreso);
+    await eliminarGrabacionPendiente(itemConDuracion.sessionId);
     return "ok";
   } catch (error) {
     console.warn(

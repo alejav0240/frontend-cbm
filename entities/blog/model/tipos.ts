@@ -1,5 +1,6 @@
 export interface PostBlog {
   id: string;
+  slug: string;
   titulo: string;
   resumen: string;
   contenido: string;

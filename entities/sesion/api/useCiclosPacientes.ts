@@ -47,6 +47,7 @@ export const useCiclosPacientes = (filtros: CicloPacienteFiltros = {}) => {
         therapistId: filtros.therapistId || undefined,
       },
       skip: filtros.skip,
+      fetchPolicy: "cache-and-network",
       nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     });

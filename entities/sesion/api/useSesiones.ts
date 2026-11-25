@@ -29,6 +29,7 @@ export const useSesiones = (filtros: SesionFiltros = {}) => {
         search: filtros.busqueda || "",
       },
       skip: filtros.skip,
+      fetchPolicy: "cache-and-network",
       nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     },
@@ -158,6 +159,8 @@ export const useCiclos = (filtros: SesionFiltros = {}) => {
         pageSize: filtros.pageSize || 10,
         byCycles: filtros.verCiclo || true,
       },
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
       notifyOnNetworkStatusChange: true,
     },
   );

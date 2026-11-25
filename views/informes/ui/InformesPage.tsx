@@ -14,10 +14,14 @@ import type { TherapyReport } from "@/entities/informes/model/tipos";
 import { useBuscarPacientes } from "@/entities/paciente";
 import { useAuthStore } from "@/shared/model/useAuthStore";
 import { Pagination } from "@/shared/ui/Pagination";
+import { SearchInput } from "@/shared/ui/components/SearchInput";
+import { TutorsList } from "./components/TutorsList";
+import { usePacientes } from "@/entities/paciente";
 
 export default function InformesPage() {
   const [paginaActual, setPaginaActual] = useState(1);
   const { informes, paginas, cargando, refetch } = useInformes();
+  const { pacientes } = usePacientes({ search: "", pageSize: 8 });
   const { usuario } = useAuthStore();
   const { options: patientOptions, onSearch: onSearchPatient } =
     useBuscarPacientes();
@@ -28,13 +32,25 @@ export default function InformesPage() {
     null,
   );
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [terminoBusqueda, setTerminoBusqueda] = useState("");
+
+  const informesFiltrados = useMemo(() => {
+    const termino = terminoBusqueda.trim().toLowerCase();
+    if (!termino) return informes;
+    return informes.filter((informe) =>
+      [informe.title, informe.patientName]
+        .join(" ")
+        .toLowerCase()
+        .includes(termino),
+    );
+  }, [informes, terminoBusqueda]);
 
   const stats = useMemo(() => {
-    const total = informes.length;
-    const read = informes.filter((r) => readIds.has(r.id)).length;
+    const total = informesFiltrados.length;
+    const read = informesFiltrados.filter((r) => readIds.has(r.id)).length;
     const rate = total > 0 ? Math.round((read / total) * 100) : 0;
     return { total, read, rate };
-  }, [informes, readIds]);
+  }, [informesFiltrados, readIds]);
 
   const handleViewReport = useCallback((report: TherapyReport) => {
     setReadIds((prev) => new Set(prev).add(report.id));
@@ -77,11 +93,17 @@ export default function InformesPage() {
     <div className="space-y-8">
       <ReportsHeader onNewReport={() => setShowCreateModal(true)} />
 
-      {informes.length > 0 && (
+      <SearchInput
+        value={terminoBusqueda}
+        onChange={setTerminoBusqueda}
+        placeholder="Buscar por paciente o título..."
+      />
+
+      {informesFiltrados.length > 0 && (
         <ReportsStats total={stats.total} read={stats.read} rate={stats.rate} />
       )}
 
-      {informes.length === 0 ? (
+      {informesFiltrados.length === 0 ? (
         <div className="bg-white dark:bg-[#111] rounded-[32px] border border-gray-200 dark:border-white/5 p-12 text-center">
           <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 mx-auto mb-6">
             <ClipboardList size={40} />
@@ -95,7 +117,7 @@ export default function InformesPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {informes.map((report) => (
+          {informesFiltrados.map((report) => (
             <ReportCard
               key={report.id}
               report={{
@@ -107,6 +129,14 @@ export default function InformesPage() {
           ))}
         </div>
       )}
+
+      <TutorsList
+        patients={pacientes.map((paciente) => ({
+          id: paciente.id,
+          name: paciente.nombre,
+          tutor: paciente.tutor?.firstName || "Sin tutor",
+        }))}
+      />
 
       <Pagination
         currentPage={paginaActual}

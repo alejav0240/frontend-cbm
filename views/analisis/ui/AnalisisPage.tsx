@@ -4,7 +4,6 @@ import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   Users,
-  Calendar,
   Activity,
   TrendingUp,
   Download,
@@ -13,8 +12,6 @@ import {
   BarChart2,
   Filter,
   CheckCircle2,
-  Clock,
-  AlertCircle,
   MapPin,
   HeartPulse,
 } from "lucide-react";
@@ -29,7 +26,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
   AreaChart,
   Area,
 } from "recharts";
@@ -41,7 +37,6 @@ import {
   generarPacientesExcel,
   PacienteExportarFila,
 } from "@/entities/paciente";
-import { useCiclosPacientes } from "@/entities/sesion";
 import { StatCard } from "@/shared/ui/StatCard";
 
 const PALETTE = [
@@ -60,20 +55,14 @@ export const AnalisisPage = () => {
   const [exporting, setExporting] = useState<"pdf" | "excel" | null>(null);
 
   // Consultar pacientes para análisis detallado
-  const { pacientes, total: totalPacientes, cargando: cargandoPacientes } =
+  const { pacientes, total: totalPacientes } =
     usePacientes({
       search: "",
       pageSize: 100,
     });
 
   // Datos históricos de crecimiento mensual de pacientes
-  const { datosCrecimiento, cargando: cargandoCrecimiento } =
-    usePacienteCrecimiento();
-
-  // Ciclos terapéuticos para métricas de efectividad y fases
-  const { ciclos, cargando: cargandoCiclos } = useCiclosPacientes({
-    pageSize: 100,
-  });
+  const { datosCrecimiento } = usePacienteCrecimiento();
 
   // Cálculo de métricas principales de pacientes
   const metricas = useMemo(() => {
@@ -172,20 +161,6 @@ export const AnalisisPage = () => {
       { name: "Inactivos", value: metricas.inactivos, color: "#9ca3af" },
     ].filter((item) => item.value > 0);
   }, [metricas]);
-
-  // Distribución Geográfica / Residencia
-  const distribucionResidencia = useMemo(() => {
-    const counts: Record<string, number> = {};
-    pacientes.forEach((p) => {
-      const res = p.residence?.trim() || "No registrada";
-      counts[res] = (counts[res] || 0) + 1;
-    });
-
-    return Object.entries(counts)
-      .map(([lugar, cantidad]) => ({ lugar, cantidad }))
-      .sort((a, b) => b.cantidad - a.cantidad)
-      .slice(0, 5);
-  }, [pacientes]);
 
   // Tasa de Crecimiento del último mes
   const tasaCrecimiento = useMemo(() => {
@@ -364,7 +339,7 @@ export const AnalisisPage = () => {
             </div>
           </div>
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={256}>
               <AreaChart data={datosCrecimiento || []}>
                 <defs>
                   <linearGradient id="colorCrecimiento" x1="0" y1="0" x2="0" y2="1">
@@ -426,7 +401,7 @@ export const AnalisisPage = () => {
               Distribución por condición clínica y permanencia
             </p>
             <div className="h-48 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={192}>
                 <PieChart>
                   <Pie
                     data={distribucionEstados}
@@ -496,7 +471,7 @@ export const AnalisisPage = () => {
           </div>
 
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={256}>
               <BarChart
                 data={distribucionDiagnosticos.slice(0, 6)}
                 layout="vertical"
@@ -554,7 +529,7 @@ export const AnalisisPage = () => {
           </div>
 
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={256}>
               <BarChart data={distribucionEdades}>
                 <CartesianGrid
                   strokeDasharray="3 3"

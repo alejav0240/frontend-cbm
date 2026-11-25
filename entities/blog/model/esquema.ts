@@ -8,9 +8,20 @@ export const esquemaPostBlog = z.object({
   autor: z.string().min(1, "El autor es requerido"),
   urlImagen: z
     .string()
-    .url("URL inválida")
-    .optional()
-    .or(z.literal("")),
+    .refine(
+      (value) => {
+        if (!value) return true;
+        if (value.startsWith("/")) return true;
+        try {
+          new URL(value);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      "URL inválida",
+    )
+    .optional(),
   tiempoLectura: z.string().optional(),
   estado: z.enum(["DRAFT", "PUBLISHED"]),
   tipo: z.enum(["MARKDOWN", "LATEX"]),

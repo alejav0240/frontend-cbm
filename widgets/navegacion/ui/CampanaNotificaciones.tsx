@@ -32,11 +32,11 @@ const tituloPara = (n: Notificacion): string => {
 };
 
 const iconoColorPara = (n: Notificacion): string =>
-  esFallo(n)
-    ? "bg-red-500/10 text-red-500"
-    : "bg-[#008080]/10 text-[#008080]";
+  esFallo(n) ? "bg-red-500/10 text-red-500" : "bg-[#008080]/10 text-[#008080]";
 
-const metadatosDe = (n: Notificacion): { jobId?: string; sessionId?: string } => {
+const metadatosDe = (
+  n: Notificacion,
+): { jobId?: string; sessionId?: string } => {
   if (!n.metadatos || typeof n.metadatos !== "object") return {};
   return n.metadatos as { jobId?: string; sessionId?: string };
 };
@@ -50,33 +50,42 @@ export function CampanaNotificaciones() {
   const primerCargaRef = useRef(true);
   const [reintentando, setReintentando] = useState<string | null>(null);
 
-  const reintentar = useCallback(async (n: Notificacion) => {
-    const metadatos = metadatosDe(n);
-    if (reintentando) return;
-    setReintentando(n.id);
-    try {
-      const response = await fetch("/api/upload/retry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          metadatos.jobId ? { jobId: metadatos.jobId } : { sessionId: metadatos.sessionId },
-        ),
-      });
-      const data = (await response.json()) as { success?: boolean };
-      if (!response.ok || !data.success) {
-        throw new Error("No se pudo reintentar");
+  const reintentar = useCallback(
+    async (n: Notificacion) => {
+      const metadatos = metadatosDe(n);
+      if (reintentando) return;
+      setReintentando(n.id);
+      try {
+        const response = await fetch("/api/upload/retry", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            metadatos.jobId
+              ? { jobId: metadatos.jobId }
+              : { sessionId: metadatos.sessionId },
+          ),
+        });
+        const data = (await response.json()) as { success?: boolean };
+        if (!response.ok || !data.success) {
+          throw new Error("No se pudo reintentar");
+        }
+        toast.success("Reintentando la subida de la grabación…");
+      } catch {
+        toast.error(
+          "No se pudo reintentar ahora. Probá nuevamente en unos minutos.",
+        );
+      } finally {
+        setReintentando(null);
       }
-      toast.success("Reintentando la subida de la grabación…");
-    } catch {
-      toast.error(
-        "No se pudo reintentar ahora. Probá nuevamente en unos minutos.",
-      );
-    } finally {
-      setReintentando(null);
-    }
-  }, [reintentando]);
+    },
+    [reintentando],
+  );
 
   useEffect(() => {
+    // La consulta empieza vacía mientras Apollo carga. Esas notificaciones
+    // existentes son la línea base y no deben mostrarse como nuevas.
+    if (cargando) return;
+
     if (primerCargaRef.current) {
       // Do not consume the initial empty state. Apollo starts with an empty
       // list while the query is loading; marking it as initialized here would
@@ -153,13 +162,9 @@ export function CampanaNotificaciones() {
       </button>
 
       {abierto && (
-        <div
-          className="absolute right-0 top-full mt-2 w-80 md:w-96 max-h-[28rem] overflow-y-auto bg-white dark:bg-accent border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 z-50"
-        >
+        <div className="absolute right-0 top-full mt-2 w-80 md:w-96 max-h-[28rem] overflow-y-auto bg-white dark:bg-accent border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 z-50">
           <div className="px-5 py-3 flex items-center justify-between border-b border-gray-100 dark:border-white/5 sticky top-0 bg-white dark:bg-accent z-10">
-            <p className="text-sm font-bold dark:text-white">
-              Notificaciones
-            </p>
+            <p className="text-sm font-bold dark:text-white">Notificaciones</p>
             {noLeidas > 0 && (
               <button
                 onClick={() => void marcarTodasLeidas()}

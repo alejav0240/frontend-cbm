@@ -1,19 +1,14 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import {
-  Video,
   VideoOff,
-  Mic,
-  MicOff,
   Maximize2,
   Minimize2,
   RefreshCw,
-  Sparkles,
   Camera,
   Activity,
-  SlidersHorizontal,
   Volume2,
   ShieldCheck,
 } from "lucide-react";
@@ -44,7 +39,6 @@ export function VistaCamara({
   isMobile = false,
 }: CameraPreviewProps) {
   const [espejo, setEspejo] = useState(true);
-  const [mostrarAjustes, setMostrarAjustes] = useState(false);
   const [esPiPActivo, setEsPiPActivo] = useState(false);
   const [nivelAudio, setNivelAudio] = useState(0);
   const audioContextRef = useRef<AudioContext | null>(null);

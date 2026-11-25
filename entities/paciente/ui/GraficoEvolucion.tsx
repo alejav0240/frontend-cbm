@@ -2,8 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -52,8 +52,8 @@ function procesarEscalas(
 
     return {
       dateString: item.evaluatedAt,
-      eri: item.totalScore,
-      cim: cimData[index]?.totalScore ?? 0,
+      eri: Number(item.totalScore),
+      cim: Number(cimData[index]?.totalScore ?? 0),
       formattedDate: fecha.toLocaleDateString("es-ES", {
         day: "2-digit",
         month: "2-digit",
@@ -112,11 +112,11 @@ export function GraficoEvolucion({
     const total = data.length;
 
     const eri = total
-      ? (data.reduce((a, b) => a + b.eri, 0) / total).toFixed(1)
+      ? (data.reduce((a, b) => a + Number(b.eri), 0) / total).toFixed(1)
       : 0;
 
     const cim = total
-      ? (data.reduce((a, b) => a + b.cim, 0) / total).toFixed(1)
+      ? (data.reduce((a, b) => a + Number(b.cim), 0) / total).toFixed(1)
       : 0;
 
     return {
@@ -210,7 +210,7 @@ export function GraficoEvolucion({
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
+            <LineChart
               data={data}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
@@ -263,28 +263,26 @@ export function GraficoEvolucion({
                 wrapperStyle={{ paddingBottom: "20px" }}
               />
               {indicator !== "cim" && (
-                <Area
+                <Line
                   type="monotone"
                   dataKey="eri"
                   name="ERI"
                   stroke="#008080"
                   strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorEri)"
+                  dot={{ r: 3 }}
                 />
               )}
               {indicator !== "eri" && (
-                <Area
+                <Line
                   type="monotone"
                   dataKey="cim"
                   name="CIM"
                   stroke="#3b82f6"
                   strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorCim)"
+                  dot={{ r: 3 }}
                 />
               )}
-            </AreaChart>
+            </LineChart>
           </ResponsiveContainer>
         )}
       </div>

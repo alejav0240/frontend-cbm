@@ -13,6 +13,7 @@ import MusicalNotes from "@/shared/ui/MusicalNotes";
 import { useTheme } from "next-themes";
 import { INICIO_SESION_MUTACION } from "@/shared/api/auth";
 import { esquemaLogin, DatosFormularioLogin } from "@/shared/lib/esquemas-auth";
+import { ensureCsrfToken } from "@/shared/lib/apollo";
 
 export default function Login() {
   const { theme, setTheme } = useTheme();
@@ -53,8 +54,17 @@ export default function Login() {
   });
 
   const onFormSubmit = useCallback(
-    (data: DatosFormularioLogin) => {
+    async (data: DatosFormularioLogin) => {
       if (isBusy) return;
+      try {
+        await ensureCsrfToken();
+      } catch (error) {
+        console.error("CSRF connection error:", error);
+        toast.error(
+          "No se pudo conectar con el servidor. Verifica que el backend esté activo.",
+        );
+        return;
+      }
       login({
         variables: {
           username: data.username,

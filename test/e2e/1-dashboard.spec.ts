@@ -15,7 +15,7 @@ test.describe('Dashboard Principal (Overview)', () => {
   });
 
   test('debe mostrar el balance financiero', async ({ page }) => {
-    await expect(page.getByText('Balance Financiero')).toBeVisible();
+    await expect(page.getByText('Ingresos Mes')).toBeVisible();
   });
 
   test('debe permitir navegar a otras vistas mediante acciones rápidas', async ({ page }) => {

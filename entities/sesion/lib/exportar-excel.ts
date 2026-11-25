@@ -1,6 +1,8 @@
 import { SesionExportarFila } from "../model/dto";
 import { descargarExcel } from "@/shared/lib/exportar-excel";
 
+import { descargarExcel } from "@/shared/lib/exportarExcel";
+
 type ExportColumn = {
   key: keyof SesionExportarFila;
   label: string;

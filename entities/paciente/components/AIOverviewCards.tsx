@@ -6,11 +6,15 @@ import { Activity, TrendingUp, Brain } from "lucide-react";
 interface PatientAIOverviewCardsProps {
   analysesCount: number;
   lastUpdateDate: string;
+  progressLabel: string;
+  focusLabel: string;
 }
 
 export function AIOverviewCards({
   analysesCount,
   lastUpdateDate,
+  progressLabel,
+  focusLabel,
 }: PatientAIOverviewCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -38,9 +42,9 @@ export function AIOverviewCards({
             Progreso General
           </h4>
         </div>
-        <p className="text-3xl font-bold dark:text-white">+18%</p>
-        <p className="text-xs text-green-500 mt-2 font-bold">
-          Tendencia positiva detectada
+        <p className="text-3xl font-bold dark:text-white">{progressLabel}</p>
+        <p className="text-xs text-gray-500 mt-2">
+          Comparación basada en evaluaciones disponibles
         </p>
       </div>
 
@@ -53,9 +57,9 @@ export function AIOverviewCards({
             Foco Terapéutico
           </h4>
         </div>
-        <p className="text-xl font-bold dark:text-white">Exploración Rítmica</p>
+        <p className="text-xl font-bold dark:text-white">{focusLabel}</p>
         <p className="text-xs text-gray-500 mt-2">
-          Área con mayor crecimiento reciente
+          Área con mayor puntuación en la última evaluación
         </p>
       </div>
     </div>

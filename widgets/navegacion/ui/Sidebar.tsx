@@ -321,7 +321,7 @@ export const Sidebar = () => {
 
     const handleLogout = async () => {
         await cerrarSesion();
-        window.location.href = "/login";
+        router.push("/login");
     };
 
     const handleNavigation = (href: string) => {

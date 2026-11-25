@@ -37,6 +37,9 @@ export interface RespuestaFormNormalizada {
 
 export interface AsignacionesFiltros {
   patientId?: string;
+  page?: number;
+  pageSize?: number;
+  skip?: boolean;
 }
 
 export const useAsignacionesFormulario = (filtros: AsignacionesFiltros = {}) => {
@@ -44,10 +47,14 @@ export const useAsignacionesFormulario = (filtros: AsignacionesFiltros = {}) => 
     ObtenerAsignacionesFormularioQuery,
     ObtenerAsignacionesFormularioQueryVariables
   >(OBTENER_ASIGNACIONES_FORMULARIO, {
-    variables: {
-      patientId: filtros.patientId,
-    },
-    skip: !filtros.patientId,
+      variables: {
+        patientId: filtros.patientId,
+        page: filtros.page ?? 1,
+        pageSize: filtros.pageSize ?? 10,
+      },
+    skip: filtros.skip,
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
     notifyOnNetworkStatusChange: true,
   });
 

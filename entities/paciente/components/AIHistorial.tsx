@@ -66,7 +66,7 @@ export function AIHistorial({ data }: PatientAIHistoryTableProps) {
                       />
                     </div>
                     <span className="text-[10px] font-bold text-gray-400">
-                      {row.restrictivos.toFixed(1)}
+                      {Number(row.restrictivos).toFixed(1)}
                     </span>
                   </div>
                 </td>
@@ -79,7 +79,7 @@ export function AIHistorial({ data }: PatientAIHistoryTableProps) {
                       />
                     </div>
                     <span className="text-[10px] font-bold text-gray-400">
-                      {row.vocal.toFixed(1)}
+                      {Number(row.vocal).toFixed(1)}
                     </span>
                   </div>
                 </td>
@@ -92,7 +92,7 @@ export function AIHistorial({ data }: PatientAIHistoryTableProps) {
                       />
                     </div>
                     <span className="text-[10px] font-bold text-gray-400">
-                      {row.social.toFixed(1)}
+                      {Number(row.social).toFixed(1)}
                     </span>
                   </div>
                 </td>

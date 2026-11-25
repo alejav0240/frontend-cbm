@@ -23,6 +23,28 @@ export const ADD_SCALE_RESPONSE = gql`
   }
 `;
 
+export const ACTUALIZAR_EVALUACION_ESCALA = gql`
+  mutation UpdateScaleEvaluation(
+    $evaluationId: ID!
+    $subscales: [ResponseSubScale]!
+    $accept: Boolean
+  ) {
+    updateScaleEvaluation(
+      evaluationId: $evaluationId
+      subscales: $subscales
+      accept: $accept
+    ) {
+      success
+      message
+      evaluation {
+        id
+        totalScore
+        reviewStatus
+      }
+    }
+  }
+`;
+
 export const ELIMINAR_ESCALA = gql`
   mutation DeleteScale($id: ID!) {
     deleteScale(id: $id) {

@@ -1,5 +1,6 @@
-import { useMutation } from "@apollo/client/react";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import { ACTUALIZAR_SESION } from "./mutaciones";
+import { refetchActiveSessionQueries } from "./cache";
 import {
   ActualizarSesionMutation,
   ActualizarSesionMutationVariables,
@@ -7,6 +8,7 @@ import {
 import { toast } from "sonner";
 
 export function useActualizarEstadoSesion() {
+  const client = useApolloClient();
   const [actualizar, { loading }] = useMutation<
     ActualizarSesionMutation,
     ActualizarSesionMutationVariables
@@ -17,6 +19,7 @@ export function useActualizarEstadoSesion() {
       await actualizar({
         variables: { id, sessionStatus: sessionStatus.toLowerCase() },
       });
+      await refetchActiveSessionQueries(client);
       toast.success("Estado de sesión actualizado");
     } catch (err: unknown) {
       toast.error(

@@ -6,24 +6,20 @@ test.describe('Vista de Análisis (Reports)', () => {
 
     // Navegar a Análisis
     await page.getByRole('button', { name: 'Análisis' }).click();
-    await expect(page.getByText('Análisis e Informes', { exact: false })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Análisis y Estadísticas' })).toBeVisible();
   });
 
   test('debe mostrar los gráficos de salud financiera e impacto terapéutico', async ({ page }) => {
     // Verificar que los contenedores de los gráficos estén presentes
-    await expect(page.getByText('Salud Financiera', { exact: true })).toBeVisible();
-    await expect(page.getByText('Impacto Terapéutico', { exact: true })).toBeVisible();
-    await expect(page.getByText('Distribución de Pacientes')).toBeVisible();
+    await expect(page.getByText('Evolución y Crecimiento de Pacientes', { exact: true })).toBeVisible();
+    await expect(page.getByText('Estado de Pacientes', { exact: true })).toBeVisible();
+    await expect(page.getByText('Distribución por Diagnóstico', { exact: true })).toBeVisible();
   });
 
-  test('debe permitir cambiar el rango de tiempo', async ({ page }) => {
-    // Los selectores de tiempo son botones en un flex container
-    const trimesterBtn = page.getByRole('button', { name: 'Trimestre', exact: true });
-    await expect(trimesterBtn).toBeVisible();
-    await trimesterBtn.click();
-    
-    // Al ser un mock, simplemente verificamos que el botón reciba el clic
-    // (En una app real podríamos verificar que los datos cambien)
-    await expect(trimesterBtn).toHaveClass(/bg-\[#008080\]/);
+  test('debe permitir filtrar pacientes por diagnóstico', async ({ page }) => {
+    const diagnosisFilter = page.locator('select').first();
+    await expect(diagnosisFilter).toBeVisible();
+    await diagnosisFilter.selectOption('Todos');
+    await expect(diagnosisFilter).toHaveValue('Todos');
   });
 });
