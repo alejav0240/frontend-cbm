@@ -82,7 +82,7 @@ jobs:
         run: pnpm build
 
       - name: Upload standalone build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-standalone
           path: |
@@ -146,7 +146,7 @@ jobs:
 
       - name: Upload security artifact
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-trivy-filesystem
           path: trivy-frontend-filesystem.sarif
