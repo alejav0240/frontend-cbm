@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3004";
 const port = new URL(baseURL).port || "3004";
+const usesExternalServer = Boolean(process.env.PLAYWRIGHT_BASE_URL);
 
 export default defineConfig({
   testDir: ".",
@@ -9,7 +10,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-    workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : undefined,
   reporter: [["list"], ["html", { open: "never" }]],
   outputDir: "test-results",
   expect: {
@@ -37,10 +38,14 @@ export default defineConfig({
       use: { ...devices["Pixel 5"] },
     },
   ],
-  webServer: {
-    command: `cd ../.. && NEXT_PUBLIC_E2E_DISABLE_ONBOARDING=true pnpm build && NEXT_PUBLIC_E2E_DISABLE_ONBOARDING=true pnpm start --port ${port}`,
-    url: `${baseURL}/login`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  ...(usesExternalServer
+    ? {}
+    : {
+        webServer: {
+          command: `cd ../.. && NEXT_PUBLIC_E2E_DISABLE_ONBOARDING=true pnpm build && NEXT_PUBLIC_E2E_DISABLE_ONBOARDING=true pnpm start --port ${port}`,
+          url: `${baseURL}/login`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+      }),
 });
