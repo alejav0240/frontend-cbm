@@ -13,20 +13,23 @@ concurrency:
   group: frontend-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-  lint:
-    name: "Lint (ESLint)"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
+env:
+  NODE_VERSION: "24"
+  PNPM_VERSION: "11.2.2"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+jobs:
+  fast-checks:
+    name: "Phase 1 - Quality and secrets"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Detect secrets
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -35,9 +38,21 @@ jobs:
         with:
           version: ${{ env.PNPM_VERSION }}
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm lint
+
+      - name: Type-check TypeScript
+        run: pnpm exec tsc --noEmit
 
   build:
     name: "Phase 2 - Next.js build"
@@ -45,57 +60,28 @@ jobs:
     needs: fast-checks
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
           version: ${{ env.PNPM_VERSION }}
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-
-  security-scan:
-    name: "Security Scan"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Install Trivy
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-            | sh -s -- -b /usr/local/bin
-
-      - name: Block secrets and misconfiguration findings
-        run: |
-          trivy fs --scanners secret,misconfig \
-            --severity CRITICAL,HIGH,MEDIUM,LOW --exit-code 1 .
-
-      - name: Scan — JSON
-        run: |
-          trivy fs --format json --output trivy-report.json \
-            --severity CRITICAL,HIGH,MEDIUM,LOW \
-            --scanners vuln,secret,misconfig --exit-code 0 .
-
-      - name: Scan — SARIF
-        run: |
-          trivy fs --format sarif --output trivy-report.sarif \
-            --severity CRITICAL,HIGH,MEDIUM,LOW \
-            --scanners vuln,secret,misconfig --exit-code 0 .
-
-      - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Upload reports
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+
+      - name: Upload standalone build
         uses: actions/upload-artifact@v7
         with:
           name: frontend-standalone
@@ -118,16 +104,14 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: ${{ env.PNPM_VERSION }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
 
       - name: Audit Node dependencies
         run: pnpm audit --audit-level high
@@ -160,7 +144,7 @@ jobs:
 
       - name: Upload security artifact
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-trivy-filesystem
           path: trivy-frontend-filesystem.sarif
