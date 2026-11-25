@@ -15,7 +15,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,css,json}\""
   },
   "dependencies": {
-    "@apollo/client": "^4.2.0",
+    "@apollo/client": "^4.3.8",
     "@dnd-kit/core": "6.3.1-next-202411517925",
     "@dnd-kit/dom": "^0.5.0",
     "@dnd-kit/helpers": "^0.5.0",
