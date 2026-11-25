@@ -27,7 +27,7 @@
     "docx": "9.5.1",
     "driver.js": "^1.8.0",
     "exceljs": "4.4.0",
-    "graphql": "^16.14.0",
+    "graphql": "^16.15.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "katex": "^0.17.0",
