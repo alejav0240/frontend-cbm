@@ -95,6 +95,11 @@ jobs:
 
   e2e:
     name: "Phase 4 - Browser tests"
+    if: >-
+      ${{
+        github.event_name != 'pull_request' ||
+        vars.E2E_BASE_URL != ''
+      }}
     runs-on: ubuntu-24.04
     needs: fast-checks
     timeout-minutes: 30
@@ -173,6 +178,8 @@ jobs:
       - name: Scan source tree with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
+          cache: "false"
+          limit-severities-for-sarif: "true"
           version: v0.76.2
           scan-type: fs
           scan-ref: .
@@ -277,6 +284,8 @@ jobs:
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
+          cache: "false"
+          limit-severities-for-sarif: "true"
           image-ref: cbm-frontend:${{ github.sha }}
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
